@@ -100,68 +100,18 @@ async def seed_data():
         # Token de autenticación (se usará el del admin para la mayoría de las operaciones)
         auth_token = None
 
-        # 1. Sembrar Estados de Elementos de Inventario
-        print("\n--- Sembrando Estados de Elementos de Inventario ---")
-        for item_data in data_to_seed.get("estados_elementos_inventario", []):
-            await post_data(client, "/inventario/estado_elemento_inventario", item_data)
-
-        # 2. Sembrar Tipos de Movimientos de Inventario
-        print("\n--- Sembrando Tipos de Movimientos de Inventario ---")
-        for item_data in data_to_seed.get("tipos_movimientos_inventario", []):
-            await post_data(client, "/inventario/tipo_movimiento_inventario", item_data)
-
-        # Sembrar grupos de inventario
-        print("\n--- Sembrando Grupos de Inventario ---")
-        for item_data in data_to_seed.get("grupos_inventario", []):
-            await post_data(client, "/inventario/grupo_inventario", item_data)
-
-        # 3. Sembrar Tipos de Precios de Elementos de Inventario
-        print("\n--- Sembrando Tipos de Precios de Elementos de Inventario ---")
-        for item_data in data_to_seed.get("tipos_precios_elementos_inventario", []):
-            await post_data(
-                client, "/inventario/tipo_precio_elemento_inventario", item_data
-            )
-
-        # Sembrar unidades medida
-        print("\n--- Sembrando Unidades de Medida ---")
-        for item_data in data_to_seed.get("unidades_medida", []):
-            await post_data(client, "/inventario/unidad_medida", item_data)
-
-        # Sembrar bodegas inventario
-        print("\n--- Sembrando Bodegas de Inventario ---")
-        for item_data in data_to_seed.get("bodegas_inventario", []):
-            await post_data(client, "/inventario/bodega_inventario", item_data)
-
-        # 4. Sembrar Usuarios
+        # 1. Sembrar Usuarios
         print("\n--- Sembrando Usuarios ---")
         for user_data in data_to_seed.get("usuarios", []):
             # Clonar el diccionario para no modificar el original al eliminar la contraseña
             user_create_data = user_data.copy()
-            password = user_create_data.pop(
-                "password"
-            )  # Eliminar la contraseña del payload de creación si no es esperada por el modelo UsuarioCreate
-            # Si UsuarioCreate espera la contraseña, no hacer pop.
-            # En tu OpenAPI, UsuarioCreate sí espera 'password', así que no la eliminamos.
+            password = user_create_data.pop("password")
             user_create_data["password"] = (
                 password  # Asegurarse de que la contraseña esté presente
             )
 
             response_json = await post_data(client, "/usuarios/", user_create_data)
             if response_json and "username" in response_json:
-                # Asumimos que la respuesta incluye el ID del usuario creado
-                # Si el ID no se devuelve, esta parte necesitará ajuste o una consulta GET
-                # Para este ejemplo, asumimos que el ID se devuelve o que podemos usar el ID del JSON si se envió
-                # Sin embargo, el OpenAPI para UsuarioBase no muestra 'id'.
-                # Para propósitos de este script de siembra, vamos a asumir que los IDs de usuario se asignan secuencialmente
-                # o que el `usuario_id` en `elementos_inventario` y `movimientos_inventario` puede ser null.
-                # Si necesitas el ID real, tendrías que hacer una consulta GET después de la creación.
-                # Para simplificar, si tu API devuelve el ID en la respuesta de creación, úsalo.
-                # Si no, y si el `usuario_id` es `Optional`, puedes dejarlo como `null` en el JSON o mapearlo manualmente.
-                # Para este script, mapearemos el username a un ID ficticio o al ID que venga en la respuesta si existe.
-                # Si tu API no devuelve el ID, y el ID es auto-incrementable, deberías obtenerlo de otra forma.
-                # Para este ejemplo, asignaremos IDs basados en el orden de creación para `usuario_id` en otros modelos.
-                # Esto es una simplificación y puede no coincidir con los IDs reales de la DB.
-                # Una mejor práctica sería obtener el ID real de la respuesta o de una consulta.
                 user_ids_map[response_json["username"]] = (
                     len(user_ids_map) + 1
                 )  # Asignar un ID secuencial temporal
@@ -174,12 +124,56 @@ async def seed_data():
                         print(
                             f"Token de admin_user obtenido: {auth_token[:20]}..."
                         )  # Mostrar solo una parte del token
+                        auth_token = auth_token
                     else:
                         print(
                             "No se pudo obtener el token para admin_user. Las siguientes operaciones podrían fallar."
                         )
 
-        # 5. Sembrar Elementos de Inventario
+        #
+
+        # 2. Sembrar Estados de Elementos de Inventario
+        print("\n--- Sembrando Estados de Elementos de Inventario ---")
+        for item_data in data_to_seed.get("estados_elementos_inventario", []):
+            await post_data(client, "/inventario/estado_elemento_inventario", item_data, auth_token)
+
+        # 3. Sembrar Tipos de Movimientos de Inventario
+        print("\n--- Sembrando Tipos de Movimientos de Inventario ---")
+        for item_data in data_to_seed.get("tipos_movimientos_inventario", []):
+            await post_data(
+                client, "/inventario/tipo_movimiento_inventario", item_data, auth_token
+            )
+
+        # 4. Sembrar grupos de inventario
+        print("\n--- Sembrando Grupos de Inventario ---")
+        for item_data in data_to_seed.get("grupos_inventario", []):
+            await post_data(
+                client, "/inventario/grupo_inventario", item_data, auth_token
+            )
+
+        # 5. Sembrar Tipos de Precios de Elementos de Inventario
+        print("\n--- Sembrando Tipos de Precios de Elementos de Inventario ---")
+        for item_data in data_to_seed.get("tipos_precios_elementos_inventario", []):
+            await post_data(
+                client,
+                "/inventario/tipo_precio_elemento_inventario",
+                item_data,
+                auth_token,
+            )
+
+        # 6. Sembrar unidades medida
+        print("\n--- Sembrando Unidades de Medida ---")
+        for item_data in data_to_seed.get("unidades_medida", []):
+            await post_data(client, "/inventario/unidad_medida", item_data, auth_token)
+
+        # 7. Sembrar bodegas inventario
+        print("\n--- Sembrando Bodegas de Inventario ---")
+        for item_data in data_to_seed.get("bodegas_inventario", []):
+            await post_data(
+                client, "/inventario/bodega_inventario", item_data, auth_token
+            )
+
+        # 8. Sembrar Elementos de Inventario
         print("\n--- Sembrando Elementos de Inventario ---")
         for item_data in data_to_seed.get("elementos_inventario", []):
             # Asegurarse de que el usuario_id sea válido si se usa
@@ -209,7 +203,7 @@ async def seed_data():
                 client, "/inventario/elemento_inventario", item_data, token=auth_token
             )
 
-        # 6. Sembrar Elementos Compuestos de Inventario
+        # 9. Sembrar Elementos Compuestos de Inventario
         print("\n--- Sembrando Elementos Compuestos de Inventario ---")
         for item_data in data_to_seed.get("elementos_compuestos_inventario", []):
             if "created_at" in item_data and isinstance(item_data["created_at"], str):
@@ -228,7 +222,7 @@ async def seed_data():
                 token=auth_token,
             )
 
-        # 7. Sembrar Precios de Elementos de Inventario
+        # 10. Sembrar Precios de Elementos de Inventario
         print("\n--- Sembrando Precios de Elementos de Inventario ---")
         for item_data in data_to_seed.get("precios_elementos_inventario", []):
             # Asegurarse de que las fechas estén en el formato correcto
@@ -256,7 +250,7 @@ async def seed_data():
                 token=auth_token,
             )
 
-        # 8. Sembrar Movimientos de Inventario
+        # 11. Sembrar Movimientos de Inventario
         print("\n--- Sembrando Movimientos de Inventario ---")
         for item_data in data_to_seed.get("movimientos_inventario", []):
             if "created_at" in item_data and isinstance(item_data["created_at"], str):

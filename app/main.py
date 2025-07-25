@@ -48,7 +48,7 @@ app.include_router(inventario_router.router)
 @app.get("/", tags=["Root"])
 async def read_root():
     """Ruta raíz de la API."""
-    return {"message": "Bienvenido a la API de Gestión de Citas"}
+    return {"message": "API Coco Salvaje"}
 
 
 # --- Instrucciones para Ejecutar (en comentario) ---

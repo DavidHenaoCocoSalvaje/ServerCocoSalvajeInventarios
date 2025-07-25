@@ -59,7 +59,7 @@ def crear_access_token(data: dict, expires_delta: timedelta | None = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(days=3)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, config.secret_key, algorithm=config.algorithm)
     return encoded_jwt
@@ -75,7 +75,7 @@ async def validar_access_token(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, config.secret_key, algorithms=[config.algorithm])
+        payload = jwt.decode(token, config.secret_key, [config.algorithm])
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
@@ -98,6 +98,6 @@ async def login(
             detail="Usuario o contraseña incorrectos",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    data = {"sub": usuario.id, "name": usuario.username}
+    data = {"sub": str(usuario.id), "name": usuario.username}
     token = crear_access_token(data)
     return Token(access_token=token, token_type="bearer")
