@@ -15,7 +15,7 @@ QueryType = TypeVar("QueryType", bound=BaseQuery)
 def create_crud_routes(
     router: APIRouter,
     model: type[ModelType],
-    query_class: type[BaseQuery[ModelType]],
+    query_class: type[QueryType],
     name: str,
     id_type: type = int,  # Tipo de dato para el ID (int o str)
 ):
@@ -42,7 +42,7 @@ def create_crud_routes(
     async def create_resource(
         resource: model,  # type: ignore
         session: AsyncSessionDep,
-    ):
+    ) -> model:  # type: ignore
         """Crea un nuevo recurso."""
         query = query_class()  # type: ignore
         await query.create(session, resource)
@@ -60,7 +60,7 @@ def create_crud_routes(
         session: AsyncSessionDep,
         skip: int = 0,
         limit: int = 100,
-    ):
+    ) -> list[model]:  # type: ignore
         """Obtiene una lista de recursos."""
         query = query_class()  # type: ignore
         resources = await query.get_list(session=session, skip=skip, limit=limit)
@@ -77,7 +77,7 @@ def create_crud_routes(
     async def get_resource(
         session: AsyncSessionDep,
         resource_id: id_type,  # Usa el tipo de ID dinámicamente # type: ignore
-    ):
+    ) -> model:  # type: ignore
         """Obtiene un recurso por ID."""
         query = query_class()  # type: ignore
         db_resource = await query.get(session, resource_id)
@@ -98,7 +98,7 @@ def create_crud_routes(
         session: AsyncSessionDep,
         resource_id: id_type,  # Usa el tipo de ID dinámicamente # type: ignore
         resource: model,  # type: ignore
-    ):
+    ) -> model:  # type: ignore
         """Actualiza un recurso."""
         query = query_class()  # type: ignore
         updated_resource = await query.update(session, resource_id, resource)
@@ -118,7 +118,7 @@ def create_crud_routes(
     async def delete_resource(
         session: AsyncSessionDep,
         resource_id: id_type,  # Usa el tipo de ID dinámicamente # type: ignore
-    ):
+    ) -> model:  # type: ignore
         """Elimina un recurso."""
         query = query_class()  # type: ignore
         deleted_resource = await query.delete(session, resource_id)

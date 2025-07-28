@@ -6,17 +6,17 @@ from app.routers.base import create_crud_routes
 
 
 from app.models.inventario import (
-    BodegaInventario,
-    GrupoInventario,
-    UnidadMedida,
-    ElementoInventario,
-    ElementoCompuestoInventario,
+    BodegaInventarioResponse,
+    ElementoCompuestoInventarioResponse,
+    ElementoInventarioResponse,
+    GrupoInventarioResponse,
+    TipoMovimientoInventarioResponse,
+    TipoPrecioElementoInventarioResponse,
     ElementosPorElementoCompuestoInventario,
-    PrecioElementoInventario,
-    TipoPrecioElementoInventario,
-    MovimientoInventario,
-    TipoMovimientoInventario,
-    EstadoElementoInventario,
+    PrecioElementoInventarioResponse,
+    MovimientoInventarioResponse,
+    EstadoElementoInventarioResponse,
+    UnidadMedidaResponse,
 )
 
 # Base de datos (Repositorio)
@@ -45,48 +45,69 @@ router = APIRouter(
 
 # Llamadas a la función genérica para cada modelo de inventario
 create_crud_routes(
-    router, ElementoInventario, ElementoInventarioQuery, "elemento_inventario"
+    router,
+    ElementoInventarioResponse,
+    ElementoInventarioQuery,
+    "elemento",
 )
 create_crud_routes(
     router,
-    ElementoCompuestoInventario,
+    ElementoCompuestoInventarioResponse,
     ElementoCompuestoInventarioQuery,
-    "elemento_compuesto_inventario",
+    "elemento_compuesto",
 )
 create_crud_routes(
     router,
     ElementosPorElementoCompuestoInventario,
     ElementosPorElementoCompuestoInventarioQuery,
-    "elementos_por_elemento_compuesto_inventario",
+    "elementos_por_elemento_compuesto",
 )
 create_crud_routes(
     router,
-    PrecioElementoInventario,
+    PrecioElementoInventarioResponse,
     PrecioElementoInventarioQuery,
-    "precio_elemento_inventario",
+    "precio",
 )
 create_crud_routes(
     router,
-    TipoPrecioElementoInventario,
+    TipoPrecioElementoInventarioResponse,
     TipoPrecioElementoInventarioQuery,
-    "tipo_precio_elemento_inventario",
-)
-create_crud_routes(router, BodegaInventario, BodegaInventarioQuery, "bodega_inventario")
-create_crud_routes(router, GrupoInventario, GrupoInventarioQuery, "grupo_inventario")
-create_crud_routes(
-    router, MovimientoInventario, MovimientoInventarioQuery, "movimiento_inventario"
+    "tipo_precio",
 )
 create_crud_routes(
     router,
-    TipoMovimientoInventario,
+    BodegaInventarioResponse,
+    BodegaInventarioQuery,
+    "bodega",
+)
+create_crud_routes(
+    router,
+    GrupoInventarioResponse,
+    GrupoInventarioQuery,
+    "grupo",
+)
+create_crud_routes(
+    router,
+    MovimientoInventarioResponse,
+    MovimientoInventarioQuery,
+    "movimiento",
+)
+create_crud_routes(
+    router,
+    TipoMovimientoInventarioResponse,
     TipoMovimientoInventarioQuery,
-    "tipo_movimiento_inventario",
+    "tipo_movimiento",
     id_type=int,
 )  # Asegúrate de que el tipo de ID sea correcto
 create_crud_routes(
     router,
-    EstadoElementoInventario,
+    EstadoElementoInventarioResponse,
     EstadoElementoInventarioQuery,
-    "estado_elemento_inventario",
+    "estado",
 )
-create_crud_routes(router, UnidadMedida, UnidadMedidaQuery, "unidad_medida")
+create_crud_routes(
+    router,
+    UnidadMedidaResponse,
+    UnidadMedidaQuery,
+    "unidad_medida",
+)

@@ -10,16 +10,18 @@ class BaseQuery(Generic[ModelDB]):
     def __init__(self, model: type[ModelDB]) -> None:
         self.model = model
 
-    async def get(self, session: AsyncSession, id: int | str):
+    async def get(self, session: AsyncSession, id: int | str) -> ModelDB | None:
         """Obtiene un objeto por su ID"""
         result = await session.get(self.model, id)
         return result
 
-    async def get_list(self, session: AsyncSession, skip: int = 0, limit: int = 100):
+    async def get_list(
+        self, session: AsyncSession, skip: int = 0, limit: int = 100
+    ) -> list[ModelDB]:
         """Obtiene una lista de objetos de forma asíncrona."""
         stmt = select(self.model).offset(skip).limit(limit)
         result = await session.execute(stmt)
-        return result.scalars().all()  # type:ignore
+        return list(result.scalars().all())
 
     async def create(self, session: AsyncSession, obj: SQLModel):
         """Crea un nuevo objeto de forma asíncrona."""
