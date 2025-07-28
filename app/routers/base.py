@@ -11,12 +11,9 @@ from app.internal.query.base import BaseQuery
 Model = TypeVar("Model", bound=SQLModel)
 
 
-class FabricCRUD(Generic[Model]):
-    def __init__(self) -> None:
+class CRUD(Generic[Model]):
+    def __init__(self, router: APIRouter, query: BaseQuery, name: str) -> None:
         super().__init__()
-        pass
-
-    def create_crud_routes(self, router: APIRouter, query: BaseQuery, name: str):
         """
         Crea rutas CRUD genéricas para un modelo dado.
 
@@ -57,7 +54,7 @@ class FabricCRUD(Generic[Model]):
             session: AsyncSessionDep,
             skip: int = 0,
             limit: int = 100,
-        ):
+        ) -> list[Model]:
             """Obtiene una lista de recursos."""
             resources = await query.get_list(session=session, skip=skip, limit=limit)
             return resources
@@ -73,7 +70,7 @@ class FabricCRUD(Generic[Model]):
         async def get_resource(
             session: AsyncSessionDep,
             resource_id: int,
-        ):
+        ) -> Model:
             """Obtiene un recurso por ID."""
             db_resource = await query.get(session, resource_id)
             if db_resource is None:
@@ -93,7 +90,7 @@ class FabricCRUD(Generic[Model]):
             session: AsyncSessionDep,
             resource_id: int,
             resource: Model,
-        ):
+        ) -> Model:
             """Actualiza un recurso."""
             updated_resource = await query.update(session, resource_id, resource)
             if updated_resource is None:
@@ -112,7 +109,7 @@ class FabricCRUD(Generic[Model]):
         async def delete_resource(
             session: AsyncSessionDep,
             resource_id: int,
-        ):
+        ) -> Model:
             """Elimina un recurso."""
             deleted_resource = await query.delete(session, resource_id)
             if deleted_resource is None:

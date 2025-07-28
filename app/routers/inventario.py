@@ -1,22 +1,22 @@
 # app/routers/inventario.py
 from fastapi import APIRouter, Depends
-from app.routers.base import FabricCRUD
+from app.routers.base import CRUD
 
 # Modelos
 
 
 from app.models.inventario import (
-    BodegaInventarioResponse,
-    ElementoCompuestoInventarioResponse,
-    ElementoInventarioResponse,
-    GrupoInventarioResponse,
-    TipoMovimientoInventarioResponse,
-    TipoPrecioElementoInventarioResponse,
+    BodegaInventario,
+    ElementoCompuestoInventario,
+    ElementoInventario,
+    GrupoInventario,
+    TipoMovimientoInventario,
+    TipoPrecioElementoInventario,
     ElementosPorElementoCompuestoInventario,
-    PrecioElementoInventarioResponse,
-    MovimientoInventarioResponse,
-    EstadoElementoInventarioResponse,
-    UnidadMedidaResponse,
+    PrecioElementoInventario,
+    MovimientoInventario,
+    EstadoElementoInventario,
+    UnidadMedida,
 )
 
 # Base de datos (Repositorio)
@@ -44,72 +44,58 @@ router = APIRouter(
 
 
 # Llamadas a la función genérica para cada modelo de inventario
-elemento_inventario_crud_fabric = FabricCRUD[ElementoInventarioResponse]()
-elemento_inventario_crud_fabric.create_crud_routes(
+CRUD[ElementoInventario](
     router,
     elemento_inventario_query,
     "elemento",
 )
-elemento_compuesto_crud_fabric = FabricCRUD[ElementoCompuestoInventarioResponse]()
-elemento_compuesto_crud_fabric.create_crud_routes(
+
+CRUD[ElementoCompuestoInventario](
     router,
     elemento_compuesto_inventario_query,
     "elemento_compuesto",
 )
-elementos_por_elemento_compuesto_crud_fabric = FabricCRUD[
-    ElementosPorElementoCompuestoInventario
-]()
-elementos_por_elemento_compuesto_crud_fabric.create_crud_routes(
+CRUD[ElementosPorElementoCompuestoInventario](
     router,
     elementos_por_elemento_compuesto_inventario_query,
     "elementos_por_elemento_compuesto",
 )
-bodega_inventario_crud_fabric = FabricCRUD[BodegaInventarioResponse]()
-bodega_inventario_crud_fabric.create_crud_routes(
+CRUD[BodegaInventario](
     router,
     bodega_inventario_query,
     "bodega",
 )
-grupo_inventario_crud_fabric = FabricCRUD[GrupoInventarioResponse]()
-grupo_inventario_crud_fabric.create_crud_routes(
+CRUD[GrupoInventario](
     router,
     grupo_inventario_query,
     "grupo",
 )
-unidad_medida_crud_fabric = FabricCRUD[UnidadMedidaResponse]()
-unidad_medida_crud_fabric.create_crud_routes(
+CRUD[UnidadMedida](
     router,
     unidad_medida_query,
     "unidad_medida",
 )
-precio_elemento_inventario_crud_fabric = FabricCRUD[PrecioElementoInventarioResponse]()
-precio_elemento_inventario_crud_fabric.create_crud_routes(
+CRUD[PrecioElementoInventario](
     router,
     precio_elemento_inventario_query,
     "precio",
 )
-tipo_precio_elemento_inventario_crud_fabric = FabricCRUD[
-    TipoPrecioElementoInventarioResponse
-]()
-tipo_precio_elemento_inventario_crud_fabric.create_crud_routes(
+CRUD[TipoPrecioElementoInventario](
     router,
     tipo_precio_elemento_inventario_query,
     "tipo_precio",
 )
-movimiento_inventario_crud_fabric = FabricCRUD[MovimientoInventarioResponse]()
-movimiento_inventario_crud_fabric.create_crud_routes(
+CRUD[MovimientoInventario](
     router,
     movimiento_inventario_query,
     "movimiento",
 )
-tipo_movimiento_inventario_crud_fabric = FabricCRUD[TipoMovimientoInventarioResponse]()
-tipo_movimiento_inventario_crud_fabric.create_crud_routes(
+CRUD[TipoMovimientoInventario](
     router,
     tipo_movimiento_inventario_query,
     "tipo_movimiento",
 )
-estado_elemento_inventario_crud_fabric = FabricCRUD[EstadoElementoInventarioResponse]()
-estado_elemento_inventario_crud_fabric.create_crud_routes(
+CRUD[EstadoElementoInventario](
     router,
     estado_elemento_inventario_query,
     "estado",

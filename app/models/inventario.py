@@ -3,17 +3,13 @@ from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel, SMALLINT, DATE, TEXT
 
 
-class BodegaInventarioResponse(SQLModel):
+class BodegaInventario(SQLModel, table=True):
+    __tablename__ = "bodegas_inventario"  # type: ignore
+
     id: int = Field(primary_key=True, sa_type=SMALLINT)
     nombre: str = Field(max_length=50)
     ubicacion: str = Field(max_length=150)
 
-
-class BodegaInventario(
-    BodegaInventarioResponse, table=True
-):  # Cuando se utiliza table=True, no se respeta el orden del modelo, por eso se define con herencia
-    __tablename__ = "bodegas_inventario"  # type: ignore
-
     # Relationships
     elementos_inventario: list["ElementoInventario"] = Relationship(
         back_populates="bodega_inventario"
@@ -23,14 +19,12 @@ class BodegaInventario(
     )
 
 
-class GrupoInventarioResponse(SQLModel):
+class GrupoInventario(SQLModel, table=True):
+    __tablename__ = "grupos_inventario"  # type: ignore
+
     id: int = Field(primary_key=True, sa_type=SMALLINT)
     nombre: str = Field(max_length=50)
 
-
-class GrupoInventario(GrupoInventarioResponse, table=True):
-    __tablename__ = "grupos_inventario"  # type: ignore
-
     # Relationships
     elementos_inventario: list["ElementoInventario"] = Relationship(
         back_populates="grupo_inventario"
@@ -40,14 +34,12 @@ class GrupoInventario(GrupoInventarioResponse, table=True):
     )
 
 
-class UnidadMedidaResponse(SQLModel):
+class UnidadMedida(SQLModel, table=True):
+    __tablename__ = "unidades_medida"  # type: ignore
+
     id: int = Field(sa_type=SMALLINT, primary_key=True)
     nombre: str = Field(max_length=50)
     tipo_unidad_medida: str = Field(max_length=50)
-
-
-class UnidadMedida(UnidadMedidaResponse, table=True):
-    __tablename__ = "unidades_medida"  # type: ignore
 
     # Relationships
     elementos_inventario_cantidad: list["ElementoInventario"] = Relationship(
@@ -94,13 +86,11 @@ class UnidadMedida(UnidadMedidaResponse, table=True):
     )
 
 
-class EstadoElementoInventarioResponse(SQLModel):
+class EstadoElementoInventario(SQLModel, table=True):
+    __tablename__ = "estados_elemento_inventario"  # type: ignore
+
     id: int = Field(sa_type=SMALLINT, primary_key=True)
     nombre: str = Field(max_length=50)
-
-
-class EstadoElementoInventario(EstadoElementoInventarioResponse, table=True):
-    __tablename__ = "estados_elemento_inventario"  # type: ignore
 
     # Relationships
     elementos_inventario: list["ElementoInventario"] = Relationship(
@@ -111,7 +101,33 @@ class EstadoElementoInventario(EstadoElementoInventarioResponse, table=True):
     )
 
 
-class ElementoInventarioResponse(SQLModel):
+class TipoPrecioElementoInventario(SQLModel, table=True):
+    __tablename__ = "tipos_precio_elemento_inventario"  # type: ignore
+
+    id: int = Field(sa_type=SMALLINT, primary_key=True)
+    nombre: str = Field(max_length=50)
+
+    # Relationships
+    precios: list["PrecioElementoInventario"] = Relationship(
+        back_populates="tipo_precio"
+    )
+
+
+class TipoMovimientoInventario(SQLModel, table=True):
+    __tablename__ = "tipos_movimiento_inventario"  # type: ignore
+
+    id: int = Field(sa_type=SMALLINT, primary_key=True)
+    nombre: str = Field(max_length=50)
+
+    # Relationships
+    movimientos_inventario: list["MovimientoInventario"] = Relationship(
+        back_populates="tipo_movimiento"
+    )
+
+
+class ElementoInventario(SQLModel, table=True):
+    __tablename__ = "elementos_inventario"  # type: ignore
+
     id: int = Field(primary_key=True)
     nombre: str = Field(max_length=120)
     bodega_inventario_id: int | None = Field(foreign_key="bodegas_inventario.id")
@@ -132,10 +148,6 @@ class ElementoInventarioResponse(SQLModel):
     estado_elemento_id: int = Field(foreign_key="estados_elemento_inventario.id")
     created_at: datetime = Field(default=datetime.now)
     usuario_id: int | None = Field(foreign_key="usuarios.id", default=None)
-
-
-class ElementoInventario(ElementoInventarioResponse, table=True):
-    __tablename__ = "elementos_inventario"  # type: ignore
 
     # Relationships
     precios: list["PrecioElementoInventario"] = Relationship(
@@ -177,7 +189,9 @@ class ElementoInventario(ElementoInventarioResponse, table=True):
     )
 
 
-class ElementoCompuestoInventarioResponse(SQLModel):
+class ElementoCompuestoInventario(SQLModel, table=True):
+    __tablename__ = "elementos_compuestos_inventario"  # type: ignore
+
     id: int = Field(primary_key=True)
     nombre: str = Field(max_length=120)
     bodega_inventario_id: int | None = Field(foreign_key="bodegas_inventario.id")
@@ -200,10 +214,6 @@ class ElementoCompuestoInventarioResponse(SQLModel):
     estado_elemento_id: int = Field(foreign_key="estados_elemento_inventario.id")
     created_at: datetime = Field(default=datetime.now)
     usuario_id: int | None = Field(foreign_key="usuarios.id", default=None)
-
-
-class ElementoCompuestoInventario(ElementoCompuestoInventarioResponse, table=True):
-    __tablename__ = "elementos_compuestos_inventario"  # type: ignore
 
     # Relationships
     elementos_inventario: list["ElementosPorElementoCompuestoInventario"] = (
@@ -265,21 +275,9 @@ class ElementosPorElementoCompuestoInventario(SQLModel, table=True):
     )
 
 
-class TipoPrecioElementoInventarioResponse(SQLModel):
-    id: int = Field(sa_type=SMALLINT, primary_key=True)
-    nombre: str = Field(max_length=50)
+class PrecioElementoInventario(SQLModel, table=True):
+    __tablename__ = "precios_elemento_inventario"  # type: ignore
 
-
-class TipoPrecioElementoInventario(TipoPrecioElementoInventarioResponse, table=True):
-    __tablename__ = "tipos_precio_elemento_inventario"  # type: ignore
-
-    # Relationships
-    precios: list["PrecioElementoInventario"] = Relationship(
-        back_populates="tipo_precio"
-    )
-
-
-class PrecioElementoInventarioResponse(SQLModel):
     id: int = Field(primary_key=True)
     elemento_inventario_id: int = Field(foreign_key="elementos_inventario.id")
     precio: float
@@ -287,16 +285,14 @@ class PrecioElementoInventarioResponse(SQLModel):
     fini: datetime = Field(sa_type=DATE)
     ffin: datetime | None = Field(sa_type=DATE, default=None)
 
-
-class PrecioElementoInventario(PrecioElementoInventarioResponse, table=True):
-    __tablename__ = "precios_elemento_inventario"  # type: ignore
-
     # Relationships
     elemento_inventario: "ElementoInventario" = Relationship(back_populates="precios")
     tipo_precio: "TipoPrecioElementoInventario" = Relationship(back_populates="precios")
 
 
-class MovimientoInventarioResponse(SQLModel):
+class MovimientoInventario(SQLModel, table=True):
+    __tablename__ = "movimientos_inventario"  # type: ignore
+
     id: int = Field(primary_key=True)
     nombre: str = Field(max_length=120)
     cantidad: int
@@ -310,10 +306,6 @@ class MovimientoInventarioResponse(SQLModel):
     created_at: datetime = Field(default=datetime.now)
     usuario_id: int | None = Field(foreign_key="usuarios.id", default=None)
 
-
-class MovimientoInventario(MovimientoInventarioResponse, table=True):
-    __tablename__ = "movimientos_inventario"  # type: ignore
-
     # Relationships
     elemento_inventario: "ElementoInventario" = Relationship(
         back_populates="movimientos_inventario"
@@ -325,17 +317,3 @@ class MovimientoInventario(MovimientoInventarioResponse, table=True):
         back_populates="movimientos_inventario"
     )
     usuario: "UsuarioDB" = Relationship(back_populates="movimientos_inventario")  # type: ignore  # noqa: F821
-
-
-class TipoMovimientoInventarioResponse(SQLModel):
-    id: int = Field(sa_type=SMALLINT, primary_key=True)
-    nombre: str = Field(max_length=50)
-
-
-class TipoMovimientoInventario(TipoMovimientoInventarioResponse, table=True):
-    __tablename__ = "tipos_movimiento_inventario"  # type: ignore
-
-    # Relationships
-    movimientos_inventario: list["MovimientoInventario"] = Relationship(
-        back_populates="tipo_movimiento"
-    )
