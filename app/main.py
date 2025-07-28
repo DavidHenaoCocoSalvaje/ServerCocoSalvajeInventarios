@@ -28,7 +28,6 @@ app = FastAPI(
     description="API para gestionar el inventario de Coco Salvaje.",
     version="1.0.0",
     lifespan=lifespan,  # Usa el contexto de vida para crear tablas
-    default_response_class=JSONResponse,
 )
 
 app.add_middleware(
