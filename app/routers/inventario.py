@@ -6,16 +6,16 @@ from app.routers.base import CRUD
 
 
 from app.models.inventario import (
-    BodegaInventario,
-    ElementoCompuestoInventario,
-    ElementoInventario,
-    GrupoInventario,
-    TipoMovimientoInventario,
-    TipoPrecioElementoInventario,
-    ElementosPorElementoCompuestoInventario,
-    PrecioElementoInventario,
-    MovimientoInventario,
-    EstadoElementoInventario,
+    Bodega,
+    ElementoCompuesto,
+    Elemento,
+    Grupo,
+    TipoMovimiento,
+    TipoPrecioVariante,
+    ElementosPorElementoCompuesto,
+    PrecioVariante,
+    Movimiento,
+    EstadoElemento,
     UnidadMedida,
 )
 
@@ -44,28 +44,28 @@ router = APIRouter(
 
 
 # Llamadas a la función genérica para cada modelo de inventario
-CRUD[ElementoInventario](
+CRUD[Elemento](
     router,
     elemento_inventario_query,
     "elemento",
 )
 
-CRUD[ElementoCompuestoInventario](
+CRUD[ElementoCompuesto](
     router,
     elemento_compuesto_inventario_query,
     "elemento_compuesto",
 )
-CRUD[ElementosPorElementoCompuestoInventario](
+CRUD[ElementosPorElementoCompuesto](
     router,
     elementos_por_elemento_compuesto_inventario_query,
     "elementos_por_elemento_compuesto",
 )
-CRUD[BodegaInventario](
+CRUD[Bodega](
     router,
     bodega_inventario_query,
     "bodega",
 )
-CRUD[GrupoInventario](
+CRUD[Grupo](
     router,
     grupo_inventario_query,
     "grupo",
@@ -75,27 +75,27 @@ CRUD[UnidadMedida](
     unidad_medida_query,
     "unidad_medida",
 )
-CRUD[PrecioElementoInventario](
+CRUD[PrecioVariante](
     router,
     precio_elemento_inventario_query,
     "precio",
 )
-CRUD[TipoPrecioElementoInventario](
+CRUD[TipoPrecioVariante](
     router,
     tipo_precio_elemento_inventario_query,
     "tipo_precio",
 )
-CRUD[MovimientoInventario](
+CRUD[Movimiento](
     router,
     movimiento_inventario_query,
     "movimiento",
 )
-CRUD[TipoMovimientoInventario](
+CRUD[TipoMovimiento](
     router,
     tipo_movimiento_inventario_query,
     "tipo_movimiento",
 )
-CRUD[EstadoElementoInventario](
+CRUD[EstadoElemento](
     router,
     estado_elemento_inventario_query,
     "estado",
