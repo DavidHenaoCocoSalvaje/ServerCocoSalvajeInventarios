@@ -38,6 +38,8 @@ class Config:
 
         # Seguridad
         self.secret_key: str = os.getenv("SECRET_KEY", "")
+        self.shop_shopify: str = os.getenv("SHOP_SHOPIFY", "")
+        self.shop_version: str = os.getenv("SHOP_VERSION", "2025-07")
         self.api_key_shopify: str = os.getenv("API_KEY_SHOPIFY", "")
         self.algorithm: str = os.getenv("ALGORITHM", "HS256")
         self.access_token_expire_minutes: int = int(

@@ -1,5 +1,5 @@
 # app/models/usuario.py
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 class UsuarioBase(SQLModel):
@@ -15,21 +15,6 @@ class UsuarioCreate(UsuarioBase):
 class UsuarioDB(UsuarioCreate, table=True):
     __tablename__ = "usuarios"  # type: ignore
     id: int = Field(primary_key=True)
-
-    # Relationships
-    # Un usuario puede tener múltiples elementos de inventario creados
-    elementos_inventario: list["ElementoInventario"] | None = Relationship(  # type: ignore  # noqa: F821
-        back_populates="usuario"
-    )
-    # Un usuario puede tener múltiples elementos compuestos de inventario creados
-    elementos_compuestos_inventario: list["ElementoCompuestoInventario"] | None = (  # type: ignore  # noqa: F821
-        Relationship(back_populates="usuario")
-    )
-    # Un usuario puede realizar múltiples movimientos de inventario
-    movimientos_inventario: list["MovimientoInventario"] | None = Relationship(  # type: ignore  # noqa: F821
-        back_populates="usuario"
-    )
-
     # back_populates indica que si algo cambia en este modelo, debe cambiar en el otro también.
     # https://sqlmodel.tiangolo.com/tutorial/relationship-attributes/create-and-update-relationships/#create-a-team-with-heroes
 

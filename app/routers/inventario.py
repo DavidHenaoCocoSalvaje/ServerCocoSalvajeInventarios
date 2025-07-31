@@ -12,8 +12,8 @@ from app.models.inventario import (
     Grupo,
     TipoMovimiento,
     TipoPrecioVariante,
-    ElementosPorElementoCompuesto,
-    PrecioVariante,
+    VariantesPorElementoCompuesto,
+    PreciosPorVariante,
     Movimiento,
     EstadoElemento,
     UnidadMedida,
@@ -55,7 +55,7 @@ CRUD[ElementoCompuesto](
     elemento_compuesto_inventario_query,
     "elemento_compuesto",
 )
-CRUD[ElementosPorElementoCompuesto](
+CRUD[VariantesPorElementoCompuesto](
     router,
     elementos_por_elemento_compuesto_inventario_query,
     "elementos_por_elemento_compuesto",
@@ -75,7 +75,7 @@ CRUD[UnidadMedida](
     unidad_medida_query,
     "unidad_medida",
 )
-CRUD[PrecioVariante](
+CRUD[PreciosPorVariante](
     router,
     precio_elemento_inventario_query,
     "precio",
