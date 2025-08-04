@@ -4,8 +4,8 @@ from typing import Annotated
 from string import punctuation
 
 # Modelos
-from app.models.database import AsyncSessionDep
-from app.models.usuario import UsuarioBase, UsuarioCreate
+from app.models.db.session import AsyncSessionDep
+from app.models.db.usuario import UsuarioBase, UsuarioCreate
 
 # Base de datos (Repositorio)
 from app.internal.query.usuario import usuario_query

@@ -2,10 +2,15 @@ import asyncio
 from typing import Any
 from pydantic import BaseModel
 import aiohttp
-import json
 
 import os
 import sys
+
+from app.models.pydantic.shopify.inventario import (
+    InventoryLevelsResponse,
+    ProductsResponse,
+    VariantsResponse,
+)
 
 sys.path.append(os.path.abspath("."))
 
@@ -52,6 +57,8 @@ class ShopifyGraphQLClient:
         page_info = query_result.copy()
 
         for key in keys:
+            if isinstance(page_info, list):
+                page_info = page_info[0]
             page_info = page_info[key]
         page_info = page_info["pageInfo"]
 
@@ -116,6 +123,9 @@ class QueriesShopify:
                         inventoryQuantity
                         title
                         price
+                        inventoryItem {
+                            legacyResourceId
+                        }
                     }
                     pageInfo {
                         hasNextPage
@@ -175,10 +185,32 @@ class QueriesShopify:
 async def main():
     query = QueriesShopify()
     product_data = await query.get_products()
-    product_data["data"]["products"] = []
-    for node in product_data["data"]["products"]["nodes"]:
-        variants_data = await query.get_variants(node["legacyResourceId"])
-        
+    product_response = ProductsResponse(**product_data)
+
+    for product in product_response.data.products.nodes:
+        variants = []
+        inventory_levels = []
+        if product.legacyResourceId:
+            variant_data = await query.get_variants(product.legacyResourceId)
+            variant_response = VariantsResponse(**variant_data)
+            variants.extend(variant_response.data.productVariants.nodes)
+
+            for variant_data in variants:
+                if variant_data.inventoryItem.legacyResourceId:
+                    inventory_data = await query.get_inventory_levels(
+                        variant_data.inventoryItem.legacyResourceId
+                    )
+                    inventory_response = InventoryLevelsResponse(**inventory_data)
+                    inventory_levels.extend(
+                        inventory_response.data.inventoryItems.nodes[
+                            0
+                        ].inventoryLevels.nodes
+                    )
+
+        product.variants = variants
+        product.inventory_levels = inventory_levels
+
+    print(product_response.model_dump_json(indent=2))
 
 
 asyncio.run(

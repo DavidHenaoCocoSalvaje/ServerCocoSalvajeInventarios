@@ -5,7 +5,7 @@ from app.routers.base import CRUD
 # Modelos
 
 
-from app.models.inventario import (
+from app.models.db.inventario import (
     Bodega,
     ElementoCompuesto,
     Elemento,

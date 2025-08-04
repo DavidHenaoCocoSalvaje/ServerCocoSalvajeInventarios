@@ -12,13 +12,13 @@ from pydantic import BaseModel
 from app.config import config
 
 # Models
-from app.models.usuario import UsuarioDB
+from app.models.db.usuario import UsuarioDB
 
 # Repository
 from app.internal.query.usuario import usuario_query
 
 # Session
-from app.models.database import AsyncSessionDep
+from app.models.db.session import AsyncSessionDep
 
 router = APIRouter(
     prefix="/auth",

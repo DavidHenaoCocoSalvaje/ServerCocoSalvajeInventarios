@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import SQLModel
 
 from app.internal.gen.utilities import pluralizar_por_sep
-from app.models.database import AsyncSessionDep
+from app.models.db.session import AsyncSessionDep
 from app.internal.query.base import BaseQuery
 
 # Define un TypeVar para los modelos de SQLModel

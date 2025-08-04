@@ -3,12 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from fastapi.responses import JSONResponse
-
 from app.routers import usuario as usuario_router
 from app.routers import auth as auth_router
 from app.routers import inventario as inventario_router
-from app.models.database import create_db_and_tables
+from app.models.db.session import create_db_and_tables
 
 
 # --- Ciclo de vida de la aplicación (Opcional) ---
