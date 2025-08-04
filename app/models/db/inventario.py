@@ -9,6 +9,7 @@ class Bodega(SQLModel, table=True):
     id: int = Field(primary_key=True, sa_type=SMALLINT)
     nombre: str = Field(max_length=50)
     ubicacion: str = Field(max_length=150)
+    shopify_location_id: int | None
 
     # Relationships
     elementos: list["Elemento"] = Relationship(back_populates="bodega")
@@ -260,6 +261,7 @@ class VariantesPorElementoCompuesto(SQLModel, table=True):
     id: int = Field(primary_key=True)
     elemento_compuesto_id: int = Field(foreign_key="elementos_compuestos_inventario.id")
     variante_elemento_id: int = Field(foreign_key="variantes_elemento_inventario.id")
+    cantidad_variante: int
 
     # Relationships
     elemento_compuesto: "ElementoCompuesto" = Relationship(back_populates="componentes")
