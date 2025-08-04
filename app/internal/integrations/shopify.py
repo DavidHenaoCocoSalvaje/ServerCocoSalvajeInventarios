@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, List
 from pydantic import BaseModel
 import aiohttp
 
@@ -156,6 +156,7 @@ class QueriesShopify:
                                     legacyResourceId
                                     address {
                                         city
+                                        province
                                         country
                                         address1
                                     }
@@ -180,39 +181,116 @@ class QueriesShopify:
         )
 
 
-# products_data = get_shopify_products(False)
-# products_data = get_shopify_products(True)
-async def main():
+async def process_prducts():
+    async def process_product_variants(
+        query_client: QueriesShopify, product_ids: List[int]
+    ) -> dict:
+        """Procesa variantes de múltiples productos concurrentemente"""
+        tasks = [query_client.get_variants(product_id) for product_id in product_ids]
+        results = await asyncio.gather(*tasks)
+
+        # Mapear resultados por product_id
+        variants_by_product = {}
+        for i, result in enumerate(results):
+            variant_response = VariantsResponse(**result)
+            variants_by_product[product_ids[i]] = (
+                variant_response.data.productVariants.nodes
+            )
+
+        return variants_by_product
+
+    async def process_inventory_levels(
+        query_client: QueriesShopify, inventory_item_ids: List[int]
+    ) -> dict:
+        """Procesa niveles de inventario de múltiples items concurrentemente"""
+        tasks = [
+            query_client.get_inventory_levels(item_id) for item_id in inventory_item_ids
+        ]
+        results = await asyncio.gather(*tasks)
+
+        # Mapear resultados por inventory_item_id
+        inventory_by_item = {}
+        for i, result in enumerate(results):
+            inventory_response = InventoryLevelsResponse(**result)
+            inventory_levels = []
+            if (
+                inventory_response.data.inventoryItems.nodes
+                and len(inventory_response.data.inventoryItems.nodes) > 0
+            ):
+                inventory_levels = inventory_response.data.inventoryItems.nodes[
+                    0
+                ].inventoryLevels.nodes
+            inventory_by_item[inventory_item_ids[i]] = inventory_levels
+
+        return inventory_by_item
+
+    """Función principal optimizada con procesamiento concurrente por lotes"""
     query = QueriesShopify()
+
+    # Obtener todos los productos
     product_data = await query.get_products()
     product_response = ProductsResponse(**product_data)
 
-    for product in product_response.data.products.nodes:
-        variants = []
-        inventory_levels = []
-        if product.legacyResourceId:
-            variant_data = await query.get_variants(product.legacyResourceId)
-            variant_response = VariantsResponse(**variant_data)
-            variants.extend(variant_response.data.productVariants.nodes)
+    products = product_response.data.products.nodes
+    batch_size = 10  # Procesar 10 productos por lote
 
-            for variant_data in variants:
-                if variant_data.inventoryItem.legacyResourceId:
-                    inventory_data = await query.get_inventory_levels(
-                        variant_data.inventoryItem.legacyResourceId
+    # Procesar productos en lotes
+    for i in range(0, len(products), batch_size):
+        batch = products[i : i + batch_size]
+
+        # Recopilar IDs de productos válidos del lote
+        product_ids = [p.legacyResourceId for p in batch if p.legacyResourceId]
+
+        if not product_ids:
+            continue
+
+        # Obtener todas las variantes del lote concurrentemente
+        variants_by_product = await process_product_variants(query, product_ids)
+
+        # Recopilar todos los inventory_item_ids del lote
+        inventory_item_ids = []
+        for product_id in product_ids:
+            variants = variants_by_product.get(product_id, [])
+            for variant in variants:
+                if variant.inventoryItem and variant.inventoryItem.legacyResourceId:
+                    inventory_item_ids.append(variant.inventoryItem.legacyResourceId)
+
+        # Obtener todos los niveles de inventario del lote concurrentemente
+        inventory_by_item = {}
+        if inventory_item_ids:
+            inventory_by_item = await process_inventory_levels(
+                query, inventory_item_ids
+            )
+
+        # Asignar datos a los productos del lote
+        for product in batch:
+            if not product.legacyResourceId:
+                product.variants = []
+                product.inventory_levels = []
+                continue
+
+            # Asignar variantes
+            variants = variants_by_product.get(product.legacyResourceId, [])
+            product.variants = variants
+
+            # Recopilar niveles de inventario para este producto
+            product_inventory_levels = []
+            for variant in variants:
+                if variant.inventoryItem and variant.inventoryItem.legacyResourceId:
+                    item_inventory = inventory_by_item.get(
+                        variant.inventoryItem.legacyResourceId, []
                     )
-                    inventory_response = InventoryLevelsResponse(**inventory_data)
-                    inventory_levels.extend(
-                        inventory_response.data.inventoryItems.nodes[
-                            0
-                        ].inventoryLevels.nodes
-                    )
+                    product_inventory_levels.extend(item_inventory)
 
-        product.variants = variants
-        product.inventory_levels = inventory_levels
+            product.inventory_levels = product_inventory_levels
 
-    print(product_response.model_dump_json(indent=2))
+    # Guardar resultado en archivo JSON
+    output_json = product_response.model_dump_json(indent=2)
+    with open("shopify_inventory_data.json", "w", encoding="utf-8") as f:
+        f.write(output_json)
+
+    print("Shopify inventario procesado exitosamente")
 
 
-asyncio.run(
-    main(),
-)
+if __name__ == "__main__":
+    asyncio.run(process_prducts())

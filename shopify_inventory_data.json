@@ -1,0 +1,3136 @@
+{
+  "data": {
+    "products": {
+      "nodes": [
+        {
+          "legacyResourceId": 9925538119972,
+          "title": "Jabón Artesanal Muñeco de Jengibre",
+          "variants": [
+            {
+              "legacyResourceId": 50098329288996,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 35500.0,
+              "inventoryItem": {
+                "legacyResourceId": 52088143085860,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9953952235812,
+          "title": "Ritual Salvaje (Regalo Gratis)",
+          "variants": [
+            {
+              "legacyResourceId": 50199480992036,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 182000.0,
+              "inventoryItem": {
+                "legacyResourceId": 52190247190820,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9956266803492,
+          "title": "Tote Bag (Naturalito, sin tanto cuento)",
+          "variants": [
+            {
+              "legacyResourceId": 50208017809700,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 45000.0,
+              "inventoryItem": {
+                "legacyResourceId": 52198717161764,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9990445367588,
+          "title": "Producto de prueba",
+          "variants": [
+            {
+              "legacyResourceId": 50325520384292,
+              "inventoryQuantity": 2,
+              "title": "Default Title",
+              "price": 0.0,
+              "inventoryItem": {
+                "legacyResourceId": 52320933806372,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003994837284,
+          "title": "Muestra sin valor comercial COLPIPE",
+          "variants": [
+            {
+              "legacyResourceId": 50369590034724,
+              "inventoryQuantity": 213,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365390545188,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003995459876,
+          "title": "Muestra sin valor comercial GALERAZAMBA",
+          "variants": [
+            {
+              "legacyResourceId": 50369593770276,
+              "inventoryQuantity": 161,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365394247972,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003996115236,
+          "title": "Muestra sin valor comercial LAS VELAS",
+          "variants": [
+            {
+              "legacyResourceId": 50369594851620,
+              "inventoryQuantity": 194,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365395329316,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003996508452,
+          "title": "Muestra sin valor comercial LOS NARANJOS",
+          "variants": [
+            {
+              "legacyResourceId": 50369596326180,
+              "inventoryQuantity": 24,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365396803876,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003997032740,
+          "title": "Muestra sin valor comercial MIRAMAR",
+          "variants": [
+            {
+              "legacyResourceId": 50369597735204,
+              "inventoryQuantity": 210,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365398212900,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10003997491492,
+          "title": "Muestra sin valor comercial PICO DE LORO",
+          "variants": [
+            {
+              "legacyResourceId": 50369598685476,
+              "inventoryQuantity": 298,
+              "title": "Default Title",
+              "price": 5900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365399163172,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004009976100,
+          "title": "COLPIPE desodorante natural en barra con aroma suave para piel sensible",
+          "variants": [
+            {
+              "legacyResourceId": 50369637220644,
+              "inventoryQuantity": 490,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365437698340,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004012073252,
+          "title": "GALERAZAMBA recarga de desodorante sin aluminio con aceite de coco para todos los climas",
+          "variants": [
+            {
+              "legacyResourceId": 50369643086116,
+              "inventoryQuantity": -30,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365443563812,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004014498084,
+          "title": "PICO DE LORO recarga de desodorante en barra con ingredientes naturales y vitamina E",
+          "variants": [
+            {
+              "legacyResourceId": 50369655144740,
+              "inventoryQuantity": 89,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365455622436,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004016529700,
+          "title": "LAS VELAS recarga de desodorante para mujer y hombre con aceites de árbol de té, romero y menta",
+          "variants": [
+            {
+              "legacyResourceId": 50369670021412,
+              "inventoryQuantity": 68,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365470499108,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004113981732,
+          "title": "LOS NARANJOS recarga de desodorante sin alcohol en barra con aroma cítrico y regulador de pH",
+          "variants": [
+            {
+              "legacyResourceId": 50369682997540,
+              "inventoryQuantity": 95,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365483409700,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004146782500,
+          "title": "MIRAMAR recarga de desodorante natural en barra con notas florales de lavanda salvia y cedro",
+          "variants": [
+            {
+              "legacyResourceId": 50369684537636,
+              "inventoryQuantity": 152,
+              "title": "Default Title",
+              "price": 64900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365484949796,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004151599396,
+          "title": "Estuche metálico de aluminio para desodorante ecológico",
+          "variants": [
+            {
+              "legacyResourceId": 50369686208804,
+              "inventoryQuantity": 82,
+              "title": "Default Title",
+              "price": 69900.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365486620964,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10004153532708,
+          "title": "Kit de desodorantes",
+          "variants": [
+            {
+              "legacyResourceId": 50369690075428,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 389400.0,
+              "inventoryItem": {
+                "legacyResourceId": 52365490520356,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10018576433444,
+          "title": "Bolsa de sisal (Sin chispitas) Sin valor comercial",
+          "variants": [
+            {
+              "legacyResourceId": 50423972004132,
+              "inventoryQuantity": 180,
+              "title": "Default Title",
+              "price": 12000.0,
+              "inventoryItem": {
+                "legacyResourceId": 52419884581156,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 10056411349284,
+          "title": "Muestra de Barrera Solar Mineral",
+          "variants": [
+            {
+              "legacyResourceId": 50573327958308,
+              "inventoryQuantity": 99,
+              "title": "Default Title",
+              "price": 10000.0,
+              "inventoryItem": {
+                "legacyResourceId": 52570308772132,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753214244,
+          "title": "GALERAZAMBA desodorantes naturales con aroma cítrico herbal",
+          "variants": [
+            {
+              "legacyResourceId": 45023857246500,
+              "inventoryQuantity": 522,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073242448164,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023857279268,
+              "inventoryQuantity": 27,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073242480932,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753279780,
+          "title": "FRESCURA, Jabón natural de espirulina, arcilla verde, menta y eucalipto",
+          "variants": [
+            {
+              "legacyResourceId": 45245009854756,
+              "inventoryQuantity": 169,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294873960740,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245009887524,
+              "inventoryQuantity": 110,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294873993508,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753312548,
+          "title": "PICO DE LORO desodorante orgánico libre de alcohol con protección duradera",
+          "variants": [
+            {
+              "legacyResourceId": 45023857672484,
+              "inventoryQuantity": 1099,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073243005220,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023857705252,
+              "inventoryQuantity": 1064,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073243037988,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753378084,
+          "title": "Sérum facial Q10 rejuvenecedor con antioxidantes",
+          "variants": [
+            {
+              "legacyResourceId": 45023857967396,
+              "inventoryQuantity": 49,
+              "title": "Default Title",
+              "price": 86900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073243136292,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753476388,
+          "title": "COLPIPE desodorante para piel sensible sin alcohol y sin aroma",
+          "variants": [
+            {
+              "legacyResourceId": 45023858426148,
+              "inventoryQuantity": 642,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073243660580,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023858491684,
+              "inventoryQuantity": 381,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073243693348,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753509156,
+          "title": "BALANCE, jabón artesanal de naranja y albahaca para hidratar la piel",
+          "variants": [
+            {
+              "legacyResourceId": 45245052092708,
+              "inventoryQuantity": 8,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294916198692,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245052125476,
+              "inventoryQuantity": 22,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294916231460,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753574692,
+          "title": "PUREZA, jabon de carbon activado artesanal con arbol de te y limon para piel grasa o mixta",
+          "variants": [
+            {
+              "legacyResourceId": 45228974473508,
+              "inventoryQuantity": 0,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47278801813796,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45244985475364,
+              "inventoryQuantity": 0,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294849319204,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753672996,
+          "title": "CALMA, jabón de caléndula artesanal para piel sensible",
+          "variants": [
+            {
+              "legacyResourceId": 45245000712484,
+              "inventoryQuantity": 84,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294864818468,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245000745252,
+              "inventoryQuantity": 91,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294864851236,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753804068,
+          "title": "CONFORT, jabón de avena artesanal sin aceites esenciales para piel sensible",
+          "variants": [
+            {
+              "legacyResourceId": 45245019521316,
+              "inventoryQuantity": 211,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294883627300,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245019554084,
+              "inventoryQuantity": 197,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294883660068,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753869604,
+          "title": "DESPERTAR, jabón de café y naranja artesanal exfoliante con hidratacion profunda",
+          "variants": [
+            {
+              "legacyResourceId": 45245038887204,
+              "inventoryQuantity": 168,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294902993188,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245038919972,
+              "inventoryQuantity": 169,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294903025956,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259753902372,
+          "title": "ALEGRÍA, jabón corporal sólido artesanal de limón y semillas de amapola con exfoliante natural",
+          "variants": [
+            {
+              "legacyResourceId": 45245042950436,
+              "inventoryQuantity": -2,
+              "title": "30g",
+              "price": 9900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294907056420,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45245042983204,
+              "inventoryQuantity": 89,
+              "title": "120g",
+              "price": 39900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47294907089188,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259754197284,
+          "title": "LAS VELAS desodorante en crema con aroma herbal mentolado y vegano",
+          "variants": [
+            {
+              "legacyResourceId": 45023860982052,
+              "inventoryQuantity": 1404,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073246183716,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023861014820,
+              "inventoryQuantity": 957,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073246216484,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259754361124,
+          "title": "LOS NARANJOS desodorante natural en crema con aroma cítrico",
+          "variants": [
+            {
+              "legacyResourceId": 45023862423844,
+              "inventoryQuantity": 598,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073247789348,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023862456612,
+              "inventoryQuantity": 702,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073247822116,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8259754459428,
+          "title": "MIRAMAR desodorante sin alcohol y sin aluminio en crema para todo tipo de piel",
+          "variants": [
+            {
+              "legacyResourceId": 45023862718756,
+              "inventoryQuantity": 982,
+              "title": "30g",
+              "price": 34900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073247920420,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 45023862751524,
+              "inventoryQuantity": 614,
+              "title": "60g",
+              "price": 54900.0,
+              "inventoryItem": {
+                "legacyResourceId": 47073247953188,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 8545815396644,
+          "title": "Jabonera artesanal de teca",
+          "variants": [
+            {
+              "legacyResourceId": 46118891192612,
+              "inventoryQuantity": 2,
+              "title": "Tamaño sencillo",
+              "price": 25000.0,
+              "inventoryItem": {
+                "legacyResourceId": 48165483839780,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "legacyResourceId": 46118891225380,
+              "inventoryQuantity": -1,
+              "title": "Tamaño doble",
+              "price": 30000.0,
+              "inventoryItem": {
+                "legacyResourceId": 48165483872548,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            },
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9517202047268,
+          "title": "Barrera solar mineral: protector solar en barra para todo tipo de piel",
+          "variants": [
+            {
+              "legacyResourceId": 49444513775908,
+              "inventoryQuantity": 77,
+              "title": "Default Title",
+              "price": 84900.0,
+              "inventoryItem": {
+                "legacyResourceId": 51432707162404,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9517258670372,
+          "title": "Bálsamo labial con aceite e ingredientes naturales y vitamina E",
+          "variants": [
+            {
+              "legacyResourceId": 49444612800804,
+              "inventoryQuantity": 359,
+              "title": "Default Title",
+              "price": 31900.0,
+              "inventoryItem": {
+                "legacyResourceId": 51432807268644,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9614965899556,
+          "title": "Bolsa de Sisal exfoliante con chispitas de jabones",
+          "variants": [
+            {
+              "legacyResourceId": 49751637754148,
+              "inventoryQuantity": 44,
+              "title": "Default Title",
+              "price": 30000.0,
+              "inventoryItem": {
+                "legacyResourceId": 51740089844004,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9917434528036,
+          "title": "Jabón Artesanal Magia del Bosque",
+          "variants": [
+            {
+              "legacyResourceId": 50052697129252,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 31950.0,
+              "inventoryItem": {
+                "legacyResourceId": 52042453025060,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "legacyResourceId": 9925535007012,
+          "title": "Jabón Artesanal Bastón de Caramelo",
+          "variants": [
+            {
+              "legacyResourceId": 50098312970532,
+              "inventoryQuantity": 0,
+              "title": "Default Title",
+              "price": 35500.0,
+              "inventoryItem": {
+                "legacyResourceId": 52088126767396,
+                "inventoryLevels": {
+                  "nodes": []
+                }
+              }
+            }
+          ],
+          "inventory_levels": [
+            {
+              "quantities": [
+                {
+                  "name": "incoming",
+                  "quantity": 0
+                },
+                {
+                  "name": "available",
+                  "quantity": 522
+                },
+                {
+                  "name": "committed",
+                  "quantity": 38
+                },
+                {
+                  "name": "reserved",
+                  "quantity": 0
+                },
+                {
+                  "name": "damaged",
+                  "quantity": 0
+                },
+                {
+                  "name": "safety_stock",
+                  "quantity": 0
+                },
+                {
+                  "name": "quality_control",
+                  "quantity": 0
+                }
+              ],
+              "location": {
+                "legacyResourceId": "80677044516",
+                "address": {
+                  "city": "Monitos",
+                  "country": "Colombia",
+                  "address1": "Cra. 5 & Calle 22b"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
