@@ -6,7 +6,6 @@ passlib[bcrypt]
 python-multipart
 sqlmodel
 psycopg
-psycopg[binary]
 dotenv
 pytz
 pyjwt

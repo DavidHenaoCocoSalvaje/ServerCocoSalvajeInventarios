@@ -1,5 +1,5 @@
 # app/routers/inventario.py
-from attr import dataclass
+from dataclasses import dataclass
 from fastapi import APIRouter, Depends, status
 from app.internal.integrations.shopify import get_inventory_info
 from app.routers.base import CRUD
