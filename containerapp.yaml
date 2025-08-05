@@ -1,0 +1,79 @@
+# Configuración de Container App para Azure
+# Usar con: az containerapp create --yaml containerapp.yaml
+
+location: eastus
+resourceGroup: rg-cosal-inventarios
+environmentId: /subscriptions/{subscription-id}/resourceGroups/rg-cosal-inventarios/providers/Microsoft.App/managedEnvironments/env-cosal-inventarios
+
+properties:
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8000
+      allowInsecure: false
+      traffic:
+        - weight: 100
+          latestRevision: true
+    replicas:
+      minReplicas: 1
+      maxReplicas: 3
+    
+  template:
+    containers:
+      - image: python:3.13-slim-bookworm
+        name: cosal-inventarios-api
+        env:
+          - name: DB_HOST
+            value: "pg-cosal-inventarios.postgres.database.azure.com"
+          - name: DB_PORT
+            value: "5432"
+          - name: DB_USER
+            value: "cosal_admin"
+          - name: DB_PASSWORD
+            secretRef: db-password
+          - name: DB_NAME
+            value: "inventarios_cosal"
+          - name: SECRET_KEY
+            secretRef: jwt-secret-key
+          - name: LOCAL_TIMEZONE
+            value: "America/Bogota"
+          - name: ALGORITHM
+            value: "HS256"
+          - name: ACCESS_TOKEN_EXPIRE_MINUTES
+            value: "30"
+          - name: PYTHONPATH
+            value: "/app"
+          - name: PYTHONDONTWRITEBYTECODE
+            value: "1"
+          - name: PYTHONUNBUFFERED
+            value: "1"
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        probes:
+          - type: Liveness
+            httpGet:
+              path: "/"
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          - type: Readiness
+            httpGet:
+              path: "/"
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+    scale:
+      minReplicas: 1
+      maxReplicas: 3
+      rules:
+        - name: http-rule
+          http:
+            metadata:
+              concurrentRequests: "30"
+
+secrets:
+  - name: db-password
+    value: "TuContraseñaDatabaseAqui"
+  - name: jwt-secret-key
+    value: "TuClaveSecretaJWTMuySeguraDeAlMenos32Caracteres"
