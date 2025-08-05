@@ -23,7 +23,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copia el código de la aplicación
 COPY app/ ./app/
 COPY default_data/ ./default_data/
-COPY sql/ ./sql/
 
 # Crea un usuario no-root para ejecutar la aplicación (buena práctica de seguridad)
 RUN adduser --disabled-password --gecos '' appuser && \
