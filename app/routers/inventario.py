@@ -1,6 +1,9 @@
 # app/routers/inventario.py
-from fastapi import APIRouter, Depends
+from attr import dataclass
+from fastapi import APIRouter, Depends, status
+from app.internal.integrations.shopify import get_inventory_info
 from app.routers.base import CRUD
+
 
 # Modelos
 
@@ -34,6 +37,12 @@ from app.internal.query.inventario import (
     estado_elemento_inventario_query,
 )
 from .auth import validar_access_token
+
+
+@dataclass
+class Tags:
+    shopify: str = "Shopify"
+
 
 router = APIRouter(
     prefix="/inventario",
@@ -100,3 +109,26 @@ CRUD[EstadoElemento](
     estado_elemento_inventario_query,
     "estado",
 )
+
+
+# Sincronización
+@router.post(
+    "/sync_shopify",
+    response_model=bool,
+    summary="Sincroniza inventarios de Shopify con base de datos",
+    description="Se registran movimiento de cargue.",
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.shopify],
+)
+async def sync_shopify(body: dict):
+    # Obtener información inventario de shopify
+    inventory_info = await get_inventory_info()
+    # Obtener lista de bodegas y filtrar por registros únicos, luego verificar si es necesario crear alguna bodega
+    locations = []
+    for product in inventory_info:
+        for variant in product.variants:
+            for inventory_level in variant.inventoryItem.inventoryLevels.nodes:
+                location = inventory_level.location
+                locations.append(location)
+
+    return {"message": "Inventarios sincronizado con Shopify"}

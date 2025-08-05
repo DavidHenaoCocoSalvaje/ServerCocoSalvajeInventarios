@@ -181,7 +181,7 @@ class QueriesShopify:
         )
 
 
-async def process_prducts():
+async def get_inventory_info():
     async def process_product_variants(
         query_client: QueriesShopify, product_ids: List[int]
     ) -> dict:
@@ -262,35 +262,30 @@ async def process_prducts():
                 query, inventory_item_ids
             )
 
-        # Asignar datos a los productos del lote
+        # Asignar datos a las variantes del lote
         for product in batch:
             if not product.legacyResourceId:
                 product.variants = []
-                product.inventory_levels = []
                 continue
 
             # Asignar variantes
             variants = variants_by_product.get(product.legacyResourceId, [])
             product.variants = variants
 
-            # Recopilar niveles de inventario para este producto
-            product_inventory_levels = []
+            # Asignar niveles de inventario a las variantes
             for variant in variants:
                 if variant.inventoryItem and variant.inventoryItem.legacyResourceId:
-                    item_inventory = inventory_by_item.get(
+                    variant.inventory_levels = inventory_by_item.get(
                         variant.inventoryItem.legacyResourceId, []
                     )
-                    product_inventory_levels.extend(item_inventory)
 
-            product.inventory_levels = product_inventory_levels
+    return products
+    # output_json = product_response.model_dump_json(indent=2)
+    # with open("shopify_inventory_data.json", "w", encoding="utf-8") as f:
+    #     f.write(output_json)
 
-    # Guardar resultado en archivo JSON
-    output_json = product_response.model_dump_json(indent=2)
-    with open("shopify_inventory_data.json", "w", encoding="utf-8") as f:
-        f.write(output_json)
-
-    print("Shopify inventario procesado exitosamente")
+    # print("Shopify inventario procesado exitosamente")
 
 
 if __name__ == "__main__":
-    asyncio.run(process_prducts())
+    asyncio.run(get_inventory_info())
