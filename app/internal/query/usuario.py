@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from sqlmodel import select
 
-from app.models.usuario import UsuarioDB
+from app.models.db.usuario import UsuarioDB
 from app.internal.query.base import BaseQuery
 
 
