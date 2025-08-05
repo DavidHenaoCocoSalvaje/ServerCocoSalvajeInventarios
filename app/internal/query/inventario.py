@@ -1,5 +1,5 @@
 # app/internal/query/inventario.py
-from app.models.inventario import (
+from app.models.db.inventario import (
     Elemento,
     ElementoCompuesto,
     VariantesPorElementoCompuesto,
