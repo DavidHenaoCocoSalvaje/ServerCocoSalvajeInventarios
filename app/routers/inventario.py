@@ -41,13 +41,13 @@ from .auth import validar_access_token
 
 @dataclass
 class Tags:
-    shopify: str = "Shopify"
+    shopify: str = 'Shopify'
 
 
 router = APIRouter(
-    prefix="/inventario",
-    tags=["Inventario"],
-    responses={404: {"description": "No encontrado"}},
+    prefix='/inventario',
+    tags=['Inventario'],
+    responses={404: {'description': 'No encontrado'}},
     dependencies=[Depends(validar_access_token)],
 )
 
@@ -56,71 +56,71 @@ router = APIRouter(
 CRUD[Elemento](
     router,
     elemento_inventario_query,
-    "elemento",
+    'elemento',
 )
 
 CRUD[ElementoCompuesto](
     router,
     elemento_compuesto_inventario_query,
-    "elemento_compuesto",
+    'elemento_compuesto',
 )
 CRUD[VariantesPorElementoCompuesto](
     router,
     elementos_por_elemento_compuesto_inventario_query,
-    "elementos_por_elemento_compuesto",
+    'elementos_por_elemento_compuesto',
 )
 CRUD[Bodega](
     router,
     bodega_inventario_query,
-    "bodega",
+    'bodega',
 )
 CRUD[Grupo](
     router,
     grupo_inventario_query,
-    "grupo",
+    'grupo',
 )
 CRUD[UnidadMedida](
     router,
     unidad_medida_query,
-    "unidad_medida",
+    'unidad_medida',
 )
 CRUD[PreciosPorVariante](
     router,
     precio_elemento_inventario_query,
-    "precio",
+    'precio',
 )
 CRUD[TipoPrecioVariante](
     router,
     tipo_precio_elemento_inventario_query,
-    "tipo_precio",
+    'tipo_precio',
 )
 CRUD[Movimiento](
     router,
     movimiento_inventario_query,
-    "movimiento",
+    'movimiento',
 )
 CRUD[TipoMovimiento](
     router,
     tipo_movimiento_inventario_query,
-    "tipo_movimiento",
+    'tipo_movimiento',
 )
 CRUD[EstadoElemento](
     router,
     estado_elemento_inventario_query,
-    "estado",
+    'estado',
 )
 
 
 # Sincronización
 @router.post(
-    "/sync_shopify",
+    '/sync_shopify',
     response_model=bool,
-    summary="Sincroniza inventarios de Shopify con base de datos",
-    description="Se registran movimiento de cargue.",
+    summary='Sincroniza inventarios de Shopify con base de datos',
+    description='Se registran movimiento de cargue.',
     status_code=status.HTTP_200_OK,
     tags=[Tags.shopify],
 )
-async def sync_shopify(body: dict):
+async def sync_shopify():
     # Obtener información inventario de shopify
     inventory_info = await get_inventory_info()
     # Obtener lista de bodegas y filtrar por registros únicos, luego verificar si es necesario crear alguna bodega
@@ -131,4 +131,15 @@ async def sync_shopify(body: dict):
                 location = inventory_level.location
                 locations.append(location)
 
-    return {"message": "Inventarios sincronizado con Shopify"}
+    return {'message': 'Inventarios sincronizado con Shopify'}
+
+
+# Pedidos
+# @router.post(
+#     "/sync",
+#     response_model=dict,
+#     status_code=status.HTTP_200_OK,
+#     tags=[Tags.shopify],
+# )
+# async def pedido_shopify(body: dict):
+#     # Obtener información inventario de shopify
