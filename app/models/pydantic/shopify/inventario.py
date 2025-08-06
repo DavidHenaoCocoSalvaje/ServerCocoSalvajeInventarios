@@ -49,6 +49,7 @@ class Variant(Base):
     title: str | None = None
     price: float | None = None
     inventoryItem: InventoryItem = InventoryItem()
+    inventoryLevels: list[InventoryLevel] = []
 
 
 class VariantNodes(Base):
@@ -72,7 +73,6 @@ class Product(Base):
     legacyResourceId: int | None = None
     title: str | None = None
     variants: list[Variant] = []
-    inventory_levels: list[InventoryLevel] = []
 
 
 class ProductNodes(Base):
