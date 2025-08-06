@@ -3,21 +3,6 @@ import logging
 import sys
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
-from typing import Optional, Dict
-
-
-def _get_environment() -> str:
-    """
-    Detecta el ambiente de ejecución usando la configuración centralizada.
-
-    Returns:
-        str: 'production' si está en Azure Container App/producción, 'development' en caso contrario
-    """
-    # Importar config aquí para evitar imports circulares
-    from app.config import config
-
-    # Usar la variable de ambiente centralizada desde config.py
-    return config.environment
 
 
 class Logger:
@@ -29,7 +14,7 @@ class Logger:
     - Producción/Azure Container: consola (INFO) para logs del contenedor
     """
 
-    _instances: Dict[str, 'Logger'] = {}
+    _instances: dict[str, 'Logger'] = {}
     _configured: bool = False
 
     def __init__(self, name: str = 'CocoSalvajeInventarios'):
@@ -40,7 +25,7 @@ class Logger:
             name: Nombre del logger. Por defecto es "CocoSalvajeInventarios"
         """
         self.name = name
-        self._logger: Optional[logging.Logger] = None
+        self._logger: logging.Logger
         self._setup_logger()
 
     def __new__(cls, name: str = 'CocoSalvajeInventarios'):
@@ -56,9 +41,6 @@ class Logger:
         """
         Configura el logger según el ambiente detectado desde config.py.
         """
-        if self._logger is not None:
-            return
-
         from app.config import config
 
         # Crear el logger específico
@@ -123,20 +105,12 @@ class Logger:
 
             self._logger.info(f'Logger "{self.name}" configurado para DESARROLLO - archivo (INFO) + consola (DEBUG)')
 
-    def get_logger(self) -> logging.Logger:
-        """
-        Retorna la instancia del logger configurado.
-        """
-        if self._logger is None:
-            raise RuntimeError('Logger no está inicializado')
-        return self._logger
-
     @property
     def logger(self) -> logging.Logger:
         """
         Propiedad para acceder directamente al logger.
         """
-        return self.get_logger()
+        return self._logger
 
     @classmethod
     def get_instance(cls, name: str = 'CocoSalvajeInventarios') -> 'Logger':
@@ -151,28 +125,6 @@ class Logger:
         """
         return cls(name)
 
-    def get_environment(self) -> str:
-        """
-        Retorna el ambiente actual detectado.
-        """
-        return _get_environment()
-
 
 # Instancia global del logger principal
 default_logger = Logger()
-
-
-def get_logger(name: Optional[str] = None) -> logging.Logger:
-    """
-    Función helper para obtener un logger específico o el principal.
-
-    Args:
-        name: Nombre del logger. Si es None, retorna el logger principal.
-
-    Returns:
-        logging.Logger: Instancia del logger configurado.
-    """
-    if name:
-        logger_instance = Logger.get_instance(name)
-        return logger_instance.logger
-    return default_logger.logger
