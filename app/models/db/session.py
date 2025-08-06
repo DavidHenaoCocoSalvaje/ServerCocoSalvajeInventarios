@@ -27,7 +27,6 @@ url = URL.create(
     host=config.db_host,
     port=config.db_port,
     database=config.db_name,
-    query={"options": "-csearch_path=public"},
 )
 
 async_engine = create_async_engine(url)
