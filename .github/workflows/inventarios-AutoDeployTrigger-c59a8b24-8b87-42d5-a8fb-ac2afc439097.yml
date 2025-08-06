@@ -1,0 +1,45 @@
+name: Trigger auto deployment for inventarios
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/inventarios-AutoDeployTrigger-c59a8b24-8b87-42d5-a8fb-ac2afc439097.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.INVENTARIOS_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: inventarios-atfgbkg7htfkedg7.azurecr.io
+          registryUsername: ${{ secrets.INVENTARIOS_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.INVENTARIOS_REGISTRY_PASSWORD }}
+          containerAppName: inventarios
+          resourceGroup: BACKEND
+          imageToBuild: inventarios-atfgbkg7htfkedg7.azurecr.io/inventarios-api:${{ github.sha }}
+          
+            
+
+     
+
