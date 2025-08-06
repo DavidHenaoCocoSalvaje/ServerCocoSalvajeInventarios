@@ -17,7 +17,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -36,7 +77,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -55,7 +137,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -74,7 +197,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -93,7 +257,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -112,7 +317,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -131,7 +377,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -150,7 +437,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -169,7 +497,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -188,7 +557,7 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": [
+              "inventoryLevels": [
                 {
                   "quantities": [
                     {
@@ -248,7 +617,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -258,7 +668,7 @@
           "variants": [
             {
               "legacyResourceId": 50369643086116,
-              "inventoryQuantity": 668,
+              "inventoryQuantity": 666,
               "title": "Default Title",
               "price": 64900.0,
               "inventoryItem": {
@@ -267,7 +677,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -286,7 +737,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -305,7 +797,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -324,7 +857,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -343,7 +917,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -362,7 +977,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -381,7 +1037,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -400,7 +1097,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -419,7 +1157,7 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": [
+              "inventoryLevels": [
                 {
                   "quantities": [
                     {
@@ -479,7 +1217,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023857279268,
@@ -492,7 +1271,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -511,7 +1331,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45245009887524,
@@ -524,7 +1385,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -543,7 +1445,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023857705252,
@@ -556,7 +1499,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -575,7 +1559,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -594,7 +1619,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023858491684,
@@ -607,7 +1673,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -626,7 +1733,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45245052125476,
@@ -639,7 +1787,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -658,7 +1847,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45244985475364,
@@ -671,7 +1901,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -690,7 +1961,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45245000745252,
@@ -703,7 +2015,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -722,7 +2075,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45245019554084,
@@ -735,7 +2129,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -754,7 +2189,7 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": [
+              "inventoryLevels": [
                 {
                   "quantities": [
                     {
@@ -808,7 +2243,7 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": [
+              "inventoryLevels": [
                 {
                   "quantities": [
                     {
@@ -868,7 +2303,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45245042983204,
@@ -881,7 +2357,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -900,7 +2417,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023861014820,
@@ -913,7 +2471,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -932,11 +2531,52 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023862456612,
-              "inventoryQuantity": 677,
+              "inventoryQuantity": 676,
               "title": "60g",
               "price": 54900.0,
               "inventoryItem": {
@@ -945,7 +2585,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -964,7 +2645,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 45023862751524,
@@ -977,7 +2699,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -996,7 +2759,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             },
             {
               "legacyResourceId": 46118891225380,
@@ -1009,7 +2813,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1028,7 +2873,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1047,7 +2933,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1066,7 +2993,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1085,7 +3053,48 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": []
+              "inventoryLevels": [
+                {
+                  "quantities": [
+                    {
+                      "name": "incoming",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "available",
+                      "quantity": 495
+                    },
+                    {
+                      "name": "committed",
+                      "quantity": 8
+                    },
+                    {
+                      "name": "reserved",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "damaged",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "safety_stock",
+                      "quantity": 0
+                    },
+                    {
+                      "name": "quality_control",
+                      "quantity": 0
+                    }
+                  ],
+                  "location": {
+                    "legacyResourceId": "80677044516",
+                    "address": {
+                      "city": "Monitos",
+                      "country": "Colombia",
+                      "address1": "Cra. 5 & Calle 22b"
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1104,7 +3113,7 @@
                   "nodes": []
                 }
               },
-              "invenrotyLevels": [
+              "inventoryLevels": [
                 {
                   "quantities": [
                     {

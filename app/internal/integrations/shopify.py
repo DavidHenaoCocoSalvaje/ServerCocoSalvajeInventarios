@@ -221,17 +221,19 @@ async def get_inventory_info():
                 product.legacyResourceId or 0, []
             )
             # Recopilar todos los inventory_item_ids del lote
-            inventory_item_ids = [
-                variant.inventoryItem.legacyResourceId
-                for variant in product.variants
-                if variant.inventoryItem and variant.inventoryItem.legacyResourceId
-            ]
+            inventory_item_ids.extend(
+                [
+                    variant.inventoryItem.legacyResourceId
+                    for variant in product.variants
+                    if variant.inventoryItem and variant.inventoryItem.legacyResourceId
+                ]
+            )
 
         tasks = [query.get_inventory_levels(item_id) for item_id in inventory_item_ids]
         inventory_levels_results = await asyncio.gather(*tasks)
 
         # Obtener todos los niveles de inventario del lote concurrentemente
-        inventory_by_item: dict[int, list[InventoryLevel]] = {
+        inventory_levels_by_item_id: dict[int, list[InventoryLevel]] = {
             item_id: InventoryLevelsResponse(**result)
             .data.inventoryItems.nodes[0]
             .inventoryLevels.nodes
@@ -241,7 +243,7 @@ async def get_inventory_info():
         # Asignar niveles de inventario a las variantes
         for product in batch_products:
             for variant in product.variants:
-                variant.inventoryLevels = inventory_by_item.get(
+                variant.inventoryLevels = inventory_levels_by_item_id.get(
                     variant.inventoryItem.legacyResourceId or 0, []
                 )
 
