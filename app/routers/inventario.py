@@ -146,5 +146,5 @@ async def sync_shopify():
     tags=[Tags.shopify],
 )
 async def pedido_shopify(body: dict):
-    log_inventario.info(f'Pedido recibido: {json.dumps(body, indent=4)}')
+    log_inventario.info(f'\nPedido recibido: {json.dumps(body, indent=4)}')
     return {'status': 'ok'}

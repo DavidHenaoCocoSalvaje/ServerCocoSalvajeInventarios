@@ -2,10 +2,10 @@ fastapi
 aiohttp
 fastapi[standard]
 sqlalchemy[asyncio]
-passlib[bcrypt]
 python-multipart
 sqlmodel
 psycopg
 dotenv
 pytz
+argon2-cffi
 pyjwt

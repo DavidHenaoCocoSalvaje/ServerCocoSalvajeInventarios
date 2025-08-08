@@ -11,17 +11,17 @@ from app.models.db.usuario import UsuarioBase, UsuarioCreate
 from app.internal.query.usuario import usuario_query
 
 # Seguridad
-from app.routers.auth import pwd_context, validar_access_token
+from app.routers.auth import password_hasher, validar_access_token
 
 router = APIRouter(
-    prefix="/usuarios",
-    tags=["Usuarios"],
-    responses={404: {"description": "No encontrado"}},
+    prefix='/usuarios',
+    tags=['Usuarios'],
+    responses={404: {'description': 'No encontrado'}},
 )
 
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    return password_hasher.hash(password)
 
 
 def verificar_complejidad_password(usuario: UsuarioCreate):
@@ -33,39 +33,39 @@ def verificar_complejidad_password(usuario: UsuarioCreate):
     if len(usuario.password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña debe tener al menos 8 caracteres.",
+            detail='La contraseña debe tener al menos 8 caracteres.',
         )
     if not any(char.isdigit() for char in usuario.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña debe contener al menos un número.",
+            detail='La contraseña debe contener al menos un número.',
         )
     if not any(char.isupper() for char in usuario.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña debe contener al menos una letra mayúscula.",
+            detail='La contraseña debe contener al menos una letra mayúscula.',
         )
     if not any(char.islower() for char in usuario.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña debe contener al menos una letra minúscula.",
+            detail='La contraseña debe contener al menos una letra minúscula.',
         )
     if not any(char in punctuation for char in usuario.password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La contraseña debe contener al menos un caracter especial.",
+            detail='La contraseña debe contener al menos un caracter especial.',
         )
     return usuario
 
 
 @router.post(
-    "/",
+    '/',
     response_model=UsuarioBase,
     response_model_exclude_none=True,
     response_model_exclude_unset=True,
     status_code=status.HTTP_201_CREATED,
-    summary="Crear un nuevo usuario",
-    description="Crea un nuevo usuario en la base de datos.",
+    summary='Crear un nuevo usuario',
+    description='Crea un nuevo usuario en la base de datos.',
 )
 async def crear_usuario(
     usuario: UsuarioCreate,
@@ -79,11 +79,11 @@ async def crear_usuario(
 
 
 @router.get(
-    "/",
+    '/',
     response_model=UsuarioBase,
     response_model_exclude_none=True,
-    summary="Obtener lista de usuarios",
-    description="Obtiene una lista paginada de usuarios registrados.",
+    summary='Obtener lista de usuarios',
+    description='Obtiene una lista paginada de usuarios registrados.',
 )
 async def get_usuarios(
     session: AsyncSessionDep,
@@ -95,27 +95,25 @@ async def get_usuarios(
 
 
 @router.get(
-    "/{usuario_id}",
+    '/{usuario_id}',
     response_model=UsuarioBase,
-    summary="Obtener un usuario por ID",
-    description="Obtiene los detalles de un usuario específico mediante su ID.",
+    summary='Obtener un usuario por ID',
+    description='Obtiene los detalles de un usuario específico mediante su ID.',
 )
-async def get(
-    session: AsyncSessionDep, usuario_id: Annotated[int, Depends(validar_access_token)]
-):
+async def get(session: AsyncSessionDep, usuario_id: Annotated[int, Depends(validar_access_token)]):
     db_usuario = await usuario_query.get(session, usuario_id)
     if db_usuario is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"UsuarioBase con ID {usuario_id} no encontrado",
+            detail=f'UsuarioBase con ID {usuario_id} no encontrado',
         )
     return db_usuario
 
 
 @router.put(
-    "/{usuario_id}",
+    '/{usuario_id}',
     response_model=UsuarioBase,
-    summary="Actualizar un usuario",
+    summary='Actualizar un usuario',
 )
 async def actualizar(
     session: AsyncSessionDep,
@@ -126,15 +124,15 @@ async def actualizar(
     if usuario_actualizado is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado",
+            detail='Usuario no encontrado',
         )
     return usuario_actualizado
 
 
 @router.delete(
-    "/{usuario_id}",
+    '/{usuario_id}',
     response_model=UsuarioBase,
-    summary="Eliminar un usuario",
+    summary='Eliminar un usuario',
 )
 async def eliminar(
     session: AsyncSessionDep,
@@ -144,6 +142,6 @@ async def eliminar(
     if usuario_eliminado is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado",
+            detail='Usuario no encontrado',
         )
     return usuario_eliminado
