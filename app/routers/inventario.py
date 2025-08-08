@@ -43,6 +43,7 @@ from .auth import validar_access_token
 
 @dataclass
 class Tags:
+    inventario: str = 'Inventario'
     shopify: str = 'Shopify'
 
 
@@ -51,6 +52,12 @@ router = APIRouter(
     tags=['Inventario'],
     responses={404: {'description': 'No encontrado'}},
     dependencies=[Depends(validar_access_token)],
+)
+
+shopify_router = APIRouter(
+    prefix='/inventario/shopify',
+    tags=[Tags.inventario, Tags.shopify],
+    responses={404: {'description': 'No encontrado'}},
 )
 
 
@@ -114,7 +121,7 @@ CRUD[EstadoElemento](
 
 
 # Sincronización
-@router.post(
+@shopify_router.post(
     '/sync_shopify',
     response_model=bool,
     summary='Sincroniza inventarios de Shopify con base de datos',
@@ -140,7 +147,7 @@ async def sync_shopify():
 
 
 # Pedidos
-@router.post(
+@shopify_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
     tags=[Tags.shopify],

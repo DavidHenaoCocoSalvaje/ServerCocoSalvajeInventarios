@@ -3,9 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.routers import usuario as usuario_router
-from app.routers import auth as auth_router
-from app.routers import inventario as inventario_router
+from app.routers import usuario
+from app.routers import auth
+from app.routers import inventario
 from app.models.db.session import create_db_and_tables
 
 
@@ -37,11 +37,12 @@ app.add_middleware(
 )
 
 # Incluye el router de usuarios en la aplicación principal
-app.include_router(usuario_router.router)
+app.include_router(usuario.router)
 # Incluye el router de autenticación en la aplicación principal
-app.include_router(auth_router.router)
-# Incluye el router de elementos de inventario
-app.include_router(inventario_router.router)
+app.include_router(auth.router)
+# Incluye el router de elementos de inventario y shopify
+app.include_router(inventario.router)
+app.include_router(inventario.shopify_router)
 
 
 # Ruta raíz simple para verificar que la API está funcionando
