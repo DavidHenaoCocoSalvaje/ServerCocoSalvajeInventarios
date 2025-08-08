@@ -2,11 +2,15 @@ import httpx
 import json
 from datetime import datetime
 
+# Importar el logger
+from app.internal.log import LoggerBase
+
 # URL base de tu API de FastAPI
 BASE_URL = "http://localhost:8000"  # Asegúrate de que esta URL sea correcta
 
 # Ruta al archivo de datos
 DATA_FILE = "default_data/data.json"
+logger = LoggerBase("seed_data")
 
 
 async def post_data(
@@ -33,14 +37,15 @@ async def post_data(
             f"{BASE_URL}{endpoint}", json=data, headers=headers
         )
         response.raise_for_status()  # Lanza una excepción para códigos de estado 4xx/5xx
-        print(f"✅ Éxito al crear {endpoint}: {response.status_code}")
+        logger.info(f"✅ Éxito al crear {endpoint}: {response.status_code}")
         return response.json()
     except httpx.HTTPStatusError as e:
-        print(
-            f"❌ Error al crear {endpoint} (Estado: {e.response.status_code}): {e.response.text}"
+        logger.error(
+            f"❌ Error al crear {endpoint} (Estado: {e.response.status_code}): {e.response.text}",
+            exc_info=True,
         )
     except httpx.RequestError as e:
-        print(f"❌ Error de red al crear {endpoint}: {e}")
+        logger.error(f"❌ Error de red al crear {endpoint}: {e}", exc_info=True)
     return None
 
 
@@ -67,14 +72,15 @@ async def login_user(client: httpx.AsyncClient, username: str, password: str):
         )
         response.raise_for_status()
         token_info = response.json()
-        print(f"✅ Login exitoso para {username}")
+        logger.info(f"✅ Login exitoso para {username}")
         return token_info.get("access_token")
     except httpx.HTTPStatusError as e:
-        print(
-            f"❌ Error de login para {username} (Estado: {e.response.status_code}): {e.response.text}"
+        logger.error(
+            f"❌ Error de login para {username} (Estado: {e.response.status_code}): {e.response.text}",
+            exc_info=True,
         )
     except httpx.RequestError as e:
-        print(f"❌ Error de red durante el login para {username}: {e}")
+        logger.error(f"❌ Error de red durante el login para {username}: {e}", exc_info=True)
     return None
 
 
@@ -82,13 +88,13 @@ async def seed_data():
     """
     Función principal para cargar y enviar los datos de prueba a la API.
     """
-    print("Iniciando el proceso de siembra de datos...")
+    logger.info("Iniciando el proceso de siembra de datos...")
 
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data_to_seed = json.load(f)
     except FileNotFoundError:
-        print(f"Error: El archivo {DATA_FILE} no se encontró.")
+        logger.error(f"Error: El archivo {DATA_FILE} no se encontró.")
         return
     except json.JSONDecodeError:
         print(f"Error: El archivo {DATA_FILE} no es un JSON válido.")

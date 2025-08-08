@@ -1,130 +1,74 @@
 # app/internal/log.py
 import logging
-import sys
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
+from enum import Enum
+from app.config import config
+import sys
+from datetime import datetime
+from os import path, makedirs
 
 
-class Logger:
+class LogLevel(Enum):
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    FATAL = logging.FATAL
+    CRITICAL = logging.CRITICAL
+
+
+def factory_logger(
+    name: str,
+    level: LogLevel = LogLevel.INFO,
+    file: bool = False,
+    max_file_size: int = 10 * 1024 * 1024,
+    backup_count: int = 5,
+):
     """
-    Clase para manejar el logging de la aplicación.
-    Permite crear múltiples instancias de logger por nombre.
-    Configura logs según el ambiente detectado desde config.py:
-    - Desarrollo: archivo (INFO) + consola (DEBUG)
-    - Producción/Azure Container: consola (INFO) para logs del contenedor
+    Crea un logger con configuración para consola y opcionalmente archivo con rotación.
+
+    Args:
+        name: Nombre del logger
+        level: Nivel de logging
+        file: Si True, también loggea a archivo
+        max_file_size: Tamaño máximo del archivo en bytes (default: 10MB)
+        backup_count: Número de archivos de backup a mantener (default: 5)
     """
+    logger = logging.getLogger(name)
+    logger.setLevel(level.value)
 
-    _instances: dict[str, 'Logger'] = {}
-    _configured: bool = False
+    # Evitar duplicar handlers si el logger ya existe
+    if logger.handlers:
+        return logger
 
-    def __init__(self, name: str = 'CocoSalvajeInventarios'):
-        """
-        Inicializa una instancia de Logger.
+    formatter = logging.Formatter(
+        fmt='%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
 
-        Args:
-            name: Nombre del logger. Por defecto es "CocoSalvajeInventarios"
-        """
-        self.name = name
-        self._logger: logging.Logger
-        self._setup_logger()
+    # Handler para consola (siempre presente)
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
 
-    def __new__(cls, name: str = 'CocoSalvajeInventarios'):
-        """
-        Crea o retorna una instancia existente del logger con el nombre dado.
-        """
-        if name not in cls._instances:
-            instance = super(Logger, cls).__new__(cls)
-            cls._instances[name] = instance
-        return cls._instances[name]
+    # Handler para archivo con rotación (solo en desarrollo o si se especifica file=True)
+    if not config.production or file:
+        # Crear directorio de logs si no existe
+        logs_dir = 'logs'
+        if not path.exists(logs_dir):
+            makedirs(logs_dir)
 
-    def _setup_logger(self):
-        """
-        Configura el logger según el ambiente detectado desde config.py.
-        """
-        from app.config import config
+        # Nombre del archivo de log con timestamp
+        log_filename = path.join(logs_dir, f'{name}_{datetime.now().strftime("%Y_%m_%d")}.log')
 
-        # Crear el logger específico
-        self._logger = logging.getLogger(self.name)
-        self._logger.setLevel(logging.DEBUG)
-
-        # Evitar duplicar handlers si el logger ya está configurado
-        if self._logger.handlers:
-            return
-
-        # Configurar handlers
-        self._configure_handlers(config)
-
-    def _configure_handlers(self, config):
-        """
-        Configura los handlers según el ambiente.
-        """
-        if self._logger is None:
-            return
-
-        # Formato para los logs
-        formatter = logging.Formatter(
-            fmt='%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S',
+        # RotatingFileHandler para manejar la rotación automática
+        file_handler = RotatingFileHandler(
+            filename=log_filename, maxBytes=max_file_size, backupCount=backup_count, encoding='utf-8'
         )
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
-        if config.is_production():
-            # PRODUCCIÓN: Solo logs a consola (para Azure Container Apps)
-            console_handler = logging.StreamHandler(sys.stdout)
-            console_handler.setLevel(logging.INFO)
-            console_handler.setFormatter(formatter)
-            self._logger.addHandler(console_handler)
-
-            container_info = ' (Azure Container)' if config.is_azure_container() else ''
-            self._logger.info(f'Logger configurado para PRODUCCIÓN{container_info} - logs a consola')
-
-        else:
-            # DESARROLLO: Archivo (INFO) + Consola (DEBUG)
-
-            # Crear directorio de logs si no existe
-            log_dir = Path('logs')
-            log_dir.mkdir(exist_ok=True)
-
-            # Handler para archivo con rotación
-            file_handler = RotatingFileHandler(
-                filename=log_dir / 'app.log',
-                maxBytes=10 * 1024 * 1024,  # 10MB
-                backupCount=5,
-                encoding='utf-8',
-            )
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)
-
-            # Handler para consola en desarrollo
-            console_handler = logging.StreamHandler(sys.stdout)
-            console_handler.setLevel(logging.DEBUG)
-            console_handler.setFormatter(formatter)
-
-            # Agregar handlers al logger
-            self._logger.addHandler(file_handler)
-            self._logger.addHandler(console_handler)
-
-            self._logger.info(f'Logger "{self.name}" configurado para DESARROLLO - archivo (INFO) + consola (DEBUG)')
-
-    @property
-    def logger(self) -> logging.Logger:
-        """
-        Propiedad para acceder directamente al logger.
-        """
-        return self._logger
-
-    @classmethod
-    def get_instance(cls, name: str = 'CocoSalvajeInventarios') -> 'Logger':
-        """
-        Método de clase para obtener una instancia de Logger por nombre.
-
-        Args:
-            name: Nombre del logger
-
-        Returns:
-            Logger: Instancia del logger
-        """
-        return cls(name)
+    return logger
 
 
-# Instancia global del logger principal
-default_logger = Logger()
+log_inventario = factory_logger('inventario')

@@ -17,11 +17,11 @@ def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
 
         ultima_letra = palabras_en_plural[i][-1]
 
-        if ultima_letra in "aeiou":
-            palabras_en_plural[i] = palabras_en_plural[i] + "s"
-        elif ultima_letra == "z":
-            palabras_en_plural[i] = palabras_en_plural[i][:-1] + "ces"
+        if ultima_letra in 'aeiou':
+            palabras_en_plural[i] = palabras_en_plural[i] + 's'
+        elif ultima_letra == 'z':
+            palabras_en_plural[i] = palabras_en_plural[i][:-1] + 'ces'
         else:
-            palabras_en_plural[i] = palabras_en_plural[i] + "es"
+            palabras_en_plural[i] = palabras_en_plural[i] + 'es'
 
     return sep.join(palabras_en_plural + palabras_en_singular)

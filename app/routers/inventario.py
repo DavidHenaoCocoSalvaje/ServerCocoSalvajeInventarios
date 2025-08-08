@@ -1,8 +1,10 @@
 # app/routers/inventario.py
 from dataclasses import dataclass
+import json
 from fastapi import APIRouter, Depends, status
 from app.internal.integrations.shopify import get_inventory_info
 from app.routers.base import CRUD
+from app.internal.log import log_inventario
 
 
 # Modelos
@@ -121,25 +123,28 @@ CRUD[EstadoElemento](
     tags=[Tags.shopify],
 )
 async def sync_shopify():
-    # Obtener información inventario de shopify
-    inventory_info = await get_inventory_info()
-    # Obtener lista de bodegas y filtrar por registros únicos, luego verificar si es necesario crear alguna bodega
-    locations = []
-    for product in inventory_info:
-        for variant in product.variants:
-            for inventory_level in variant.inventoryItem.inventoryLevels.nodes:
-                location = inventory_level.location
-                locations.append(location)
-
-    return {'message': 'Inventarios sincronizado con Shopify'}
+    """Sincroniza los datos de inventario desde Shopify."""
+    try:
+        # Obtener información inventario de shopify
+        inventory_info = await get_inventory_info()
+        # Obtener lista de bodegas y filtrar por registros únicos, luego verificar si es necesario crear alguna bodega
+        locations = []
+        for product in inventory_info:
+            for variant in product.variants:
+                for inventory_level in variant.inventoryItem.inventoryLevels.nodes:
+                    location = inventory_level.location
+                    locations.append(location)
+        return True
+    except Exception:
+        return False
 
 
 # Pedidos
-# @router.post(
-#     "/sync",
-#     response_model=dict,
-#     status_code=status.HTTP_200_OK,
-#     tags=[Tags.shopify],
-# )
-# async def pedido_shopify(body: dict):
-#     # Obtener información inventario de shopify
+@router.post(
+    '/pedido',
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.shopify],
+)
+async def pedido_shopify(body: dict):
+    log_inventario.info(f'Pedido recibido: {json.dumps(body, indent=4)}')
+    return {'status': 'ok'}
