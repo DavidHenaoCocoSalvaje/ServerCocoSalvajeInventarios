@@ -1,0 +1,163 @@
+{
+    "estados_variante": [
+        {
+            "id": 1,
+            "nombre": "Almacenado",
+            "descripcion": "Inventario en el bodega"
+        },
+        {
+            "id": 2,
+            "nombre": "Entrante",
+            "descripcion": "Inventario que se encuentra en camino a una ubicación"
+        },
+        {
+            "id": 3,
+            "nombre": "Transito",
+            "descripcion": "Inventario que se traslada de una ubicación a otra"
+        }
+    ],
+    "tipos_movimiento": [
+        {
+            "id": 1,
+            "nombre": "Cargue inicial",
+            "descripcion": "Carga inicial de inventario con cantidades existentes"
+        },
+        {
+            "id": 2,
+            "nombre": "Ajuste",
+            "descripcion": "Ajuste manual de inventario"
+        },
+        {
+            "id": 3,
+            "nombre": "Entrada",
+            "descripcion": "Mayor cantidad de un elemento en el inventario"
+        },
+        {
+            "id": 4,
+            "nombre": "Salida",
+            "descripcion": "Menor cantidad de un elemento en el inventario"
+        }
+    ],
+    "tipos_precios": [
+        {
+            "id": 1,
+            "nombre": "Retail",
+            "descripcion": "Precio de venta al consumidor"
+        },
+        {
+            "id": 2,
+            "nombre": "Wholesale",
+            "descripcion": "Precio de distribución"
+        },
+        {
+            "id": 3,
+            "nombre": "Acquisition",
+            "descripcion": "Costo de adquisición"
+        },
+        {
+            "id": 5,
+            "nombre": "Manufacturing",
+            "descripcion": "Costo de fabricación"
+        }
+    ],
+    "grupos": [
+        {
+            "id": 1,
+            "nombre": "Materia Prima"
+        },
+        {
+            "id": 2,
+            "nombre": "Producto en proceso"
+        },
+        {
+            "id": 3,
+            "nombre": "Producto Terminado"
+        }
+    ],
+    "tipos_medida": [
+        {
+            "id": 1,
+            "nombre": "Cantidad"
+        },
+        {
+            "id": 2,
+            "nombre": "Peso"
+        },
+        {
+            "id": 3,
+            "nombre": "Volumen"
+        },
+        {
+            "id": 4,
+            "nombre": "Longitud"
+        },
+        {
+            "id": 5,
+            "nombre": "Area"
+        }
+    ],
+    "medidas": [
+        {
+            "id": 1,
+            "nombre": "u",
+            "nombre_largo": "Unidad",
+            "tipo_medida_id": 1
+        },
+        {
+            "id": 2,
+            "nombre": "Kg",
+            "nombre_largo": "Kilogramo",
+            "tipo_medida_id": 2
+        },
+        {
+            "id": 3,
+            "nombre": "g",
+            "nombre_largo": "Gramo",
+            "tipo_medida_id": 2
+        },
+        {
+            "id": 4,
+            "nombre": "ml",
+            "nombre_largo": "Mililitro",
+            "tipo_medida_id": 3
+        },
+        {
+            "id": 5,
+            "nombre": "lt",
+            "nombre_largo": "Litro",
+            "tipo_medida_id": 3
+        },
+        {
+            "id": 6,
+            "nombre": "mm",
+            "nombre_largo": "Milimetro",
+            "tipo_medida_id": 4
+        },
+        {
+            "id": 7,
+            "nombre": "cm",
+            "nombre_largo": "Centímetro",
+            "tipo_medida_id": 4
+        },
+        {
+            "id": 8,
+            "nombre": "m",
+            "nombre_largo": "Metro",
+            "tipo_medida_id": 5
+        }
+    ],
+    "tipos_soporte": [
+        {
+            "id": 1,
+            "nombre": "Factura de compra"
+        },
+        {
+            "id": 2,
+            "nombre": "Pedido"
+        },
+        {
+            "id": 3,
+            "nombre": "Orden de producción"
+        }
+    ]
+}

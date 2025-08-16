@@ -1,0 +1,5 @@
+hostinguer:
+  hosts:
+    cocosalvajeapps.com:
+      ansible_user: coco
+      ansible_ssh_private_key_file: /home/david/.shh/id_ed25519

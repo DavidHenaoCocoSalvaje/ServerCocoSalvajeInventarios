@@ -1,0 +1,74 @@
+@startuml use_case_inventarios_mejorado
+left to right direction
+
+' --- Definición de Actores ---
+actor "Usuario" as User
+
+package "Gestión de Inventarios" {
+
+    ' --- Casos de Uso Base ---
+    (Crear elementos) as UC_Create
+    (Modificar elementos) as UC_Modify
+    (Eliminar elementos) as UC_Delete
+    (Consumo elementos) as UC_Consume
+
+    ' --- Casos de Uso de Inclusión (Funcionalidad Requerida) ---
+    (Modificar saldo) as UC_AdjustStock
+
+    ' --- Casos de Uso de Extensión (Funcionalidad Opcional) ---
+    (Sincronizar elementos) as UC_Sync
+    (Cambiar estado producto) as UC_ChangeStatus
+    note right of UC_ChangeStatus
+        - Pago - compra
+        - Tránsito - compra
+        - Recibido
+        - Pago - venta
+        - Transito - venta
+        - Entregado
+    end note
+
+    ' --- Casos de Uso de Informes (Agrupados por Generalización) ---
+    (Generar informe inventario) as UC_Report
+    (Informe elementos terminados) as UC_ReportFinished
+    (Informe materias primas) as UC_ReportRaw
+    (Informe empaques) as UC_ReportPackaging
+    (Alertas inventario de seguridad) as UC_ReportAlerts
+
+    ' --- Casos de Uso de Producción ---
+    (Crear orden de producción) as UC_ManagePO
+
+
+    (Sincronizar con ERP) as UC_SyncERP
+    (Sincronizar con Shopify) as UC_SyncShopify
+}
+
+' --- Relaciones del Actor ---
+User --> UC_Create
+User --> UC_Modify
+User --> UC_Delete
+User --> UC_Report
+User --> UC_ManagePO
+User --> UC_Consume
+
+' --- Relaciones <<include>> (Obligatorias) ---
+UC_Create ..> UC_AdjustStock : <<include>>
+UC_Modify ..> UC_AdjustStock : <<include>>
+UC_Consume ..> UC_AdjustStock : <<include>>
+
+' --- Relaciones <<extend>> (Opcionales) ---
+UC_Create <.. UC_Sync : <<include>>
+UC_Modify <.. UC_Sync : <<include>>
+UC_Delete <.. UC_Sync : <<include>>
+UC_Modify <.. UC_ChangeStatus : <<include>>
+
+' --- Relaciones de Generalización (Tipos de...) ---
+UC_Report <|-- UC_ReportFinished
+UC_Report <|-- UC_ReportRaw
+UC_Report <|-- UC_ReportPackaging
+UC_Report <|-- UC_ReportAlerts
+
+' --- Detalle de Sincronización (Generalización) ---
+UC_Sync <|-- UC_SyncERP
+UC_Sync <|-- UC_SyncShopify
+
+@enduml

@@ -1,0 +1,26 @@
+services:
+  coco-salvaje-inventarios:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: coco-salvaje-inventarios:${IMAGE_TAG:-latest}
+    container_name: coco-salvaje-inventarios-app
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    env_file:
+      - ${ENV_FILE:-.env}
+    volumes:
+      # Opcional: para logs persistentes
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - coco-salvaje-network
+
+networks:
+  coco-salvaje-network:
+    driver: bridge
+
+# Volúmenes para persistir datos si es necesario
+volumes:
+  logs_data:
+    driver: local

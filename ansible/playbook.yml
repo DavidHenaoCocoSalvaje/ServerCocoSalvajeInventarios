@@ -1,0 +1,95 @@
+---
+- name: deploy server
+  hosts: hostinguer
+  vars:
+    # Variables que se pueden sobrescribir al ejecutar el playbook
+    branch: "{{ ansible_branch | default('staging') }}"
+    image_tag: "{{ branch if branch != 'main' else 'latest' }}"
+    image_name: "coco-salvaje-inventarios"
+    container_name: "coco-salvaje-inventarios-app"
+    # Puerto según la rama
+    host_port: "{{ '8000' if branch in ['main', 'master', 'production'] else ('8001' if branch == 'staging' else ('8002' if branch in ['development', 'develop'] else '8003')) }}"
+
+  tasks:
+    # Verificar que la imagen existe localmente antes de enviar
+    - name: Check if image exists locally
+      delegate_to: localhost
+      command: docker images -q {{ image_name }}:{{ image_tag }}
+      register: local_image_check
+      failed_when: local_image_check.stdout == ""
+      changed_when: false
+
+    # Enviar imagen comprimida al servidor
+    - name: send image
+      copy:
+        src: "../build/{{ image_name }}-{{ image_tag }}.tar"
+        dest: "/tmp/{{ image_name }}-{{ image_tag }}.tar"
+        mode: '0644'
+      register: image_uploaded
+
+    # Cargar la imagen en Docker del servidor
+    - name: Load Docker image on server
+      command: docker load -i /tmp/{{ image_name }}-{{ image_tag }}.tar
+      when: image_uploaded.changed
+
+    # Limpiar archivo temporal
+    - name: Remove temporary image file
+      file:
+        path: "/tmp/{{ image_name }}-{{ image_tag }}.tar"
+        state: absent
+
+    # Detener contenedor existente si está corriendo
+    - name: Stop existing container
+      docker_container:
+        name: "{{ container_name }}"
+        state: stopped
+      ignore_errors: yes
+
+    # Remover contenedor existente
+    - name: Remove existing container
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      ignore_errors: yes
+
+    # Crear y ejecutar el nuevo contenedor
+    - name: Run new container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}:{{ image_tag }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ host_port }}:8000"
+        env_file: "/home/{{ ansible_user }}/.env.{{ branch }}"
+        volumes:
+          - "/home/{{ ansible_user }}/logs:/app/logs"
+        networks:
+          - name: coco-salvaje-network
+
+    # Crear red Docker si no existe
+    - name: Create Docker network
+      docker_network:
+        name: coco-salvaje-network
+        driver: bridge
+      ignore_errors: yes
+
+    # Verificar que el contenedor está corriendo
+    - name: Verify container is running
+      docker_container_info:
+        name: "{{ container_name }}"
+      register: container_info
+      failed_when: container_info.container.State.Status != "running"
+
+    # Mostrar información del despliegue
+    - name: Display deployment info
+      debug:
+        msg:
+          - "✅ Despliegue completado exitosamente"
+          - "🏷️  Imagen: {{ image_name }}:{{ image_tag }}"
+          - "🔌 Puerto: {{ host_port }}"
+          - "🌿 Rama: {{ branch }}"
+          - "🐳 Contenedor: {{ container_name }}"
+          - "📍 URL: http://cocosalvajeapps.com:{{ host_port }}"
+
+
