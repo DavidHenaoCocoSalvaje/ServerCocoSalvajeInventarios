@@ -1,0 +1,11 @@
+fastapi[standard]
+sqlalchemy[asyncio]
+pandas
+aiohttp
+python-multipart
+sqlmodel
+psycopg
+dotenv
+pytz
+argon2-cffi
+pyjwt

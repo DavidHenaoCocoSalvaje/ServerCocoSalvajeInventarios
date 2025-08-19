@@ -1,0 +1,15 @@
+services:
+  coco-salvaje-integraciones:
+    image: coco-salvaje-integraciones-api:latest
+    container_name: coco-salvaje-integraciones-api
+    ports:
+      - "8003:8003"
+    env_file:
+      - .env.development
+    restart: unless-stopped
+    networks:
+      - coco-salvaje-network
+
+networks:
+  coco-salvaje-network:
+    driver: bridge

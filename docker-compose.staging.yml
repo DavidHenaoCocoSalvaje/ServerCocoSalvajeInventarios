@@ -1,0 +1,15 @@
+services:
+  coco-salvaje-integraciones:
+    image: coco-salvaje-integraciones-api:latest
+    container_name: coco-salvaje-integraciones-api
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.staging
+    restart: unless-stopped
+    networks:
+      - coco-network
+
+networks:
+  coco-network:
+    external: true

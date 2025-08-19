@@ -1,0 +1,90 @@
+# .dockerignore para la aplicación FastAPI
+
+# Archivos y directorios de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Archivos de entorno virtual
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Variables de entorno y configuración sensible
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos del sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Archivos de prueba y desarrollo
+test.py
+*.test.py
+tests/
+pytest_cache/
+
+# Archivos de documentación y README (opcional, puedes mantenerlos si los necesitas)
+README.md
+*.md
+
+# Archivos de Git
+.git/
+.gitignore
+
+# Archivos de Docker
+Dockerfile*
+docker-compose*.yml
+
+# Archivos específicos del proyecto
+CoSal_Inventarios.pgerd
+use_case.pu
+shopify_inventory_data.json
+
+# Cache de pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
