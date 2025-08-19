@@ -8,6 +8,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError
 from pydantic import BaseModel
 from app.config import config
 
@@ -40,13 +41,28 @@ class TokenData(BaseModel):
 password_hasher = PasswordHasher()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
 
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Invalid credentials',
+    headers={'WWW-Authenticate': 'Bearer'},
+)
+
+unauthorized_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail='Unauthorized',
+    headers={'WWW-Authenticate': 'Bearer'},
+)
+
 
 def verificar_password(plain_password, hashed_password):
     return password_hasher.verify(hashed_password, plain_password)
 
 
 async def autenticar_usuario(username: str, password: str, session: AsyncSessionDep) -> UsuarioDB | None:
-    usuario = await usuario_query.get_by_username(session, username)
+    try:
+        usuario = await usuario_query.get_by_username(session, username)
+    except InvalidHashError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     if usuario and verificar_password(password, usuario.password):
         return usuario
     return None
@@ -65,21 +81,17 @@ def crear_access_token(data: dict, expires_delta: timedelta | None = None):
 
 async def validar_access_token(token: Annotated[str, Depends(oauth2_scheme)], session: AsyncSessionDep):
     """Se obtiene el usuario actual a partir del token JWT."""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail='Invalid credentials',
-        headers={'WWW-Authenticate': 'Bearer'},
-    )
+
     try:
         payload = jwt.decode(token, config.secret_key, [config.algorithm])
         user_id = payload.get('sub')
         if user_id is None:
-            raise credentials_exception
+            raise unauthorized_exception
     except InvalidTokenError:
-        raise credentials_exception
+        raise unauthorized_exception
     user = await usuario_query.get(session, user_id)
     if user is None:
-        raise credentials_exception
+        raise unauthorized_exception
     return user
 
 
@@ -87,11 +99,7 @@ async def validar_access_token(token: Annotated[str, Depends(oauth2_scheme)], se
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: AsyncSessionDep) -> Token:
     usuario = await autenticar_usuario(form_data.username, form_data.password, session)
     if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Usuario o contraseña incorrectos',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
+        raise credentials_exception
     data = {'sub': str(usuario.id), 'name': usuario.username}
     token = crear_access_token(data)
     return Token(access_token=token, token_type='bearer')

@@ -1,7 +1,7 @@
 # app/routers/inventario.py
 from dataclasses import dataclass
 import json
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 
 from app.internal.integrations.shopify import get_inventory_info, process_inventory_info
 from app.routers.base import CRUD
@@ -143,7 +143,7 @@ CRUD[EstadoVariante](
     summary='Sincroniza inventarios de Shopify con base de datos',
     description='Se registran movimiento de cargue.',
     status_code=status.HTTP_200_OK,
-    tags=[Tags.shopify],
+    tags=[Tags.inventario, Tags.shopify],
 )
 async def sync_shopify(response: Response):
     """Sincroniza los datos de inventario desde Shopify."""
@@ -155,15 +155,14 @@ async def sync_shopify(response: Response):
         return True
     except Exception as e:
         log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')
-        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return False
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Pedidos
 @shopify_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
-    tags=[Tags.shopify],
+    tags=[Tags.inventario, Tags.shopify],
 )
 async def pedido_shopify(body: dict):
     log_inventario.info(f'\nPedido recibido: {json.dumps(body, indent=4)}')

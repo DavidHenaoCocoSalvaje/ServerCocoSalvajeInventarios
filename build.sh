@@ -35,14 +35,14 @@ if [ ! -f "$ENV_FILE" ]; then
 fi
 
 # Construir la imagen
-docker build -t "coco-salvaje-integraciones-api:$IMAGE_TAG" .
+docker build -t "integraciones-api:$IMAGE_TAG" .
 # Limipiar imagenes
 echo "🧹 Eliminando imágenes huérfanas..."
 docker image prune -f
 
 # Guardar la imagen en la carpeta build
-IMAGE_NAME="coco-salvaje-integraciones-api:$IMAGE_TAG"
+IMAGE_NAME="integraciones-api:$IMAGE_TAG"
 echo "💾 Guardando imagen en build/"
-docker save "$IMAGE_NAME" -o "build/coco-salvaje-integraciones-api-$IMAGE_TAG.tar"
+docker save "$IMAGE_NAME" -o "build/integraciones-api-$IMAGE_TAG.tar"
 
-echo "✅ Imagen construida y guardada en build/coco-salvaje-integraciones-api-$IMAGE_TAG.tar"
+echo "✅ Imagen construida y guardada en build/integraciones-api-$IMAGE_TAG.tar"

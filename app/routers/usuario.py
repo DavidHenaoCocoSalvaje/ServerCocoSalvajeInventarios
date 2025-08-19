@@ -17,11 +17,8 @@ router = APIRouter(
     prefix='/usuarios',
     tags=['Usuarios'],
     responses={404: {'description': 'No encontrado'}},
+    dependencies=[Depends(validar_access_token)],
 )
-
-
-def get_password_hash(password):
-    return password_hasher.hash(password)
 
 
 def verificar_complejidad_password(usuario: UsuarioCreate):
@@ -72,7 +69,7 @@ async def crear_usuario(
     session: AsyncSessionDep,
 ):
     # hash password
-    usuario.password = get_password_hash(usuario.password)
+    usuario.password = password_hasher.hash(usuario.password)
     usuario_db = UsuarioDB(**usuario.model_dump())
 
     usuario_creado = await usuario_query.create(session, usuario_db)
@@ -88,7 +85,7 @@ async def crear_usuario(
 )
 async def get_usuarios(
     session: AsyncSessionDep,
-    skip: Annotated[int, Depends(validar_access_token)] = 0,
+    skip: int = 0,
     limit: int = 100,
 ):
     usuarios = await usuario_query.get_list(session=session, skip=skip, limit=limit)
@@ -101,7 +98,7 @@ async def get_usuarios(
     summary='Obtener un usuario por ID',
     description='Obtiene los detalles de un usuario específico mediante su ID.',
 )
-async def get(session: AsyncSessionDep, usuario_id: Annotated[int, Depends(validar_access_token)]):
+async def get(session: AsyncSessionDep, usuario_id: int):
     db_usuario = await usuario_query.get(session, usuario_id)
     if db_usuario is None:
         raise HTTPException(
@@ -118,7 +115,7 @@ async def get(session: AsyncSessionDep, usuario_id: Annotated[int, Depends(valid
 )
 async def actualizar(
     session: AsyncSessionDep,
-    usuario_id: Annotated[int, Depends(validar_access_token)],
+    usuario_id: int,
     usuario: UsuarioBase,
 ):
     db_user = await usuario_query.get(session, usuario_id)
@@ -138,7 +135,7 @@ async def actualizar(
 )
 async def eliminar(
     session: AsyncSessionDep,
-    usuario_id: Annotated[int, Depends(validar_access_token)],
+    usuario_id: int,
 ):
     usuario_eliminado = await usuario_query.delete(session, usuario_id)
     if usuario_eliminado is None:

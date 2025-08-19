@@ -57,7 +57,7 @@ class Config:
         self.api_key_shopify: str = getenv('API_KEY_SHOPIFY', '')
         self.algorithm: str = getenv('ALGORITHM', 'HS256')
         self.access_token_expire_minutes: int = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
-        self.admin_password: str = getenv('ADMIN_PASSWORD', '')
+        self.admin_password: str = getenv('ADMIN_PWD', '')
 
     @property
     def production(self) -> bool:

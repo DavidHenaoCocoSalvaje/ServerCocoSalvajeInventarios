@@ -20,9 +20,9 @@ echo -e "${YELLOW}🚀 Iniciando despliegue para rama: $BRANCH${NC}"
 
 # Verificar que existe la imagen construida
 if [ "$BRANCH" = "main" ]; then
-    IMAGE_FILE="build/coco-salvaje-integraciones-api-latest.tar"
+    IMAGE_FILE="build/integraciones-api-latest.tar"
 else
-    IMAGE_FILE="build/coco-salvaje-integraciones-api-$BRANCH.tar"
+    IMAGE_FILE="build/integraciones-api-$BRANCH.tar"
 fi
 if [ ! -f "$IMAGE_FILE" ]; then
     echo -e "${RED}❌ Error: No se encontró la imagen $IMAGE_FILE${NC}"
@@ -69,6 +69,6 @@ case "$BRANCH" in
 esac
 
 echo -e "${GREEN}🌐 URL del servicio: http://cocosalvajeapps.com:$PORT${NC}"
-echo -e "${GREEN}📋 Para ver logs: ssh coco@cocosalvajeapps.com 'docker logs coco-salvaje-integraciones-api-app'${NC}"
+echo -e "${GREEN}📋 Para ver logs: ssh coco@cocosalvajeapps.com 'docker logs integraciones-api-app'${NC}"
 
 

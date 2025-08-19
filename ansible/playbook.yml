@@ -7,10 +7,10 @@
       # Si no se provee, el valor por defecto será 'main'.
       git_branch: "{{ git_branch | default('main') }}"
       image_tag: "{% if git_branch == 'main' %}latest{% else %}{{ git_branch }}{% endif %}"
-      local_image_path: "{{ playbook_dir }}/../build/coco-salvaje-integraciones-api-{{ image_tag }}.tar"
+      local_image_path: "{{ playbook_dir }}/../build/integraciones-api-{{ image_tag }}.tar"
       local_env_path: "{{ playbook_dir }}/../{% if git_branch == 'main' %}.env{% else %}.env.{{ git_branch }}{% endif %}"
       local_compose_path: "{{ playbook_dir }}/../docker-compose{% if git_branch != 'main' %}.{{ git_branch }}{% endif %}.yml"
-      image_name: "coco-salvaje-integraciones-api:{{ image_tag }}"
+      image_name: "integraciones-api:{{ image_tag }}"
       remote_folder: "/home/coco/images/backend/integraciones/{{ git_branch }}"
 
   tasks:

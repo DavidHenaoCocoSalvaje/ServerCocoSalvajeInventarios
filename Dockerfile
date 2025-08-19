@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copia el código de la aplicación
 COPY app/ ./app/
 COPY app/default_data/ ./app/default_data/
+COPY ./reset_admin_pwd.py ./
 
 # Crea un usuario no-root para ejecutar la aplicación (buena práctica de seguridad)
 RUN adduser --disabled-password --gecos '' appuser && \

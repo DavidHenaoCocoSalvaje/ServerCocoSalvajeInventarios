@@ -1,9 +1,8 @@
 # app/internal/query/usuario.py
 from getpass import getpass
-
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from sqlmodel import select
+from argon2 import PasswordHasher
 
 from app.models.db.usuario import UsuarioCreate, UsuarioDB
 from app.models.db.session import get_async_session
@@ -28,6 +27,7 @@ class UsuarioQuery(BaseQuery[UsuarioDB, UsuarioCreate]):
 
 
 usuario_query = UsuarioQuery()
+password_hasher = PasswordHasher()
 
 
 async def set_admin_user(reset_password: bool = False):
@@ -38,7 +38,7 @@ async def set_admin_user(reset_password: bool = False):
     try:
         usuario = await usuario_query.get_by_username(session, 'admin')
         if usuario is None:
-            password = config.admin_password
+            password = password_hasher.hash(config.admin_password)
             usuario = UsuarioDB(username='admin', password=password)
             usuario = await usuario_query.create(session, usuario)
             logger.info('✅ Usuario creado')
@@ -48,7 +48,7 @@ async def set_admin_user(reset_password: bool = False):
             if password != retype_password:
                 logger.error('❌ Las contraseñas no coinciden. Por favor, vuelva a intentarlo.')
                 return await set_admin_user(reset_password=reset_password)
-            usuario.password = password
+            usuario.password = password_hasher.hash(password)
             usuario_db = await usuario_query.get_by_username(session, 'admin')
             if usuario_db is None:
                 usuario_db = await usuario_query.create(session, usuario)
