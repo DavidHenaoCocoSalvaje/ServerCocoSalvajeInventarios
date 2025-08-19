@@ -5,7 +5,7 @@ services:
     ports:
       - "8003:8003"
     env_file:
-      - .env.development
+      - .env
     restart: unless-stopped
     networks:
       - coco-salvaje-network
