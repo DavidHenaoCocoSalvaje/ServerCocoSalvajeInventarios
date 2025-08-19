@@ -40,3 +40,7 @@
       ansible.builtin.shell:
         cmd: "docker compose up -d"
         chdir: "{{ remote_folder }}"
+    
+    - name: Clean docker
+      ansible.builtin.shell:
+        cmd: "docker system prune -a -f"
