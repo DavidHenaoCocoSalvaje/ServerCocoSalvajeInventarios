@@ -194,6 +194,9 @@ class QueriesShopify:
             variables,
         )
 
+    async def get_order_payment_info(self, order_id: int):
+        pass
+
 
 async def get_inventory_info():
     """Función principal optimizada con procesamiento concurrente por lotes"""

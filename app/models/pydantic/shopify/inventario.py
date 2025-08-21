@@ -1,3 +1,5 @@
+# app.models.pydantic.shopify.inventario
+
 from pydantic import Field
 from app.models.pydantic.base import Base
 

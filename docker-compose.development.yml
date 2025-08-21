@@ -2,6 +2,7 @@ services:
   coco-salvaje-integraciones:
     image: integraciones-api:development
     container_name: integraciones-api-development
+    user: "1001:1001"
     ports:
       - "8003:8000"
     env_file:
@@ -9,6 +10,8 @@ services:
     restart: unless-stopped
     networks:
       - coco-salvaje-network
+    volumes:
+      - ./logs:/app/logs
 
 networks:
   coco-salvaje-network:

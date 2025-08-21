@@ -35,6 +35,20 @@
     - name: Load docker-image
       ansible.builtin.shell:
         cmd: "docker load -i {{ remote_folder }}/{{ image_name }}.tar"
+      
+    - name: Mkdir logs
+      ansible.builtin.file:
+        path: "{{ remote_folder }}/logs"
+        state: directory
+        mode: 0755
+    
+    - name: chown logs
+      ansible.builtin.shell:
+        cmd: "chown -R {{ ansible_user }}:{{ ansible_user }} {{ remote_folder }}/logs"
+    
+    - name: chmod logs
+      ansible.builtin.shell:
+        cmd: "chmod -R 755 {{ remote_folder }}/logs"
     
     - name: Run container
       ansible.builtin.shell:

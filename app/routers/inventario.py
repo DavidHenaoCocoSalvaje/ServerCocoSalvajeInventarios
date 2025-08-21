@@ -1,13 +1,14 @@
 # app/routers/inventario.py
 from dataclasses import dataclass
 import json
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.internal.integrations.shopify import get_inventory_info, process_inventory_info
 from app.routers.base import CRUD
 from app.internal.log import factory_logger
 
-# Modelos
+# Seguridad
+from app.routers.auth import hmac_validation_shopify
 
 
 from app.models.db.inventario import (
@@ -144,11 +145,12 @@ CRUD[EstadoVariante](
     description='Se registran movimiento de cargue.',
     status_code=status.HTTP_200_OK,
     tags=[Tags.inventario, Tags.shopify],
+    dependencies=[Depends(validar_access_token)],
 )
-async def sync_shopify(response: Response):
+async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
-        # Obtener información inventario de shopify
+        # Obtener información de inventario de Shopify
         inventory_info = await get_inventory_info()
         await process_inventory_info(inventory_info)
         log_inventario_shopify.info('Inventarios de Shopify sincronizado con éxito')
@@ -163,7 +165,9 @@ async def sync_shopify(response: Response):
     '/pedido',
     status_code=status.HTTP_200_OK,
     tags=[Tags.inventario, Tags.shopify],
+    dependencies=[Depends(hmac_validation_shopify)],
 )
-async def pedido_shopify(body: dict):
-    log_inventario.info(f'\nPedido recibido: {json.dumps(body, indent=4)}')
-    return {'status': 'ok'}
+async def pedido_shopify(request: Request):
+    # Obtener datos de pedido
+    data = await request.json()
+    log_inventario_shopify.info(f'\nPedido recibido: {json.dumps(data, indent=2)}')

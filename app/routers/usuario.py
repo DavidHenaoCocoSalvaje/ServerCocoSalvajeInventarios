@@ -1,6 +1,5 @@
 # app/routers/usuario.py
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Annotated
 from string import punctuation
 
 # Modelos

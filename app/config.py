@@ -55,6 +55,7 @@ class Config:
         self.shop_shopify: str = getenv('SHOP_SHOPIFY', '')
         self.shop_version: str = getenv('SHOP_VERSION', '2025-07')
         self.api_key_shopify: str = getenv('API_KEY_SHOPIFY', '')
+        self.webhook_secret_shopify: str = getenv('WEBHOOK_SECRET_SHOPIFY', '')
         self.algorithm: str = getenv('ALGORITHM', 'HS256')
         self.access_token_expire_minutes: int = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
         self.admin_password: str = getenv('ADMIN_PWD', '')

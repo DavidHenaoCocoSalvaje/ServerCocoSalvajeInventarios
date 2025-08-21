@@ -1,7 +1,7 @@
 # app/routers/base.py
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Request, Depends, HTTPException, status
 
 # Seguridad
 import jwt
@@ -11,6 +11,9 @@ from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError
 from pydantic import BaseModel
 from app.config import config
+import hmac
+import hashlib
+import base64
 
 # Models
 from app.models.db.usuario import UsuarioDB
@@ -41,17 +44,25 @@ class TokenData(BaseModel):
 password_hasher = PasswordHasher()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
 
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Invalid credentials',
-    headers={'WWW-Authenticate': 'Bearer'},
-)
 
-unauthorized_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail='Unauthorized',
-    headers={'WWW-Authenticate': 'Bearer'},
-)
+class AuthException:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Invalid credentials',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
+
+    unauthorized_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Unauthorized',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
+
+    hmac_validation_failed = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Invalid HMAC',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
 
 
 def verificar_password(plain_password, hashed_password):
@@ -86,20 +97,49 @@ async def validar_access_token(token: Annotated[str, Depends(oauth2_scheme)], se
         payload = jwt.decode(token, config.secret_key, [config.algorithm])
         user_id = payload.get('sub')
         if user_id is None:
-            raise unauthorized_exception
+            raise AuthException.unauthorized_exception
     except InvalidTokenError:
-        raise unauthorized_exception
+        raise AuthException.unauthorized_exception
     user = await usuario_query.get(session, user_id)
     if user is None:
-        raise unauthorized_exception
+        raise AuthException.unauthorized_exception
     return user
+
+
+# Webhooks Shopify
+async def hmac_validation_shopify(request: Request) -> bool:
+    """
+    Valida una firma de webhook de Shopify transcribiendo la lógica
+    oficial de la documentación de Shopify (Node.js) a Python.
+    https://shopify.dev/docs/apps/build/webhooks/subscribe/https#step-2-validate-the-origin-of-your-webhook-to-ensure-its-coming-from-shopify
+    """
+    # 1. Calcular el digest HMAC-SHA256.
+    # Se utiliza el secreto (codificado a bytes) como clave y el cuerpo crudo de la
+    # solicitud como mensaje.
+    body = await request.body()
+    received_hmac = request.headers.get('x-shopify-hmac-sha256', '')
+    calculated_hmac_digest = hmac.new(
+        config.webhook_secret_shopify.encode('utf-8'), msg=body, digestmod=hashlib.sha256
+    ).digest()
+
+    # 2. Codificar el digest en Base64.
+    # El resultado del digest se codifica en Base64 para que coincida con el formato
+    # del encabezado que envía Shopify.
+    calculated_hmac_base64 = base64.b64encode(calculated_hmac_digest).decode('utf-8')
+
+    # 3. Comparar de forma segura (timing-safe) el HMAC calculado con el recibido.
+    # hmac.compare_digest previene ataques de temporización.
+    verify =  hmac.compare_digest(calculated_hmac_base64, received_hmac)
+    if not verify:
+        raise AuthException.hmac_validation_failed
+    return True
 
 
 @router.post('/login')
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: AsyncSessionDep) -> Token:
     usuario = await autenticar_usuario(form_data.username, form_data.password, session)
     if not usuario:
-        raise credentials_exception
+        raise AuthException.credentials_exception
     data = {'sub': str(usuario.id), 'name': usuario.username}
     token = crear_access_token(data)
     return Token(access_token=token, token_type='bearer')
