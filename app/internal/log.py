@@ -4,8 +4,9 @@ from logging.handlers import RotatingFileHandler
 from enum import Enum
 from app.config import config
 import sys
-from datetime import datetime
 from os import path, makedirs
+
+from app.internal.gen.utilities import DateTz
 
 
 class LogLevel(Enum):
@@ -59,7 +60,7 @@ def factory_logger(
             makedirs(logs_dir)
 
         # Nombre del archivo de log con timestamp
-        log_filename = path.join(logs_dir, f'{name}_{datetime.now().strftime("%Y_%m_%d")}.log')
+        log_filename = path.join(logs_dir, f'{name}_{DateTz.local().strftime("%Y_%m_%d")}.log')
 
         # RotatingFileHandler para manejar la rotación automática
         file_handler = RotatingFileHandler(

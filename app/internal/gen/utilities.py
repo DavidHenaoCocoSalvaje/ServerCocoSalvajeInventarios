@@ -1,3 +1,17 @@
+from datetime import datetime
+from pytz import timezone
+
+
+class DateTz(datetime):
+    @classmethod
+    def local(cls, tz: str = 'America/Bogota'):
+        return cls.now(timezone(tz))
+
+    @classmethod
+    def local_date(cls, tz: str = 'America/Bogota'):
+        return cls.now(timezone(tz)).date()
+
+
 def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
     """
     Convierte a plural cada palabra en una cadena de texto estilo 'dunder_score'.

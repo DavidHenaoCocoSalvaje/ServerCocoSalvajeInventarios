@@ -129,7 +129,7 @@ async def hmac_validation_shopify(request: Request) -> bool:
 
     # 3. Comparar de forma segura (timing-safe) el HMAC calculado con el recibido.
     # hmac.compare_digest previene ataques de temporización.
-    verify =  hmac.compare_digest(calculated_hmac_base64, received_hmac)
+    verify = hmac.compare_digest(calculated_hmac_base64, received_hmac)
     if not verify:
         raise AuthException.hmac_validation_failed
     return True

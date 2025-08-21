@@ -2,6 +2,8 @@
 from datetime import datetime, date
 from sqlmodel import Field, Relationship, SQLModel, SMALLINT, DATE, TEXT, BIGINT, TIMESTAMP
 
+from app.internal.gen.utilities import DateTz
+
 
 class InventarioBase(SQLModel):
     __table_args__ = {'schema': 'inventario'}
@@ -145,7 +147,7 @@ class MovimientoUpdate(InventarioBase):
     bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=0)
     soporte_id: str | None = Field(sa_type=TEXT, default=None)
     nota: str | None = Field(sa_type=TEXT, default=None)
-    fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=datetime.now)
+    fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=DateTz.local)
 
 
 class Movimiento(MovimientoUpdate, table=True):

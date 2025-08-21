@@ -1,5 +1,5 @@
 # app/routers/inventario.py
-from dataclasses import dataclass
+from enum import Enum
 import json
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
@@ -49,22 +49,21 @@ log_inventario = factory_logger('inventario', file=True)
 log_inventario_shopify = factory_logger('inventario_shopify', file=True)
 
 
-@dataclass
-class Tags:
-    inventario: str = 'Inventario'
-    shopify: str = 'Shopify'
+class Tags(Enum):
+    INVENTARIO = 'Inventario'
+    SHOPIFY = 'Shopify'
 
 
 router = APIRouter(
     prefix='/inventario',
-    tags=[Tags.inventario],
+    tags=[Tags.INVENTARIO],
     responses={404: {'description': 'No encontrado'}},
     dependencies=[Depends(validar_access_token)],
 )
 
 shopify_router = APIRouter(
     prefix='/inventario/shopify',
-    tags=[Tags.inventario, Tags.shopify],
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     responses={404: {'description': 'No encontrado'}},
 )
 
@@ -144,7 +143,7 @@ CRUD[EstadoVariante](
     summary='Sincroniza inventarios de Shopify con base de datos',
     description='Se registran movimiento de cargue.',
     status_code=status.HTTP_200_OK,
-    tags=[Tags.inventario, Tags.shopify],
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(validar_access_token)],
 )
 async def sync_shopify():
@@ -164,7 +163,7 @@ async def sync_shopify():
 @shopify_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
-    tags=[Tags.inventario, Tags.shopify],
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(hmac_validation_shopify)],
 )
 async def pedido_shopify(request: Request):
