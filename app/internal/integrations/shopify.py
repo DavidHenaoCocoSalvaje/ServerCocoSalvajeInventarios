@@ -98,7 +98,7 @@ class ShopifyGraphQLClient:
         return result
 
 
-class QueriesShopify:
+class QueryShopify:
     def __init__(self):
         self.client = ShopifyGraphQLClient()
 
@@ -106,7 +106,8 @@ class QueriesShopify:
         num_items: int = 20
         cursor: str | None = None
         search_query: str | None = None
-        inventory_item_id: int | None = None
+        id: int | None = None
+        gid: str | None = None
 
     async def get_products(self) -> dict[str, Any]:
         query = """
@@ -194,13 +195,73 @@ class QueriesShopify:
             variables,
         )
 
-    async def get_order_payment_info(self, order_id: int):
-        pass
+    async def get_order(self, order_gid: str, num_items: int = 40):
+        query = """
+        query GetOrder($gid: ID!, $num_items: Int!) {
+            order(id: $gid) {
+                fullyPaid
+                email
+                number
+                createdAt
+                app {
+                    name
+                }
+                customer {
+                    firstName
+                    lastName
+                    id
+                }
+                transactions {
+                    gateway
+                    paymentId
+                }
+                billingAddress {
+                firstName
+                lastName
+                company
+                address1
+                address2
+                province
+                country
+                city
+                phone
+                zip
+                },
+                shippingLine {
+                    originalPriceSet {
+                        shopMoney {
+                            amount
+                            currencyCode
+                        }
+                    }
+                }
+                lineItems(first:$num_items) {
+                    nodes {
+                        name
+                        quantity
+                        sku
+                        originalUnitPriceSet {
+                        shopMoney {
+                            amount
+                            currencyCode
+                        }
+                    }
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
+                }
+            }
+        }
+        """
+        variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
+        return await self.client.execute_query(query, **variables)
 
 
 async def get_inventory_info():
     """Función principal optimizada con procesamiento concurrente por lotes"""
-    query = QueriesShopify()
+    query = QueryShopify()
 
     # Obtener todos los productos
     product_data = await query.get_products()

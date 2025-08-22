@@ -1,11 +1,13 @@
 # app/routers/inventario.py
 from enum import Enum
 import json
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.internal.integrations.shopify import get_inventory_info, process_inventory_info
+from app.internal.integrations.shopify import QueryShopify, get_inventory_info, process_inventory_info
+from app.models.pydantic.shopify.order import OrderResponse, OrderWebHook
 from app.routers.base import CRUD
-from app.internal.log import factory_logger
+from app.internal.log import LogLevel, factory_logger
 
 # Seguridad
 from app.routers.auth import hmac_validation_shopify
@@ -47,6 +49,7 @@ from .auth import validar_access_token
 
 log_inventario = factory_logger('inventario', file=True)
 log_inventario_shopify = factory_logger('inventario_shopify', file=True)
+log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 class Tags(Enum):
@@ -167,6 +170,10 @@ async def sync_shopify():
     dependencies=[Depends(hmac_validation_shopify)],
 )
 async def pedido_shopify(request: Request):
+    query_shopify = QueryShopify()
     # Obtener datos de pedido
-    data = await request.json()
-    log_inventario_shopify.info(f'\nPedido recibido: {json.dumps(data, indent=2)}')
+    webhook_data = await request.json()
+    order_webhook = OrderWebHook(**webhook_data)
+    order = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
+    order_response = OrderResponse(**order)
+    log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
