@@ -88,7 +88,7 @@ def factory_logger(
             makedirs(logs_dir)
 
         # Nombre base del archivo de log
-        log_filename = path.join(logs_dir, f'{name}.log')
+        log_filename = path.join(logs_dir, f'{name}_{DateTz.local().strftime("%Y_%m_%d")}.log')
 
         # Configurar timezone de Colombia
         bogota_tz = pytz.timezone('America/Bogota')
