@@ -1,7 +1,5 @@
 # app/routers/inventario.py
 from enum import Enum
-import json
-import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, process_inventory_info

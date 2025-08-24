@@ -1,12 +1,41 @@
 # app/internal/log.py
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from enum import Enum
 from app.config import config
 import sys
 from os import path, makedirs
+import datetime
+import pytz
 
 from app.internal.gen.utilities import DateTz
+
+
+class TimedSizeRotatingFileHandler(TimedRotatingFileHandler):
+    """
+    Handler que combina rotación por tiempo y por tamaño
+    """
+
+    def __init__(self, *args, maxBytes=0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.maxBytes = maxBytes
+
+    def shouldRollover(self, record):
+        """
+        Determina si se debe rotar el archivo por tiempo o por tamaño
+        """
+        # Verificar rotación por tiempo
+        if super().shouldRollover(record):
+            return True
+
+        # Verificar rotación por tamaño
+        if self.maxBytes > 0:
+            msg = '%s\n' % self.format(record)
+            self.stream.seek(0, 2)  # Ir al final del archivo
+            if self.stream.tell() + len(msg) >= self.maxBytes:
+                return True
+
+        return False
 
 
 class LogLevel(Enum):
@@ -43,8 +72,7 @@ def factory_logger(
         return logger
 
     formatter = logging.Formatter(
-        fmt='%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
+        fmt=f'{DateTz.local().strftime("%Y-%m-%d %H:%M:%S")} - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
     )
 
     # Handler para consola (siempre presente)
@@ -59,13 +87,25 @@ def factory_logger(
         if not path.exists(logs_dir):
             makedirs(logs_dir)
 
-        # Nombre del archivo de log con timestamp
-        log_filename = path.join(logs_dir, f'{name}_{DateTz.local().strftime("%Y_%m_%d")}.log')
+        # Nombre base del archivo de log
+        log_filename = path.join(logs_dir, f'{name}.log')
 
-        # RotatingFileHandler para manejar la rotación automática
-        file_handler = RotatingFileHandler(
-            filename=log_filename, maxBytes=max_file_size, backupCount=backup_count, encoding='utf-8'
+        # Configurar timezone de Colombia
+        bogota_tz = pytz.timezone('America/Bogota')
+        midnight_bogota = datetime.time(0, 0, 0, 0, bogota_tz)
+
+        # TimedSizeRotatingFileHandler para rotación diaria y por tamaño
+        file_handler = TimedSizeRotatingFileHandler(
+            filename=log_filename,
+            when='midnight',
+            interval=1,
+            backupCount=backup_count,
+            encoding='utf-8',
+            maxBytes=max_file_size,
+            utc=False,
+            atTime=midnight_bogota,
         )
+        file_handler.suffix = '%Y_%m_%d'
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 
