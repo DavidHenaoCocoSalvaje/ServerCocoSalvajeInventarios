@@ -45,12 +45,12 @@ class FinancialStatus(Enum):
 
 
 class OrderWebHook(Base):
-    admin_graphql_api_id: str = ''
+    adminGraphqlApiId: str = ''
 
 
 class BillingAddress(Base):
-    first_name: str = ''
-    last_name: str = ''
+    firstName: str = ''
+    lastName: str = ''
     company: str = ''
     address1: str = ''
     address2: str = ''
@@ -62,44 +62,44 @@ class BillingAddress(Base):
 
 
 class Customer(Base):
-    first_name: str = ''
-    last_name: str = ''
+    firstName: str = ''
+    lastName: str = ''
     id: str = ''
 
 
 class ShopMoney(Base):
     amount: str = ''
-    currency_code: str = ''
+    currencyCode: str = ''
 
 
 class OriginalPriceSet(Base):
-    shop_money: ShopMoney = ShopMoney()
+    shopMoney: ShopMoney = ShopMoney()
 
 
 class LineItem(Base):
     name: str = ''
     quantity: int = 0
-    original_unit_price_set: OriginalPriceSet = OriginalPriceSet()
+    originalUnitPriceSet: OriginalPriceSet = OriginalPriceSet()
     sku: str = ''
 
 
 class PageInfo(Base):
-    end_cursor: str = ''
-    has_next_page: bool = False
+    endCursor: str = ''
+    hasNextPage: bool = False
 
 
 class LineItemsNodes(Base):
     nodes: list[LineItem] = []
-    page_info: PageInfo = PageInfo()
+    pageInfo: PageInfo = PageInfo()
 
 
 class ShippingLine(Base):
-    original_price_set: OriginalPriceSet = OriginalPriceSet()
+    originalPriceSet: OriginalPriceSet = OriginalPriceSet()
 
 
 class Transaction(Base):
     gateway: str = ''
-    payment_id: str = ''
+    paymentId: str = ''
 
 
 class App(Base):
@@ -107,16 +107,16 @@ class App(Base):
 
 
 class Order(Base):
-    fully_paid: bool = False
+    fullyPaid: bool = False
     email: str = ''
     number: int = 0
-    created_at: datetime | None = None
+    createdAt: datetime | None = None
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []
-    billing_address: BillingAddress = BillingAddress()
-    shipping_line: ShippingLine = ShippingLine()
-    line_items: LineItemsNodes = LineItemsNodes()
+    billingAddress: BillingAddress = BillingAddress()
+    shippingLine: ShippingLine = ShippingLine()
+    lineItems: LineItemsNodes = LineItemsNodes()
 
 
 class OrderData(Base):
