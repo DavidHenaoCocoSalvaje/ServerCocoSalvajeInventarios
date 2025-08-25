@@ -20,7 +20,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         """Obtiene una lista de objetos de forma asíncrona."""
         stmt = select(self.model).offset(skip).limit(limit)
         result = await session.execute(stmt)
-        return list(result.scalars().all()) or [self.model()]
+        return list(result.scalars().all()) or []
 
     async def create(self, session: AsyncSession, obj: ModelCreate) -> ModelDB:
         """Crea un nuevo objeto de forma asíncrona."""

@@ -1,8 +1,7 @@
 import asyncio
 from typing import Any
 from pydantic import BaseModel
-import aiohttp
-from pandas import DataFrame, merge
+from pandas import DataFrame, merge, isna
 
 
 if __name__ == '__main__':
@@ -11,6 +10,7 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
+from app.internal.integrations.base import BaseClient
 from app.models.db.inventario import Bodega, Elemento, Movimiento, PreciosPorVariante, VarianteElemento
 from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.inventario import (
@@ -34,14 +34,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import config
 
 
-class ShopifyGraphQLClient:
+class ShopifyGraphQLClient(BaseClient):
     def __init__(
         self,
         shop: str = config.shop_shopify,
         version: str = config.shop_version,
         access_token: str = config.api_key_shopify,
     ):
-        self.shop_url = f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json'
+        super().__init__(f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json')
         self.access_token = access_token
         self.headers = {
             'Content-Type': 'application/json',
@@ -52,13 +52,7 @@ class ShopifyGraphQLClient:
         """Ejecuta una consulta GraphQL"""
         payload = {'query': query, 'variables': variables or {}}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                self.shop_url,
-                headers=self.headers,
-                json=payload,
-            ) as response:
-                return await response.json(encoding='utf-8')
+        return await self.post('', payload=payload)
 
     async def get_all_recursively(
         self,
@@ -331,44 +325,49 @@ async def get_inventory_info():
 
 async def process_inventory_info(products: list[Product]):
     # df Bodegas
-    bodegas_df = DataFrame(columns=['shopify_id', 'variante_shopify_id', 'variante_id', 'ubicacion'])
-    variantes_df = DataFrame(columns=['nombre', 'shopify_id', 'product_shopify_id'])
-    elementos_df = DataFrame(columns=['shopify_id', 'nombre', 'tipo_medida_id', 'grupo_id', 'descripcion', 'fabricado'])
-    precios_variante_df = DataFrame(columns=['variante_shopify_id', 'tipo_precio_id', 'precio'])
-    movimientos_df = DataFrame(
-        columns=[
-            'tipo_movimiento_id',
-            'variante_shopify_id',
-            'estado_variante_id',
-            'cantidad',
-            'bodega_shopify_id',
-        ]
-    )
+    bodega_model_keys = list(Bodega.model_json_schema()['properties'].keys())
+    bodega_model_keys.extend(['variante_shopify_id', 'variante_id'])  # Columnas que no pertenecen a la tabla Bodega
+    bodegas_df = DataFrame(columns=bodega_model_keys)
+
+    variante_model_keys = list(VarianteElemento.model_json_schema()['properties'].keys())
+    variante_model_keys.extend(['product_shopify_id'])  # Columnas que no pertenecen a la tabla VarianteElemento
+    variantes_df = DataFrame(columns=variante_model_keys)
+
+    elemento_model_keys = list(Elemento.model_json_schema()['properties'].keys())
+    elementos_df = DataFrame(columns=elemento_model_keys)
+
+    precio_model_keys = list(PreciosPorVariante.model_json_schema()['properties'].keys())
+    precio_model_keys.extend(['variante_shopify_id'])  # Columnas que no pertenecen a la tabla PreciosPorVariante
+    precios_variante_df = DataFrame(columns=precio_model_keys)
+
+    movimiento_model_keys = list(Movimiento.model_json_schema()['properties'].keys())
+    movimiento_model_keys.extend(
+        ['variante_shopify_id', 'bodega_shopify_id']
+    )  # Columnas que no pertenecen a la tabla Movimiento
+    movimientos_df = DataFrame(columns=movimiento_model_keys)
 
     for product in products:
-        elementos_df.loc[len(elementos_df)] = [
-            product.legacyResourceId,
-            product.title,
-            1,
-            3,
-            None,
-            True,
-        ]
+        elementos_df.loc[len(elementos_df)] = {  # type: ignore
+            'shopify_id': product.legacyResourceId,
+            'nombre': product.title,
+            'tipo_medida_id': 1,
+            'grupo_id': 3,
+            'fabricado': True,
+        }
 
         for variante in product.variants:
-            # ['nombre', 'shopify_id', 'product_shopify_id']
-            variantes_df.loc[len(variantes_df)] = [
-                variante.title,
-                variante.legacyResourceId,
-                product.legacyResourceId,
-            ]
+            variantes_df.loc[len(variantes_df)] = {  # type: ignore
+                'nombre': variante.title,
+                'sku': variante.sku,
+                'shopify_id': variante.legacyResourceId,
+                'product_shopify_id': product.legacyResourceId,
+            }
 
-            # ['variante_shopify_id', 'tipo_precio_id', 'precio']
-            precios_variante_df.loc[len(precios_variante_df)] = [
-                variante.legacyResourceId,
-                1,
-                variante.price,
-            ]
+            precios_variante_df.loc[len(precios_variante_df)] = {  # type: ignore
+                'variante_shopify_id': variante.legacyResourceId,
+                'tipo_precio_id': 1,
+                'precio': variante.price,
+            }
 
             for level in variante.inventoryLevels:
                 address = level.location.address.address1
@@ -378,22 +377,21 @@ async def process_inventory_info(products: list[Product]):
                 bodega = bodegas_df.loc[bodegas_df['shopify_id'] == level.location.legacyResourceId]
                 ubicacion = ', '.join([str(x) for x in [address, city, province, country] if x])
                 if bodega.empty:
-                    bodegas_df.loc[len(bodegas_df)] = [
-                        level.location.legacyResourceId,
-                        variante.legacyResourceId,
-                        None,
-                        ubicacion,
-                    ]
+                    bodegas_df.loc[len(bodegas_df)] = {  # type: ignore
+                        'shopify_id': level.location.legacyResourceId,
+                        'variante_shopify_id': variante.legacyResourceId,
+                        'ubicacion': ubicacion,
+                    }
 
                 cantidad = level.quantities[0].quantity
-                # ['tipo_movimiento_id', 'variante_shopify_id', 'estado_variante_id', 'cantidad', 'bodega_shopify_id']
-                movimientos_df.loc[len(movimientos_df)] = [
-                    1,
-                    variante.legacyResourceId,
-                    1,
-                    cantidad,
-                    level.location.legacyResourceId,
-                ]
+
+                movimientos_df.loc[len(movimientos_df)] = {  # type: ignore
+                    'tipo_movimiento_id': 1,
+                    'variante_shopify_id': variante.legacyResourceId,
+                    'estado_variante_id': 1,
+                    'cantidad': cantidad,
+                    'bodega_shopify_id': level.location.legacyResourceId,
+                }
 
     session_gen = get_async_session()
     session: AsyncSession = await anext(session_gen)
@@ -402,17 +400,16 @@ async def process_inventory_info(products: list[Product]):
     bodegas_shopify_ids = bodegas_df.shopify_id.to_list()
     bodegas_db = await bodega_query.get_by_shopify_ids(session, bodegas_shopify_ids)
     if bodegas_df.shape[0] > 0:
-        if len(bodegas_db) == 0:
+        if not bodegas_db:
             insert_records = bodegas_df.to_dict('records')
-            insert_models = [Bodega(**{str(k): v for k, v in x.items()}) for x in insert_records]
+            insert_models = [Bodega(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
             await bodega_query.bulk_insert(session, insert_models)
         else:
             bodegas_db_df = DataFrame([x.model_dump() for x in bodegas_db])
             bodegas_df = bodegas_df[~bodegas_df['shopify_id'].isin(bodegas_db_df['shopify_id'])]
-            if bodegas_df.shape[0] > 0:
-                insert_records = bodegas_df.to_dict('records')
-                insert_models = [Bodega(**{str(k): v for k, v in x.items()}) for x in insert_records]
-                await bodega_query.bulk_insert(session, insert_models)
+            insert_records = bodegas_df.to_dict('records')
+            insert_models = [Bodega(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
+            await bodega_query.bulk_insert(session, insert_models)
 
     bodegas_db = await bodega_query.get_by_shopify_ids(session, bodegas_shopify_ids)
     bodegas_db_df = DataFrame([x.model_dump() for x in bodegas_db])
@@ -421,17 +418,16 @@ async def process_inventory_info(products: list[Product]):
     elementos_shopify_ids = elementos_df.shopify_id.to_list()
     elementos_db = await elemento_query.get_by_shopify_ids(session, elementos_shopify_ids)
     if elementos_df.shape[0] > 0:
-        if len(elementos_db) == 0:
+        if not elementos_db:
             insert_records = elementos_df.to_dict('records')
-            insert_models = [Elemento(**{str(k): v for k, v in x.items()}) for x in insert_records]
+            insert_models = [Elemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
             await elemento_query.bulk_insert(session, insert_models)
         else:
             elementos_db_df = DataFrame([x.model_dump() for x in elementos_db])
             elementos_df = elementos_df[~elementos_df['shopify_id'].isin(elementos_db_df['shopify_id'])]
-            if elementos_df.shape[0] > 0:
-                insert_records = elementos_df.to_dict('records')
-                insert_models = [Elemento(**{str(k): v for k, v in x.items()}) for x in insert_records]
-                await elemento_query.bulk_insert(session, insert_models)
+            insert_records = elementos_df.to_dict('records')
+            insert_models = [Elemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
+            await elemento_query.bulk_insert(session, insert_models)
 
     elementos_db = await elemento_query.get_by_shopify_ids(session, elementos_shopify_ids)
     elementos_db_df = DataFrame([x.model_dump() for x in elementos_db])
@@ -446,21 +442,25 @@ async def process_inventory_info(products: list[Product]):
         suffixes=('', '_elemento'),
     )
     variantes_df = variantes_df.drop(columns=['shopify_id_elemento'])
-    variantes_df = variantes_df.rename(columns={'id': 'elemento_id'})
+    variantes_df['elemento_id'] = variantes_df['id_elemento']
+    variantes_df = variantes_df.drop(columns=['id_elemento'])
     variantes_shopify_ids = variantes_df.shopify_id.to_list()
     variantes_db = await variante_elemento_query.get_by_shopify_ids(session, variantes_shopify_ids)
     if variantes_df.shape[0] > 0:
-        if len(variantes_db) == 0:
+        if not variantes_db:
             insert_records = variantes_df.to_dict('records')
-            insert_models = [VarianteElemento(**{str(k): v for k, v in x.items()}) for x in insert_records]
+            insert_models = [
+                VarianteElemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
+            ]
             await variante_elemento_query.bulk_insert(session, insert_models)
         else:
             variantes_db_df = DataFrame([x.model_dump() for x in variantes_db])
             variantes_df = variantes_df[~variantes_df['shopify_id'].isin(variantes_db_df['shopify_id'])]
-            if variantes_df.shape[0] > 0:
-                insert_records = variantes_df.to_dict('records')
-                insert_models = [VarianteElemento(**{str(k): v for k, v in x.items()}) for x in insert_records]
-                await variante_elemento_query.bulk_insert(session, insert_models)
+            insert_records = variantes_df.to_dict('records')
+            insert_models = [
+                VarianteElemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
+            ]
+            await variante_elemento_query.bulk_insert(session, insert_models)
 
     variantes_db = await variante_elemento_query.get_by_shopify_ids(session, variantes_shopify_ids)
     variantes_db_df = DataFrame([x.model_dump() for x in variantes_db])
@@ -472,15 +472,19 @@ async def process_inventory_info(products: list[Product]):
         left_on='variante_shopify_id',
         right_on='shopify_id',
         how='left',
+        suffixes=('', '_variante'),
     )
     precios_variante_df = precios_variante_df.drop(columns=['shopify_id'])
-    precios_variante_df = precios_variante_df.rename(columns={'id': 'variante_id'})
+    precios_variante_df['variante_id'] = precios_variante_df['id_variante']
+    precios_variante_df = precios_variante_df.drop(columns=['id_variante'])
     variante_ids = precios_variante_df.variante_id.to_list()
     precio_varaintes_db = await precio_variante_query.get_lasts(session, variante_ids, 1)
     if precios_variante_df.shape[0] > 0:
-        if len(precio_varaintes_db) == 0:
+        if not precio_varaintes_db:
             insert_records = precios_variante_df.to_dict('records')
-            insert_models = [PreciosPorVariante(**{str(k): v for k, v in x.items()}) for x in insert_records]
+            insert_models = [
+                PreciosPorVariante(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
+            ]
             await precio_variante_query.bulk_insert(session, insert_models)
         else:
             precio_varaintes_db_df = DataFrame([x.model_dump() for x in precio_varaintes_db])
@@ -493,10 +497,11 @@ async def process_inventory_info(products: list[Product]):
             )
             precios_variante_df['nuevo_precio'] = precios_variante_df['precio'] != precios_variante_df['precio_db']
             precios_variante_df = precios_variante_df[precios_variante_df['nuevo_precio']]
-            if precios_variante_df.shape[0] > 0:
-                insert_records = precios_variante_df.to_dict('records')
-                insert_models = [PreciosPorVariante(**{str(k): v for k, v in x.items()}) for x in insert_records]
-                await precio_variante_query.bulk_insert(session, insert_models)
+            insert_records = precios_variante_df.to_dict('records')
+            insert_models = [
+                PreciosPorVariante(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
+            ]
+            await precio_variante_query.bulk_insert(session, insert_models)
 
     precio_varaintes_db = await precio_variante_query.get_lasts(session, variante_ids, 1)
     precio_varaintes_db_df = DataFrame([x.model_dump() for x in precio_varaintes_db])
@@ -508,32 +513,36 @@ async def process_inventory_info(products: list[Product]):
         left_on='variante_shopify_id',
         right_on='shopify_id',
         how='left',
+        suffixes=('', '_variante'),
     )
     movimientos_df = movimientos_df.drop(columns=['shopify_id'])
-    movimientos_df = movimientos_df.rename(columns={'id': 'variante_id'})
+    movimientos_df['variante_id'] = movimientos_df['id_variante']
+    movimientos_df = movimientos_df.drop(columns=['id_variante'])
     movimientos_df = merge(
         movimientos_df,
         bodegas_db_df[['shopify_id', 'id']],
         left_on='bodega_shopify_id',
         right_on='shopify_id',
         how='left',
+        suffixes=('', '_bodega'),
     )
     movimientos_df = movimientos_df.drop(columns=['shopify_id'])
-    movimientos_df = movimientos_df.rename(columns={'id': 'bodega_id'})
+    movimientos_df['bodega_id'] = movimientos_df['id_bodega']
+    movimientos_df = movimientos_df.drop(columns=['id_bodega'])
     movimientos_db = await movimiento_query.get_by_varante_ids(session, variante_ids)
-    movimientos_db_df = DataFrame([x.model_dump() for x in movimientos_db])
-    movimientos_db_df = movimientos_db_df.groupby(['variante_id', 'bodega_id']).agg(
-        {
-            'cantidad': 'sum',
-        }
-    )
-    movimientos_db_df = movimientos_db_df.reset_index()
     if movimientos_df.shape[0] > 0:
-        if len(movimientos_db) == 0:
+        if not movimientos_db:
             insert_records = movimientos_df.to_dict('records')
-            insert_models = [Movimiento(**{str(k): v for k, v in x.items()}) for x in insert_records]
+            insert_models = [Movimiento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
             await movimiento_query.bulk_insert(session, insert_models)
         else:
+            movimientos_db_df = DataFrame([x.model_dump() for x in movimientos_db])
+            movimientos_db_df = movimientos_db_df.groupby(['variante_id', 'bodega_id']).agg(
+                {
+                    'cantidad': 'sum',
+                }
+            )
+            movimientos_db_df = movimientos_db_df.reset_index()
             movimientos_db = movimientos_df.merge(
                 movimientos_db_df[['variante_id', 'bodega_id', 'cantidad']],
                 on=['variante_id', 'bodega_id'],
@@ -542,10 +551,9 @@ async def process_inventory_info(products: list[Product]):
             )
             movimientos_db['diferencia'] = movimientos_db['cantidad'] - movimientos_db['cantidad_db']
             movimientos_db = movimientos_db[movimientos_db['diferencia'] != 0]
-            if movimientos_db.shape[0] > 0:
-                insert_records = movimientos_db.to_dict('records')
-                insert_models = [Movimiento(**{str(k): v for k, v in x.items()}) for x in insert_records]
-                await movimiento_query.bulk_insert(session, insert_models)
+            insert_records = movimientos_db.to_dict('records')
+            insert_models = [Movimiento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
+            await movimiento_query.bulk_insert(session, insert_models)
 
     # Cerrar la sesión
     await session.aclose()

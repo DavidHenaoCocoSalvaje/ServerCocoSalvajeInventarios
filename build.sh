@@ -11,11 +11,11 @@ case "$BRANCH" in
         IMAGE_TAG="staging"
         ;;
     "development"|"develop")
-        ENV_FILE=".env.development"
+        ENV_FILE=".env"
         IMAGE_TAG="development"
         ;;
     "main"|"master"|"production")
-        ENV_FILE=".env"
+        ENV_FILE=".env.production"
         IMAGE_TAG="latest"
         ;;
     *)

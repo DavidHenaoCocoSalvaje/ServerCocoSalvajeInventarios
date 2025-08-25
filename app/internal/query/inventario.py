@@ -38,7 +38,7 @@ class BaseQueryWithShopifyId(BaseQuery, Generic[ModelDB, ModelCreate]):
     async def get_by_shopify_ids(self, session: AsyncSession, shopify_ids: list[int]) -> list[ModelDB]:
         statement = select(self.model).where(self.model.shopify_id.in_(shopify_ids))
         result = await session.execute(statement)
-        return list(result.scalars().all()) or [self.model()]
+        return list(result.scalars().all()) or []
 
 
 class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVariante]):
@@ -77,7 +77,7 @@ class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVariante]):
         # IMPORTANTE seleccionar self.model para que SQLModel pueda mapear los campos
         statement = select(self.model).join(subq, self.model.id == subq.c.id).where(subq.c.rn == 1)  # type: ignore
         result = await session.execute(statement)
-        return list(result.scalars().all()) or [self.model()]  # type: ignore
+        return list(result.scalars().all()) or []  # type: ignore
 
 
 class MovimientoQuery(BaseQuery[Movimiento, Movimiento]):
@@ -87,7 +87,7 @@ class MovimientoQuery(BaseQuery[Movimiento, Movimiento]):
     async def get_by_varante_ids(self, session: AsyncSession, variante_ids: list[int]) -> list[Movimiento]:
         statement = select(self.model).where(self.model.variante_id.in_(variante_ids))  # type: ignore
         result = await session.execute(statement)
-        return list(result.scalars().all()) or [self.model()]  # type: ignore
+        return list(result.scalars().all()) or []  # type: ignore
 
 
 elemento_query = BaseQueryWithShopifyId(Elemento)
