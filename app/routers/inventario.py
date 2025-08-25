@@ -175,3 +175,5 @@ async def pedido_shopify(request: Request):
     order = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
     order_response = OrderResponse(**order)
     log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
+    if order_response.data.order is None:
+        HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Order not found')

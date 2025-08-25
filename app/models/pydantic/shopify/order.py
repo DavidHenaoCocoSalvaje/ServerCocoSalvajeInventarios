@@ -120,7 +120,7 @@ class Order(Base):
 
 
 class OrderData(Base):
-    order: Order = Order()
+    order: Order | None = Order()  # Cuando no se encuentra la orden la respuesta llega con order: null
 
 
 class OrderResponse(Base):
