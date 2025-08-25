@@ -2,8 +2,6 @@
 
 import json
 
-from asyncio import run
-
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -26,10 +24,12 @@ class WoClient(BaseClient):
         self.set_header('Authorization', f'WO {config.wo_api_key}')
 
 
-async def main():
-    wo_client = WoClient()
-    cliente = await wo_client.get(wo_client.Paths.Terceros.identificacion, ['1094240554'])
-    print(json.dumps(cliente, indent=2))
+if __name__ == '__main__':
+    from asyncio import run
 
+    async def main():
+        wo_client = WoClient()
+        cliente = await wo_client.get(wo_client.Paths.Terceros.identificacion, ['1094240554'])
+        print(json.dumps(cliente, indent=2))
 
-run(main())
+    run(main())

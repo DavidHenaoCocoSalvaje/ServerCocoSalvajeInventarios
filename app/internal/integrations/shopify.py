@@ -1,4 +1,4 @@
-import asyncio
+from asyncio import gather
 from typing import Any
 from pydantic import BaseModel
 from pandas import DataFrame, merge, isna
@@ -275,7 +275,7 @@ async def get_inventory_info():
 
         # Obtener todas las variantes del lote concurrentemente
         tasks = [query.get_variants(product_id) for product_id in product_ids]
-        variants_results = await asyncio.gather(*tasks)
+        variants_results = await gather(*tasks)
         variants_responses = [VariantsResponse(**result) for result in variants_results]
 
         # Mapear las respuestas por product_id
@@ -294,7 +294,7 @@ async def get_inventory_info():
 
         # Obtener todos los niveles de inventario del lote concurrentemente
         tasks = [query.get_inventory_levels(item_id) for item_id in inventory_item_ids]
-        inventory_levels_results = await asyncio.gather(*tasks)
+        inventory_levels_results = await gather(*tasks)
 
         inventory_levels_responses = [InventoryLevelsResponse(**result) for result in inventory_levels_results]
 
@@ -559,10 +559,11 @@ async def process_inventory_info(products: list[Product]):
     await session.aclose()
 
 
-async def main():
-    products = await get_inventory_info()
-    await process_inventory_info(products)
-
-
 if __name__ == '__main__':
-    asyncio.run(main())
+    from asyncio import run
+
+    async def main():
+        products = await get_inventory_info()
+        await process_inventory_info(products)
+
+    run(main())
