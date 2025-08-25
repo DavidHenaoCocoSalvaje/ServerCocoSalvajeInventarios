@@ -3,7 +3,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from enum import Enum
 from app.config import config
-import sys
+from sys import stdout
 from os import path, makedirs
 import datetime
 import pytz
@@ -76,7 +76,7 @@ def factory_logger(
     )
 
     # Handler para consola (siempre presente)
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = logging.StreamHandler(stdout)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 

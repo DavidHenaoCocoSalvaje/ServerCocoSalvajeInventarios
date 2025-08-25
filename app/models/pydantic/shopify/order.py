@@ -45,7 +45,7 @@ class FinancialStatus(Enum):
 
 
 class OrderWebHook(Base):
-    adminGraphqlApiId: str = ''
+    admin_graphql_api_id: str = ''  # Webhook con guiones bajos
 
 
 class BillingAddress(Base):

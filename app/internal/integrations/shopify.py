@@ -4,10 +4,12 @@ from pydantic import BaseModel
 import aiohttp
 from pandas import DataFrame, merge
 
-from os.path import abspath
-from sys import path as sys_path
 
-sys_path.append(abspath('.'))
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
 
 from app.models.db.inventario import Bodega, Elemento, Movimiento, PreciosPorVariante, VarianteElemento
 from app.models.db.session import get_async_session

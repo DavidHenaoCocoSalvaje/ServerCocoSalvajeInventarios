@@ -59,6 +59,8 @@ class Config:
         self.algorithm: str = getenv('ALGORITHM', 'HS256')
         self.access_token_expire_minutes: int = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
         self.admin_password: str = getenv('ADMIN_PWD', '')
+        self.wo_api_key: str = getenv('WO_API_KEY', '')
+        self.wo_api_version: str = getenv('WO_API_VERSION', 'v1')
 
     @property
     def production(self) -> bool:
