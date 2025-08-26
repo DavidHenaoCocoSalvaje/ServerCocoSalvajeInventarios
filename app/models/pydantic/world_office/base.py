@@ -1,57 +1,94 @@
 # app.models.pydantic.world_office.base
+# Optional\[(\w+)\]
+# $1 | None
+
+from enum import Enum
 from typing import Any
+
 from app.models.pydantic.base import Base
 
 
 class WOResponse(Base):
-    status: str | None = ''
-    userMessage: str | None = ''
-    developerMessage: str | None = ''
-    errorCode: str | None = ''
+    status: str | None = None
+    userMessage: str | None = None
+    developerMessage: str | None = None
+    errorCode: str | None = None
     moreInfo: Any | None = None
 
 
+class TipoFiltroWoFiltro(str, Enum):
+    IGUAL = 'IGUAL'
+    CONTIENE = 'CONTIENE'
+    MENOR_QUE = 'MENOR_QUE'
+    MAYOR_QUE = 'MAYOR_QUE'
+    EMPIEZA_CON = 'EMPIEZA_CON'
+    MAYOR_O_IGUAL = 'MAYOR_O_IGUAL'
+    MENOR_O_IGUAL = 'MENOR_O_IGUAL'
+    TERMINA_CON = 'TERMINA_CON'
+    ENTRE = 'ENTRE'
+    IS_NULL = 'IS_NULL'
+    LENGTH = 'LENGTH'
+    DIFERENTE = 'DIFERENTE'
+    IS_NOT_NULL = 'IS_NOT_NULL'
+    LENGTH_IGUAL = 'LENGTH_IGUAL'
+    NO_EMPIEZA_CON = 'NO_EMPIEZA_CON'
+
+
+class TipoDatoWoFiltro(str, Enum):
+    STRING = 'STRING'
+    BOOLEAN = 'BOOLEAN'
+    NUMERIC = 'NUMERIC'
+    FECHA = 'FECHA'
+    LONG = 'LONG'
+    LISTA = 'LISTA'
+    IN = 'IN'
+    NOT_IN = 'NOT_IN'
+    ENUM = 'ENUM'
+    ENTIDAD = 'ENTIDAD'
+    ARRAY_INT = 'ARRAY_INT'
+
+
 class WOFiltro(Base):
-    atributo: str | None = ''
-    valor: str | None = ''
-    tipoFiltro: str | None = ''
-    tipoDato: str | None = ''
-    operador: str | None = ''
+    atributo: str | None = None
+    valor: str | int | None = None
+    tipoFiltro: TipoFiltroWoFiltro | None = None
+    tipoDato: TipoDatoWoFiltro | None = None
+    operador: str | None = None
 
 
 class WOListar(Base):
-    columnaOrdenar: str | None = ''
-    pagina: int | None = 0
-    registrosPorPagina: int | None = 0
-    orden: str | None = ''
-    filtros: list[WOFiltro] | None = []
-    canal: int | None = 0
-    registroInicial: int | None = 0
+    columnaOrdenar: str | None = None
+    pagina: int | None = None
+    registrosPorPagina: int | None = None
+    orden: str | None = None
+    filtros: list[WOFiltro] | None = None
+    canal: int | None = None
+    registroInicial: int | None = None
 
 
 class Sort(Base):
-    empty: bool | None = False
-    sorted: bool | None = False
+    empty: bool | None = None
+    sorted: bool | None = None
     unsorted: bool | None = True
 
 
 class Pageable(Base):
-    offset: int | None = 0
-    sort: Sort | None = Sort()
-    pageSize: int | None = 0
-    pageNumber: int | None = 0
-    paged: bool | None = False
+    offset: int | None = None
+    sort: Sort | None = None
+    pageSize: int | None = None
+    pageNumber: int | None = None
+    paged: bool | None = None
     unpaged: bool | None = True
 
 
 class WODataList(Base):
-    pageable: Pageable | None = Pageable()
-    last: bool | None = False
-    totalElements: int | None = 0
-    totalPages: int | None = 0
+    pageable: Pageable | None = None
+    last: bool | None = None
+    totalElements: int | None = None
+    totalPages: int | None = None
     first: bool | None = True
-    size: int | None = 0
-    number: int | None = 0
-    sort: Sort | None = Sort()
-    numberOfElements: int | None = 0
+    size: int | None = None
+    number: int | None = None
+    sort: Sort | None = None
+    numberOfElements: int | None = None
     empty: bool | None = True

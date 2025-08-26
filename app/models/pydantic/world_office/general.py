@@ -5,36 +5,36 @@ from app.models.pydantic.base import Base
 
 
 class WOUbicacionPais(Base):
-    id: int | None = 0
-    nombre: str | None = ''
-    codigo: str | None = ''
-    codAlterno: str | None = ''
+    id: int | None = None
+    nombre: str | None = None
+    codigo: str | None = None
+    codAlterno: str | None = None
 
 
 class WOUbicacionDepartamento(Base):
-    id: int | None = 0
-    nombre: str | None = ''
-    codigo: str | None = ''
-    senSistema: bool | None = False
-    ubicacionPais: WOUbicacionPais | None = WOUbicacionPais()
+    id: int | None = None
+    nombre: str | None = None
+    codigo: str | None = None
+    senSistema: bool | None = None
+    ubicacionPais: WOUbicacionPais | None = None
 
 
 class WOCiudad(Base):
-    id: int | None = 0
-    ciudadNombre: str | None = ''
-    nombre: str | None = ''
-    codigo: str | None = ''
-    senSistema: bool | None = False
-    ubicacionDepartamento: WOUbicacionDepartamento | None = WOUbicacionDepartamento()
+    id: int | None = None
+    ciudadNombre: str | None = None
+    nombre: str | None = None
+    codigo: str | None = None
+    senSistema: bool | None = None
+    ubicacionDepartamento: WOUbicacionDepartamento | None = None
 
 
 class WOContentCiudades(Base):
-    content: list[WOCiudad] | None = []
+    content: list[WOCiudad] | None = None
 
 
 class WODataListCiudades(WODataList):
-    content: list[WOCiudad] | None = []
+    content: list[WOCiudad] | None = None
 
 
 class WOListaCiudadesResponse(WOResponse):
-    data: WOContentCiudades | None = WOContentCiudades()
+    data: WOContentCiudades | None = None
