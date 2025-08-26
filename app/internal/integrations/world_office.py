@@ -5,9 +5,11 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
+from random import randint
+
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import WOFiltro, WOListar
-from app.models.pydantic.world_office.general import WOListaCiudadesResponse
+from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
 from app.models.pydantic.world_office.terceros import WOTerceroResponse, WOTerceroCreate
 from app.internal.integrations.base import BaseClient
 from app.config import config
@@ -39,7 +41,7 @@ class WoClient(BaseClient):
         tercero_response = await self.post(self.Paths.Terceros.crear, payload=wo_tercero_create.model_dump())
         return WOTerceroResponse(**tercero_response)
 
-    async def buscar_ciudad(self, nombre: str):
+    async def buscar_ciudad(self, nombre: str) -> WOCiudad:
         filtro = WOFiltro(atributo='nombre', valor=nombre, tipoFiltro='CONTIENE', tipoDato='STRING', operador='AND')
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro])
         ciudades_json = await self.post(self.Paths.Ciudad.listar_ciudades, payload=wo_listar.model_dump())
@@ -59,8 +61,17 @@ if __name__ == '__main__':
         wo_client = WoClient()
         tercero = await wo_client.get_tercero('1094240554')
         assert tercero.data.identificacion == '1094240554'
-
         ciudad = await wo_client.buscar_ciudad('Bogotá')
-        print(ciudad)
+        assert isinstance(ciudad, WOCiudad)
+        assert ciudad.ciudadNombre and 'Bogotá' in ciudad.ciudadNombre
+        tercero_create = WOTerceroCreate(
+            idTerceroTipoIdentificacion=3, # Cédula
+            # Número aleatorio de 10 dígitos
+            identificacion=str(randint(1000000000, 9999999999)),
+            primerNombre='Tercero',
+            primerApellido='Prueba',
+            idCiudad=ciudad.id,
+            idTerceroTipos=[4] # Cliente
+        )
 
     run(main())

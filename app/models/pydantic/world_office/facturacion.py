@@ -1,7 +1,6 @@
 # app.models.pydantic.world_office.facturacion
 from datetime import datetime
 from app.models.pydantic.base import Base
-from pydantic import Field
 
 
 class Reglone(Base):
@@ -23,4 +22,4 @@ class FacturaCreate(Base):
     idTerceroInterno: int | None = 0
     idFormaPago: int | None = 0
     idMoneda: int | None = 0
-    reglones: list[Reglone] | None = Field(default_factory=list)
+    reglones: list[Reglone] | None = []

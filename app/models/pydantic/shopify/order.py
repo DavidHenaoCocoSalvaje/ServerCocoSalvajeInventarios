@@ -45,78 +45,78 @@ class FinancialStatus(Enum):
 
 
 class OrderWebHook(Base):
-    admin_graphql_api_id: str = ''  # Webhook con guiones bajos
+    admin_graphql_api_id: str | None = ''  # Webhook con guiones bajos
 
 
 class BillingAddress(Base):
-    firstName: str = ''
-    lastName: str = ''
-    company: str = ''
-    address1: str = ''
-    address2: str = ''
-    province: str = ''
-    country: str = ''
-    city: str = ''
-    phone: str = ''
-    zip: int = 0
+    firstName: str | None = ''
+    lastName: str | None = ''
+    company: str | None = ''
+    address1: str | None = ''
+    address2: str | None = ''
+    province: str | None = ''
+    country: str | None = ''
+    city: str | None = ''
+    phone: str | None = ''
+    zip: int | None = 0
 
 
 class Customer(Base):
-    firstName: str = ''
-    lastName: str = ''
-    id: str = ''
+    firstName: str | None = ''
+    lastName: str | None = ''
+    id: str | None = ''
 
 
 class ShopMoney(Base):
-    amount: str = ''
-    currencyCode: str = ''
+    amount: str | None = ''
+    currencyCode: str | None = ''
 
 
 class OriginalPriceSet(Base):
-    shopMoney: ShopMoney = ShopMoney()
+    shopMoney: ShopMoney | None = ShopMoney()
 
 
 class LineItem(Base):
-    name: str = ''
-    quantity: int = 0
-    originalUnitPriceSet: OriginalPriceSet = OriginalPriceSet()
-    sku: str = ''
+    name: str | None = ''
+    quantity: int | None = 0
+    originalUnitPriceSet: OriginalPriceSet | None = OriginalPriceSet()
+    sku: str | None = ''
 
 
 class PageInfo(Base):
-    endCursor: str = ''
-    hasNextPage: bool = False
+    endCursor: str | None = ''
+    hasNextPage: bool | None = False
 
 
 class LineItemsNodes(Base):
-    nodes: list[LineItem] = []
-    pageInfo: PageInfo = PageInfo()
+    nodes: list[LineItem] | None = []
+    pageInfo: PageInfo | None = PageInfo()
 
 
 class ShippingLine(Base):
-    originalPriceSet: OriginalPriceSet = OriginalPriceSet()
+    originalPriceSet: OriginalPriceSet | None = OriginalPriceSet()
 
 
 class Transaction(Base):
-    gateway: str = ''
-    paymentId: str = ''
+    gateway: str | None = ''
+    paymentId: str | None = ''
 
 
 class App(Base):
-    name: str = ''
+    name: str | None = ''
 
 
 class Order(Base):
-    fullyPaid: bool = False
-    email: str = ''
-    number: int = 0
+    fullyPaid: bool | None = False
+    email: str | None = ''
+    number: int | None = 0
     createdAt: datetime | None = None
-    app: App = App()
-    customer: Customer = Customer()
-    transactions: list[Transaction] = []
-    billingAddress: BillingAddress = BillingAddress()
-    shippingLine: ShippingLine = ShippingLine()
-    lineItems: LineItemsNodes = LineItemsNodes()
+    app: App | None = App()
+    customer: Customer | None = Customer()
+    transactions: list[Transaction] | None = []
+    billingAddress: BillingAddress | None = BillingAddress()
+    shippingLine: ShippingLine | None = ShippingLine()
+    lineItems: LineItemsNodes | None = LineItemsNodes()
 
 
 class OrderData(Base):
@@ -124,4 +124,4 @@ class OrderData(Base):
 
 
 class OrderResponse(Base):
-    data: OrderData = OrderData()
+    data: OrderData | None = OrderData()
