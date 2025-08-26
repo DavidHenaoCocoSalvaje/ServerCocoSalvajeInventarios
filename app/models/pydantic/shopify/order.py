@@ -58,7 +58,7 @@ class BillingAddress(Base):
     country: str | None = ''
     city: str | None = ''
     phone: str | None = ''
-    zip: int | None = 0
+    zip: int | str | None = 0
 
 
 class Customer(Base):
