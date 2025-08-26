@@ -6,99 +6,99 @@ from app.models.pydantic.base import Base
 
 
 class TerceroTipo(Base):
-    id: int | None = None
-    nombre: str | None = None
-    codigo: str | None = None
+    id: int = 0
+    nombre: str = ''
+    codigo: str = ''
 
 
 class Ubicacion(Base):
-    id: int | None = None
-    nombre: str | None = None
-    codigo: str | None = None
-    ubicacionCiudad: WOCiudad | None = None
-    codAlterno: str | None = None
+    id: int = 0
+    nombre: str = ''
+    codigo: str = ''
+    ubicacionCiudad: WOCiudad = WOCiudad()
+    codAlterno: str = ''
 
 
 class Ciudad(Base):
-    id: int | None = None
-    ciudadNombre: str | None = None
-    nombre: str | None = None
-    codigo: str | None = None
-    senSistema: bool | None = None
-    ubicacionDepartamento: WOUbicacionDepartamento | None = None
+    id: int = 0
+    ciudadNombre: str = ''
+    nombre: str = ''
+    codigo: str = ''
+    senSistema: bool = False
+    ubicacionDepartamento: WOUbicacionDepartamento = WOUbicacionDepartamento()
 
 
 class DireccionPrincipal(Base):
-    id: int | None = None
-    direccion: str | None = None
-    ciudad: str | None = None
-    telefonoPrincipal: str | None = None
-    emailPrincipal: str | None = None
-    sucursal: str | None = None
-    senPrincipal: bool | None = None
+    id: int = 0
+    direccion: str = ''
+    ciudad: str = ''
+    telefonoPrincipal: str = ''
+    emailPrincipal: str = ''
+    sucursal: str = ''
+    senPrincipal: bool = False
 
 
 class TerceroTipoIdentificacion(Base):
-    id: int | None = None
-    abreviatura: str | None = None
-    nombre: str | None = None
-    codigo: str | None = None
-    senEsEmpresa: bool | None = None
-    senManejaDV: bool | None = None
+    id: int = 0
+    abreviatura: str = ''
+    nombre: str = ''
+    codigo: str = ''
+    senEsEmpresa: bool = False
+    senManejaDV: bool = False
 
 
 class TerceroTipoDireccion(Base):
-    id: int | None = None
-    nombre: str | None = None
+    id: int = 0
+    nombre: str = ''
 
 
 class TerceroZonaPOJO(Base):
-    id: int | None = None
-    nombre: str | None = None
-    codigo: str | None = None
-    senActivo: bool | None = None
-    folder: bool | None = None
-    borrador: bool | None = None
+    id: int = 0
+    nombre: str = ''
+    codigo: str = ''
+    senActivo: bool = False
+    folder: bool = False
+    borrador: bool = False
 
 
 class Direccion(Base):
-    id: int | None = None
-    nombre: str | None = None
-    terceroTipoDireccion: TerceroTipoDireccion | None = None
-    direccion: str | None = None
-    senPrincipal: bool | None = None
-    ubicacionCiudad: WOCiudad | None = None
-    ubicacionBarrio: Ubicacion | None = None
-    indicaciones: str | None = None
-    telefonoPrincipal: str | None = None
-    terceroZonaPojo: TerceroZonaPOJO | None = None
-    emailPrincipal: str | None = None
+    id: int = 0
+    nombre: str = ''
+    terceroTipoDireccion: TerceroTipoDireccion = TerceroTipoDireccion()
+    direccion: str = ''
+    senPrincipal: bool = False
+    ubicacionCiudad: WOCiudad = WOCiudad()
+    ubicacionBarrio: Ubicacion = Ubicacion()
+    indicaciones: str = ''
+    telefonoPrincipal: str = ''
+    terceroZonaPojo: TerceroZonaPOJO = TerceroZonaPOJO()
+    emailPrincipal: str = ''
 
 
 class WOTercero(Base):
-    id: int | None = None
-    terceroTipoIdentificacion: TerceroTipoIdentificacion | None = None
-    identificacion: str | None = None
-    digitoVerificacionGenerado: bool | None = None
-    primerNombre: str | None = None
-    segundoNombre: str | None = None
-    primerApellido: str | None = None
-    segundoApellido: str | None = None
-    nombreCompleto: str | None = None
-    nombreCompletoEmpleado: str | None = None
-    ciudad: Ciudad | None = None
-    codigo: str | None = None
-    senActivo: bool | None = None
-    senManejaNomina: bool | None = None
-    atributos: bool | None = None
-    aplicaICAVentas: bool | None = None
-    terceroTipos: list[TerceroTipo] | None = None
-    tieneDirPrincipal: bool | None = None
-    direccionPrincipal: DireccionPrincipal | None = None
+    id: int = 0
+    terceroTipoIdentificacion: TerceroTipoIdentificacion = TerceroTipoIdentificacion()
+    identificacion: str = ''
+    digitoVerificacionGenerado: bool = False
+    primerNombre: str = ''
+    segundoNombre: str = ''
+    primerApellido: str = ''
+    segundoApellido: str = ''
+    nombreCompleto: str = ''
+    nombreCompletoEmpleado: str = ''
+    ciudad: Ciudad = Ciudad()
+    codigo: str = ''
+    senActivo: bool = False
+    senManejaNomina: bool = False
+    atributos: bool = False
+    aplicaICAVentas: bool = False
+    terceroTipos: list[TerceroTipo] = []
+    tieneDirPrincipal: bool = False
+    direccionPrincipal: DireccionPrincipal = DireccionPrincipal()
 
 
 class WOTerceroResponse(WOResponse):
-    data: WOTercero | None = None
+    data: WOTercero = WOTercero()
 
 
 class WOTerceroCreate(Base):
@@ -119,27 +119,27 @@ class WOTerceroCreate(Base):
         responsabilidadFiscal (list[int]): IDs de las responsabilidades fiscales.
     """
 
-    id: int | None = None
-    idTerceroTipoIdentificacion: int | None = None
-    identificacion: str | None = None
-    primerNombre: str | None = None
-    segundoNombre: str | None = None
-    primerApellido: str | None = None
-    segundoApellido: str | None = None
-    idCiudad: int | None = None
-    codigo: str | None = None
-    senActivo: bool | None = None
-    idTerceroTipos: list[int] | None = None
-    idTerceroTipoContribuyente: int | None = None
-    idClasificacionImpuestos: int | None = None
-    direccion: str | None = None
-    telefono: str | None = None
-    email: str | None = None
-    plazoDias: int | None = None
-    responsabilidadFiscal: list[int] | None = None
-    direcciones: list[Direccion] | None = None
-    idListaPrecioPredeterminada: int | None = None
-    idTerceroVendedorPredeterminado: int | None = None
-    idFormaPagoPredeterminada: int | None = None
-    idLocal: int | None = None
-    soloCrearDireccion: bool | None = None
+    id: int = 0
+    idTerceroTipoIdentificacion: int = 0
+    identificacion: str = ''
+    primerNombre: str = ''
+    segundoNombre: str = ''
+    primerApellido: str = ''
+    segundoApellido: str = ''
+    idCiudad: int = 0
+    codigo: str = ''
+    senActivo: bool = False
+    idTerceroTipos: list[int] = []
+    idTerceroTipoContribuyente: int = 0
+    idClasificacionImpuestos: int = 0
+    direccion: str = ''
+    telefono: str = ''
+    email: str = ''
+    plazoDias: int = 0
+    responsabilidadFiscal: list[int] = []
+    direcciones: list[Direccion] = []
+    idListaPrecioPredeterminada: int = 0
+    idTerceroVendedorPredeterminado: int = 0
+    idFormaPagoPredeterminada: int = 0
+    idLocal: int = 0
+    soloCrearDireccion: bool = False

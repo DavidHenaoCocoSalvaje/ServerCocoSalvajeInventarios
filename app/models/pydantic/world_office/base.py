@@ -9,11 +9,11 @@ from app.models.pydantic.base import Base
 
 
 class WOResponse(Base):
-    status: str | None = None
-    userMessage: str | None = None
-    developerMessage: str | None = None
-    errorCode: str | None = None
-    moreInfo: Any | None = None
+    status: str = ''
+    userMessage: str = ''
+    developerMessage: str = ''
+    errorCode: str = ''
+    moreInfo: Any = None
 
 
 class TipoFiltroWoFiltro(str, Enum):
@@ -49,46 +49,46 @@ class TipoDatoWoFiltro(str, Enum):
 
 
 class WOFiltro(Base):
-    atributo: str | None = None
-    valor: str | int | None = None
-    tipoFiltro: TipoFiltroWoFiltro | None = None
-    tipoDato: TipoDatoWoFiltro | None = None
-    operador: str | None = None
+    atributo: str = ''
+    valor: str | int = ''
+    tipoFiltro: TipoFiltroWoFiltro = TipoFiltroWoFiltro.IGUAL
+    tipoDato: TipoDatoWoFiltro = TipoDatoWoFiltro.STRING
+    operador: str = ''
 
 
 class WOListar(Base):
-    columnaOrdenar: str | None = None
-    pagina: int | None = None
-    registrosPorPagina: int | None = None
-    orden: str | None = None
-    filtros: list[WOFiltro] | None = None
-    canal: int | None = None
-    registroInicial: int | None = None
+    columnaOrdenar: str = ''
+    pagina: int = 0
+    registrosPorPagina: int = 0
+    orden: str = ''
+    filtros: list[WOFiltro] = []
+    canal: int = 0
+    registroInicial: int = 0
 
 
 class Sort(Base):
-    empty: bool | None = None
-    sorted: bool | None = None
-    unsorted: bool | None = True
+    empty: bool = False
+    sorted: bool = False
+    unsorted: bool = True
 
 
 class Pageable(Base):
-    offset: int | None = None
-    sort: Sort | None = None
-    pageSize: int | None = None
-    pageNumber: int | None = None
-    paged: bool | None = None
-    unpaged: bool | None = True
+    offset: int = 0
+    sort: Sort = Sort()
+    pageSize: int = 0
+    pageNumber: int = 0
+    paged: bool = False
+    unpaged: bool = True
 
 
 class WODataList(Base):
-    pageable: Pageable | None = None
-    last: bool | None = None
-    totalElements: int | None = None
-    totalPages: int | None = None
-    first: bool | None = True
-    size: int | None = None
-    number: int | None = None
-    sort: Sort | None = None
-    numberOfElements: int | None = None
-    empty: bool | None = True
+    pageable: Pageable = Pageable()
+    last: bool = False
+    totalElements: int = 0
+    totalPages: int = 0
+    first: bool = True
+    size: int = 0
+    number: int = 0
+    sort: Sort = Sort()
+    numberOfElements: int = 0
+    empty: bool = True

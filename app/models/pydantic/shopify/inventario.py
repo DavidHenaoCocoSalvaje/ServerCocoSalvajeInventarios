@@ -1,103 +1,102 @@
 # app.models.pydantic.shopify.inventario
 
-from pydantic import Field
 from app.models.pydantic.base import Base
 
 
 class Address(Base):
-    city: str | None = ''
-    province: str | None = ''
-    country: str | None = ''
-    address1: str | None = ''
+    city: str = ''
+    province: str = ''
+    country: str = ''
+    address1: str = ''
 
 
 class Location(Base):
-    legacyResourceId: int | None = 0
-    address: Address | None = Address()
+    legacyResourceId: int = 0
+    address: Address = Address()
 
 
 class Quantitie(Base):
-    quantity: int | None = None
+    quantity: int = 0
 
 
 class InventoryLevel(Base):
     class Item(Base):
         class Variant(Base):
-            legacyResourceId: int | None = 0
+            legacyResourceId: int = 0
 
-        variant: Variant | None = Variant()
+        variant: Variant = Variant()
 
-    item: Item | None = Item()
-    quantities: list[Quantitie] | None = Field(default_factory=list)
-    location: Location | None = Location()
+    item: Item = Item()
+    quantities: list[Quantitie] = []
+    location: Location = Location()
 
 
 class InventoryLevelNodes(Base):
-    nodes: list[InventoryLevel] | None = Field(default_factory=list)
+    nodes: list[InventoryLevel] = []
 
 
 class InventoryItem(Base):
-    legacyResourceId: int | None = 0
-    sku: str | None = ''
-    inventoryLevels: InventoryLevelNodes | None = InventoryLevelNodes()
+    legacyResourceId: int = 0
+    sku: str = ''
+    inventoryLevels: InventoryLevelNodes = InventoryLevelNodes()
 
 
 class InventoryItemNodes(Base):
-    nodes: list[InventoryItem] | None = Field(default_factory=list)
+    nodes: list[InventoryItem] = []
 
 
 class InventoryItems(Base):
-    inventoryItems: InventoryItemNodes | None = InventoryItemNodes()
+    inventoryItems: InventoryItemNodes = InventoryItemNodes()
 
 
 class InventoryLevelsResponse(Base):
-    data: InventoryItems | None = InventoryItems()
+    data: InventoryItems = InventoryItems()
 
 
 class Variant(Base):
     class Product(Base):
-        legacyResourceId: int | None = 0
+        legacyResourceId: int = 0
 
-    product: Product | None = Product()
-    legacyResourceId: int | None = 0
-    inventoryQuantity: int | None = None
-    title: str | None = ''
-    price: float | None = None
-    inventoryItem: InventoryItem | None = InventoryItem()
-    sku: str | None = ''
-    inventoryLevels: list[InventoryLevel] | None = Field(default_factory=list)
+    product: Product = Product()
+    legacyResourceId: int = 0
+    inventoryQuantity: int = 0
+    title: str = ''
+    price: float = 0.0
+    inventoryItem: InventoryItem = InventoryItem()
+    sku: str = ''
+    inventoryLevels: list[InventoryLevel] = []
 
 
 class VariantNodes(Base):
-    nodes: list[Variant] | None = Field(default_factory=list)
+    nodes: list[Variant] = []
 
 
 class Variants(Base):
-    productVariants: VariantNodes | None = VariantNodes()
+    productVariants: VariantNodes = VariantNodes()
 
 
 class VariantsResponse(Base):
-    data: Variants | None = Variants()
+    data: Variants = Variants()
 
 
 class PageInfo(Base):
-    hasNextPage: bool | None = None
-    endCursor: str | None = ''
+    hasNextPage: bool = False
+    endCursor: str = ''
 
 
 class Product(Base):
-    legacyResourceId: int | None = 0
-    title: str | None = ''
-    variants: list[Variant] | None = Field(default_factory=list)
+    legacyResourceId: int = 0
+    title: str = ''
+    variants: list[Variant] = []
 
 
 class ProductNodes(Base):
-    nodes: list[Product] | None = Field(default_factory=list)
+    nodes: list[Product] = []
 
 
 class Products(Base):
-    products: ProductNodes | None = ProductNodes()
+    products: ProductNodes = ProductNodes()
 
 
 class ProductsResponse(Base):
-    data: Products | None = Products()
+    data: Products = Products()

@@ -4,6 +4,7 @@
 
 from datetime import datetime
 from enum import Enum
+from pydantic import Field
 from app.models.pydantic.base import Base
 
 
@@ -45,83 +46,83 @@ class FinancialStatus(Enum):
 
 
 class OrderWebHook(Base):
-    admin_graphql_api_id: str | None = ''  # Webhook con guiones bajos
+    admin_graphql_api_id: str = ''  # Webhook con guiones bajos
 
 
 class BillingAddress(Base):
-    firstName: str | None = ''
-    lastName: str | None = ''
-    company: str | None = ''
-    address1: str | None = ''
-    address2: str | None = ''
-    province: str | None = ''
-    country: str | None = ''
-    city: str | None = ''
-    phone: str | None = ''
-    zip: int | str | None = 0
+    firstName: str = ''
+    lastName: str = ''
+    company: str = ''
+    address1: str = ''
+    address2: str = ''
+    province: str = ''
+    country: str = ''
+    city: str = ''
+    phone: str = ''
+    zip: str = ''  # Se deja como str porque es un campo ingresado por el cliente y no se restringe su tipo.
 
 
 class Customer(Base):
-    firstName: str | None = ''
-    lastName: str | None = ''
-    id: str | None = ''
+    firstName: str = ''
+    lastName: str = ''
+    id: str = ''
 
 
 class ShopMoney(Base):
-    amount: str | None = ''
-    currencyCode: str | None = ''
+    amount: str = ''
+    currencyCode: str = ''
 
 
 class OriginalPriceSet(Base):
-    shopMoney: ShopMoney | None = ShopMoney()
+    shopMoney: ShopMoney = ShopMoney()
 
 
 class LineItem(Base):
-    name: str | None = ''
-    quantity: int | None = 0
-    originalUnitPriceSet: OriginalPriceSet | None = OriginalPriceSet()
-    sku: str | None = ''
+    name: str = ''
+    quantity: int = 0
+    originalUnitPriceSet: OriginalPriceSet = OriginalPriceSet()
+    sku: str = ''
 
 
 class PageInfo(Base):
-    endCursor: str | None = ''
-    hasNextPage: bool | None = False
+    endCursor: str = ''
+    hasNextPage: bool = False
 
 
 class LineItemsNodes(Base):
-    nodes: list[LineItem] | None = []
-    pageInfo: PageInfo | None = PageInfo()
+    nodes: list[LineItem] = []
+    pageInfo: PageInfo = PageInfo()
 
 
 class ShippingLine(Base):
-    originalPriceSet: OriginalPriceSet | None = OriginalPriceSet()
+    originalPriceSet: OriginalPriceSet = OriginalPriceSet()
 
 
 class Transaction(Base):
-    gateway: str | None = ''
-    paymentId: str | None = ''
+    gateway: str = ''
+    paymentId: str = ''
 
 
 class App(Base):
-    name: str | None = ''
+    name: str = ''
 
 
 class Order(Base):
-    fullyPaid: bool | None = False
-    email: str | None = ''
-    number: int | None = 0
-    createdAt: datetime | None = None
-    app: App | None = App()
-    customer: Customer | None = Customer()
-    transactions: list[Transaction] | None = []
-    billingAddress: BillingAddress | None = BillingAddress()
-    shippingLine: ShippingLine | None = ShippingLine()
-    lineItems: LineItemsNodes | None = LineItemsNodes()
+    fullyPaid: bool = False
+    email: str = ''
+    number: int = 0
+    createdAt: datetime = Field(default_factory=datetime.now)
+    app: App = App()
+    customer: Customer = Customer()
+    transactions: list[Transaction] = []
+    billingAddress: BillingAddress = BillingAddress()
+    shippingLine: ShippingLine = ShippingLine()
+    lineItems: LineItemsNodes = LineItemsNodes()
 
 
 class OrderData(Base):
-    order: Order | None = Order()  # Cuando no se encuentra la orden la respuesta llega con order: null
+    order: Order = Order()  # Cuando no se encuentra la orden la respuesta llega con order: null
 
 
 class OrderResponse(Base):
-    data: OrderData | None = OrderData()
+    data: OrderData = OrderData()
