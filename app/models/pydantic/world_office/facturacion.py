@@ -1,6 +1,7 @@
 # app.models.pydantic.world_office.facturacion
 from datetime import date
 from pydantic import Field
+from app.internal.gen.utilities import DateTz
 from app.models.pydantic.base import Base
 from app.models.pydantic.world_office.base import WODataList, WOResponse
 from app.models.pydantic.world_office.general import WOUbicacionPais, WOCiudad
@@ -21,7 +22,7 @@ class WORegloneEdit(WOReglone):
 
 
 class WODocumentoVentaCreateEditBase(Base):
-    fecha: date = Field(default_factory=date.today)
+    fecha: date = Field(default_factory=DateTz.today)
     prefijo: int = 0
     documentoTipo: str = ''
     concepto: str = ''

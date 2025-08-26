@@ -4,10 +4,22 @@ from os import path
 from typing import Generic
 from sqlmodel import select, desc
 from app.models.db.inventario import (
+    BodegaCreate,
+    ComponentesPorVarianteCreate,
     Elemento,
     Bodega,
+    ElementoCreate,
+    EstadoVarianteCreate,
     Grupo,
+    GrupoCreate,
     Medida,
+    MedidaCreate,
+    MedidasPorVarianteCreate,
+    MovimientoCreate,
+    PreciosPorVarianteCreate,
+    TipoMovimientoCreate,
+    TipoPrecioCreate,
+    TipoSoporteCreate,
     TiposMedida,
     MedidasPorVariante,
     PreciosPorVariante,
@@ -15,9 +27,11 @@ from app.models.db.inventario import (
     Movimiento,
     TipoMovimiento,
     EstadoVariante,
+    TiposMedidaCreate,
     VarianteElemento,
     ComponentesPorVariante,
     TipoSoporte,
+    VarianteElementoCreate,
 )
 from app.internal.query.base import BaseQuery, ModelDB, ModelCreate
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,30 +41,30 @@ from sqlalchemy.dialects.postgresql import insert
 
 
 class BaseQueryWithShopifyId(BaseQuery, Generic[ModelDB, ModelCreate]):
-    def __init__(self, model: type[ModelDB]) -> None:
-        super().__init__(model)
+    def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]) -> None:
+        super().__init__(model_db, model_create)
 
     async def get_by_shopify_id(self, session: AsyncSession, shopify_id: int) -> ModelDB | None:
-        statement = select(self.model).where(self.model.shopify_id == shopify_id)
+        statement = select(self.model_db).where(self.model_db.shopify_id == shopify_id)
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
     async def get_by_shopify_ids(self, session: AsyncSession, shopify_ids: list[int]) -> list[ModelDB]:
-        statement = select(self.model).where(self.model.shopify_id.in_(shopify_ids))
+        statement = select(self.model_db).where(self.model_db.shopify_id.in_(shopify_ids))
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
 
 
-class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVariante]):
+class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCreate]):
     def __init__(self) -> None:
-        super().__init__(PreciosPorVariante)
+        super().__init__(PreciosPorVariante, PreciosPorVariante)
 
     async def get_last(self, session: AsyncSession, variante_id: int, tipo_precio_id: int) -> PreciosPorVariante | None:
         statement = (
-            select(self.model)
-            .where(self.model.variante_id == variante_id)
-            .where(self.model.tipo_precio_id == tipo_precio_id)
-            .order_by(desc(self.model.fecha))
+            select(self.model_db)
+            .where(self.model_db.variante_id == variante_id)
+            .where(self.model_db.tipo_precio_id == tipo_precio_id)
+            .order_by(desc(self.model_db.fecha))
             .limit(1)
         )
         result = await session.execute(statement)
@@ -61,49 +75,49 @@ class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVariante]):
     ) -> list[PreciosPorVariante]:
         subq = (
             select(
-                self.model.id,
+                self.model_db.id,
                 func.row_number()
                 .over(
-                    partition_by=self.model.variante_id,  # type: ignore
-                    order_by=desc(self.model.fecha),
+                    partition_by=self.model_db.variante_id,  # type: ignore
+                    order_by=desc(self.model_db.fecha),
                 )
                 .label('rn'),
             )
-            .where(self.model.variante_id.in_(variante_ids))  # type: ignore
-            .where(self.model.tipo_precio_id == tipo_precio_id)
+            .where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
+            .where(self.model_db.tipo_precio_id == tipo_precio_id)
             .subquery()
         )
 
         # IMPORTANTE seleccionar self.model para que SQLModel pueda mapear los campos
-        statement = select(self.model).join(subq, self.model.id == subq.c.id).where(subq.c.rn == 1)  # type: ignore
+        statement = select(self.model_db).join(subq, self.model_db.id == subq.c.id).where(subq.c.rn == 1)  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []  # type: ignore
 
 
-class MovimientoQuery(BaseQuery[Movimiento, Movimiento]):
+class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
     def __init__(self) -> None:
-        super().__init__(Movimiento)
+        super().__init__(Movimiento, Movimiento)
 
     async def get_by_varante_ids(self, session: AsyncSession, variante_ids: list[int]) -> list[Movimiento]:
-        statement = select(self.model).where(self.model.variante_id.in_(variante_ids))  # type: ignore
+        statement = select(self.model_db).where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []  # type: ignore
 
 
-elemento_query = BaseQueryWithShopifyId(Elemento)
-bodega_query = BaseQueryWithShopifyId(Bodega)
-variante_elemento_query = BaseQueryWithShopifyId(VarianteElemento)
-componentes_por_variante_query = BaseQuery(ComponentesPorVariante)
-grupo_query = BaseQuery(Grupo)
-unidad_medida_query = BaseQuery(Medida)
+elemento_query = BaseQueryWithShopifyId(Elemento, ElementoCreate)
+bodega_query = BaseQueryWithShopifyId(Bodega, BodegaCreate)
+variante_elemento_query = BaseQueryWithShopifyId(VarianteElemento, VarianteElementoCreate)
+componentes_por_variante_query = BaseQuery(ComponentesPorVariante, ComponentesPorVarianteCreate)
+grupo_query = BaseQuery(Grupo, GrupoCreate)
+unidad_medida_query = BaseQuery(Medida, MedidaCreate)
 precio_variante_query = PrecioPorVarianteQuery()
-tipo_precio_query = BaseQuery(TipoPrecio)
-tipo_medida_query = BaseQuery(TiposMedida)
-tipo_soporte_query = BaseQuery(TipoSoporte)
-medidas_por_variante_query = BaseQuery(MedidasPorVariante)
+tipo_precio_query = BaseQuery(TipoPrecio, TipoPrecioCreate)
+tipo_medida_query = BaseQuery(TiposMedida, TiposMedidaCreate)
+tipo_soporte_query = BaseQuery(TipoSoporte, TipoSoporteCreate)
+medidas_por_variante_query = BaseQuery(MedidasPorVariante, MedidasPorVarianteCreate)
 movimiento_query = MovimientoQuery()
-tipo_movimiento_query = BaseQuery(TipoMovimiento)
-estado_elemento_query = BaseQuery(EstadoVariante)
+tipo_movimiento_query = BaseQuery(TipoMovimiento, TipoMovimientoCreate)
+estado_elemento_query = BaseQuery(EstadoVariante, EstadoVarianteCreate)
 
 
 async def seed_data_inventario():

@@ -1,15 +1,21 @@
 from datetime import datetime
 from pytz import timezone
 
+from app.config import config
+
 
 class DateTz(datetime):
     @classmethod
-    def local(cls, tz: str = 'America/Bogota'):
+    def local(cls, tz: str = config.local_timezone):
         return cls.now(timezone(tz))
 
     @classmethod
-    def local_date(cls, tz: str = 'America/Bogota'):
+    def local_date(cls, tz: str = config.local_timezone):
         return cls.now(timezone(tz)).date()
+
+    @classmethod
+    def today(cls, tz: str = config.local_timezone):
+        return cls.local(tz).date()
 
 
 def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:

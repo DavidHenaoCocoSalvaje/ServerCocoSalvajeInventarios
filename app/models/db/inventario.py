@@ -9,12 +9,12 @@ class InventarioBase(SQLModel):
     __table_args__ = {'schema': 'inventario'}
 
 
-class BodegaUpdate(InventarioBase):
+class BodegaCreate(InventarioBase):
     ubicacion: str = Field(max_length=150)
     shopify_id: int = Field(sa_type=BIGINT)
 
 
-class Bodega(BodegaUpdate, table=True):
+class Bodega(BodegaCreate, table=True):
     __tablename__ = 'bodegas'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -23,11 +23,11 @@ class Bodega(BodegaUpdate, table=True):
     movimientos: list['Movimiento'] = Relationship(back_populates='bodega')
 
 
-class GrupoUpdate(InventarioBase):
+class GrupoCreate(InventarioBase):
     nombre: str = Field(max_length=50)
 
 
-class Grupo(GrupoUpdate, table=True):
+class Grupo(GrupoCreate, table=True):
     __tablename__ = 'grupos'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -36,11 +36,11 @@ class Grupo(GrupoUpdate, table=True):
     elementos: list['Elemento'] = Relationship(back_populates='grupo')
 
 
-class TiposMedidaUpdate(InventarioBase):
+class TiposMedidaCreate(InventarioBase):
     nombre: str = Field(max_length=50)
 
 
-class TiposMedida(TiposMedidaUpdate, table=True):
+class TiposMedida(TiposMedidaCreate, table=True):
     __tablename__ = 'tipos_medida'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -49,13 +49,13 @@ class TiposMedida(TiposMedidaUpdate, table=True):
     medidas: list['Medida'] = Relationship(back_populates='tipo_medida')
 
 
-class MedidaUpdate(InventarioBase):
+class MedidaCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     nombre_largo: str = Field(max_length=50)
     tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id')
 
 
-class Medida(MedidaUpdate, table=True):
+class Medida(MedidaCreate, table=True):
     __tablename__ = 'medidas'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -65,12 +65,12 @@ class Medida(MedidaUpdate, table=True):
     variantes: list['MedidasPorVariante'] = Relationship(back_populates='medida')
 
 
-class MedidasPorVarianteUpdate(InventarioBase):
+class MedidasPorVarianteCreate(InventarioBase):
     medida_id: int = Field(foreign_key='inventario.medidas.id')
     variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
 
 
-class MedidasPorVariante(MedidasPorVarianteUpdate, table=True):
+class MedidasPorVariante(MedidasPorVarianteCreate, table=True):
     __tablename__ = 'medidas_por_variante'  # type: ignore
 
     id: int | None = Field(primary_key=True, default=None)
@@ -80,12 +80,12 @@ class MedidasPorVariante(MedidasPorVarianteUpdate, table=True):
     variante: 'VarianteElemento' = Relationship(back_populates='medidas')
 
 
-class TipoPrecioUpdate(InventarioBase):
+class TipoPrecioCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     descripcion: str | None = Field(sa_type=TEXT, default=None)
 
 
-class TipoPrecio(TipoPrecioUpdate, table=True):
+class TipoPrecio(TipoPrecioCreate, table=True):
     __tablename__ = 'tipos_precio'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -94,14 +94,14 @@ class TipoPrecio(TipoPrecioUpdate, table=True):
     precios: list['PreciosPorVariante'] = Relationship(back_populates='tipo_precio')
 
 
-class PreciosPorVarianteUpdate(InventarioBase):
+class PreciosPorVarianteCreate(InventarioBase):
     variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
     tipo_precio_id: int = Field(foreign_key='inventario.tipos_precio.id')
     precio: float = Field(default=0.0)
     fecha: date = Field(sa_type=DATE, default_factory=date.today)
 
 
-class PreciosPorVariante(PreciosPorVarianteUpdate, table=True):
+class PreciosPorVariante(PreciosPorVarianteCreate, table=True):
     __tablename__ = 'precios_variante'  # type: ignore
 
     id: int | None = Field(primary_key=True, default=None)
@@ -111,12 +111,12 @@ class PreciosPorVariante(PreciosPorVarianteUpdate, table=True):
     variante: 'VarianteElemento' = Relationship(back_populates='precios')
 
 
-class TipoMovimientoUpdate(InventarioBase):
+class TipoMovimientoCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     descripcion: str | None = Field(sa_type=TEXT, default=None)
 
 
-class TipoMovimiento(TipoMovimientoUpdate, table=True):
+class TipoMovimiento(TipoMovimientoCreate, table=True):
     __tablename__ = 'tipos_movimiento'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -125,11 +125,11 @@ class TipoMovimiento(TipoMovimientoUpdate, table=True):
     movimientos: list['Movimiento'] = Relationship(back_populates='tipo_movimiento')
 
 
-class TipoSoporteUpdate(InventarioBase):
+class TipoSoporteCreate(InventarioBase):
     nombre: str = Field(max_length=50)
 
 
-class TipoSoporte(TipoSoporteUpdate, table=True):
+class TipoSoporte(TipoSoporteCreate, table=True):
     __tablename__ = 'tipos_soporte'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -138,7 +138,7 @@ class TipoSoporte(TipoSoporteUpdate, table=True):
     movimientos: list['Movimiento'] = Relationship(back_populates='tipo_soporte')
 
 
-class MovimientoUpdate(InventarioBase):
+class MovimientoCreate(InventarioBase):
     tipo_movimiento_id: int | None = Field(foreign_key='inventario.tipos_movimiento.id', default=None)
     tipo_soporte_id: int | None = Field(foreign_key='inventario.tipos_soporte.id', default=None)
     variante_id: int | None = Field(foreign_key='inventario.variantes_elemento.id', default=None)
@@ -150,7 +150,7 @@ class MovimientoUpdate(InventarioBase):
     fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=DateTz.local)
 
 
-class Movimiento(MovimientoUpdate, table=True):
+class Movimiento(MovimientoCreate, table=True):
     id: int | None = Field(primary_key=True, default=None)
 
     # Relationships
@@ -161,12 +161,12 @@ class Movimiento(MovimientoUpdate, table=True):
     tipo_soporte: 'TipoSoporte' = Relationship(back_populates='movimientos')
 
 
-class EstadoVarianteUpdate(InventarioBase):
+class EstadoVarianteCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     descripcion: str | None = Field(sa_type=TEXT, default=None)
 
 
-class EstadoVariante(EstadoVarianteUpdate, table=True):
+class EstadoVariante(EstadoVarianteCreate, table=True):
     __tablename__ = 'estados_variante'  # type: ignore
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
@@ -175,7 +175,7 @@ class EstadoVariante(EstadoVarianteUpdate, table=True):
     movimientos: list['Movimiento'] = Relationship(back_populates='estado_variante')
 
 
-class ElementoUpdate(InventarioBase):
+class ElementoCreate(InventarioBase):
     shopify_id: int = Field(sa_type=BIGINT)
     nombre: str = Field(max_length=120)
     tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id')
@@ -184,7 +184,7 @@ class ElementoUpdate(InventarioBase):
     fabricado: bool = Field(default=False)
 
 
-class Elemento(ElementoUpdate, table=True):
+class Elemento(ElementoCreate, table=True):
     __tablename__ = 'elementos'  # type: ignore
 
     id: int | None = Field(primary_key=True, default=None)
@@ -194,14 +194,14 @@ class Elemento(ElementoUpdate, table=True):
     variantes: list['VarianteElemento'] = Relationship(back_populates='elemento')
 
 
-class VarianteElementoUpdate(InventarioBase):
+class VarianteElementoCreate(InventarioBase):
     nombre: str = Field(max_length=120)
     sku: str | None = Field(max_length=120, default=None)
     shopify_id: int = Field(sa_type=BIGINT)
     elemento_id: int = Field(foreign_key='inventario.elementos.id')
 
 
-class VarianteElemento(VarianteElementoUpdate, table=True):
+class VarianteElemento(VarianteElementoCreate, table=True):
     __tablename__ = 'variantes_elemento'  # type: ignore
 
     id: int | None = Field(primary_key=True, default=None)
@@ -221,13 +221,13 @@ class VarianteElemento(VarianteElementoUpdate, table=True):
     elemento: 'Elemento' = Relationship(back_populates='variantes')
 
 
-class ComponentesPorVarianteUpdate(InventarioBase):
+class ComponentesPorVarianteCreate(InventarioBase):
     variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
     variante_padre_id: int = Field(foreign_key='inventario.variantes_elemento.id')
     cantidad_elemento: int
 
 
-class ComponentesPorVariante(ComponentesPorVarianteUpdate, table=True):
+class ComponentesPorVariante(ComponentesPorVarianteCreate, table=True):
     __tablename__ = 'componentes_por_variante'  # type: ignore
     id: int | None = Field(primary_key=True)
 

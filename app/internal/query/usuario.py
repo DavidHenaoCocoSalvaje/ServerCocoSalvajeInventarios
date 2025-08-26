@@ -20,7 +20,7 @@ class UsuarioQuery(BaseQuery[UsuarioDB, UsuarioCreate]):
 
     async def get_by_username(self, session: AsyncSession, username: str):
         """Obtiene un usuario por su documento de identidad"""
-        statement = select(self.model).where(self.model.username == username)
+        statement = select(self.model_db).where(self.model_db.username == username)
         results = await session.execute(statement)
         scalar_results = results.scalars()
         return scalar_results.one_or_none()

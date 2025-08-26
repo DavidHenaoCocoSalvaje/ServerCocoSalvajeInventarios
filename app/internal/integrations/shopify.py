@@ -323,7 +323,7 @@ async def get_inventory_info():
     return products
 
 
-async def process_inventory_info(products: list[Product]):
+async def persistir_inventory_info(products: list[Product]):
     # df Bodegas
     bodega_model_keys = list(Bodega.model_json_schema()['properties'].keys())
     bodega_model_keys.extend(['variante_shopify_id', 'variante_id'])  # Columnas que no pertenecen a la tabla Bodega
@@ -564,6 +564,6 @@ if __name__ == '__main__':
 
     async def main():
         products = await get_inventory_info()
-        await process_inventory_info(products)
+        await persistir_inventory_info(products)
 
     run(main())
