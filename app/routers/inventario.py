@@ -286,10 +286,12 @@ async def facturar_orden(order: Order):
 
     reglones: list[WOReglone] = []
     for line_intem in order.lineItems.nodes:
+        inventario = await wo_client.get_inventario_por_codigo(line_intem.sku)
+
         amount = line_intem.originalUnitPriceSet.shopMoney.amount.split('.')[0]
         reglones.append(
             WOReglone(
-                idInventario=int(line_intem.sku),
+                idInventario=inventario.id,
                 unidadMedida='und',
                 cantidad=line_intem.quantity,
                 valorUnitario=int(amount),

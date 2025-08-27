@@ -23,6 +23,7 @@ from app.models.pydantic.world_office.facturacion import (
     WOProductoDocumento,
 )
 from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
+from ...models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
 from app.models.pydantic.world_office.terceros import WOTercero, WOTerceroResponse, WOTerceroCreate
 from app.internal.integrations.base import BaseClient, ClientException
 from app.config import config
@@ -58,6 +59,10 @@ class WoClient(BaseClient):
             root: str = '/ciudad'
             listar_ciudades: str = f'{root}/listarCiudades'
 
+        class Inventario:
+            root: str = '/inventario'
+            inventario_por_codigo: str = f'{root}/consultaCodigo'
+
     # Singleton para implementar posteriormente la restricción de peticiones.
     def __new__(cls):
         if cls.__instance is None:
@@ -92,6 +97,13 @@ class WoClient(BaseClient):
                 url=self.current_url,
             )
         return documento_venta_response.data
+
+    async def get_inventario_por_codigo(self, codigo: str) -> WOInventario:
+        inventario_json = await self.get(self.Paths.Inventario.inventario_por_codigo, [codigo])
+        inventario_response = WOInventarioResponse(**inventario_json)
+        if not inventario_response.valid():
+            raise WOException(payload=inventario_json, url=self.current_url)
+        return inventario_response.data
 
     async def contabilizar_documento_venta(self, id_documento: int) -> bool:
         contabilizar_json = await self.post(self.Paths.Ventas.contabilizar, [str(id_documento)])
