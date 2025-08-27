@@ -40,4 +40,4 @@ class WOListaCiudadesResponse(WOResponse):
     data: WOContentCiudades = WOContentCiudades()
 
     def valid(self) -> bool:
-        return self.status == 'OK'
+        return self.status == 'OK' and bool(self.data.content)

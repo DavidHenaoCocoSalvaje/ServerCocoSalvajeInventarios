@@ -214,6 +214,7 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
 
     except WOException as e:
         log_inventario_shopify.error(f'{e}')
+        return
 
 
 async def facturar_orden(order: Order):

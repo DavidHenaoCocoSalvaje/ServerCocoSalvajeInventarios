@@ -8,6 +8,7 @@ if __name__ == '__main__':
 # from random import randint
 
 
+from typing import Any
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
@@ -30,7 +31,8 @@ wo_log = factory_logger('world_office', file=True)
 
 
 class WOException(ClientException):
-    pass
+    def __init__(*args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
 
 
 class WoClient(BaseClient):
@@ -148,12 +150,6 @@ class WoClient(BaseClient):
                 )
                 ciudades_response = WOListaCiudadesResponse(**ciudades_json)
                 if not ciudades_response.valid():
-                    raise WOException(
-                        payload=ciudades_json,
-                        url=self.current_url,
-                    )
-
-                if not ciudades_response.data.content:
                     raise WOException(
                         payload=ciudades_json,
                         url=self.current_url,
