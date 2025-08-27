@@ -16,7 +16,7 @@ class UsuarioQuery(BaseQuery[UsuarioDB, UsuarioCreate]):
     """Repositorio para la entidad Usuario"""
 
     def __init__(self):
-        super().__init__(UsuarioDB)
+        super().__init__(UsuarioDB, UsuarioCreate)
 
     async def get_by_username(self, session: AsyncSession, username: str):
         """Obtiene un usuario por su documento de identidad"""

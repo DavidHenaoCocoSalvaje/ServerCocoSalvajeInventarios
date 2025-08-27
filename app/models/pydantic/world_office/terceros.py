@@ -103,7 +103,7 @@ class WOTercero(Base):
 
     @computed_field
     @property
-    def idTerceroTipos(self):
+    def idTerceroTipos(self) -> list[int]:
         return list(map(lambda x: x.id, self.terceroTipos))
 
 
