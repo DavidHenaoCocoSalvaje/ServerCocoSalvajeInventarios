@@ -23,7 +23,7 @@ from app.models.pydantic.world_office.facturacion import (
     WOProductoDocumento,
 )
 from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
-from ...models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
+from app.models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
 from app.models.pydantic.world_office.terceros import WOTercero, WOTerceroResponse, WOTerceroCreate
 from app.internal.integrations.base import BaseClient, ClientException
 from app.config import config
@@ -60,7 +60,7 @@ class WoClient(BaseClient):
             listar_ciudades: str = f'{root}/listarCiudades'
 
         class Inventario:
-            root: str = '/inventario'
+            root: str = '/inventarios'
             inventario_por_codigo: str = f'{root}/consultaCodigo'
 
     # Singleton para implementar posteriormente la restricción de peticiones.
@@ -251,5 +251,7 @@ if __name__ == '__main__':
         assert factura_detail.id == 31735
         productos_factura = await wo_client.productos_documento_venta(id_documento=31735)
         assert isinstance(productos_factura[0], WOProductoDocumento)
+        inventario = await wo_client.get_inventario_por_codigo('COL-DES-MIRAMAR-60')
+        assert isinstance(inventario, WOInventario)
 
     run(main())
