@@ -128,3 +128,6 @@ class OrderData(Base):
 
 class OrderResponse(Base):
     data: OrderData = OrderData()
+
+    def valid(self) -> bool:
+        return self.data.order.number != 0

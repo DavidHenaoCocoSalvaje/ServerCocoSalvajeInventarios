@@ -9,8 +9,9 @@ if __name__ == '__main__':
 
 
 from app.internal.log import factory_logger
-from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar, WOResponse
+from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
+    WOContabilizarDocumentoVentaResponse,
     WODocumentoVenta,
     WODocumentoVentaCreate,
     WODocumentoVentaDetail,
@@ -90,10 +91,12 @@ class WoClient(BaseClient):
             )
         return documento_venta_response.data
 
-    async def contabilizar_documento_venta(self, id_documento: int) -> WOResponse:
+    async def contabilizar_documento_venta(self, id_documento: int) -> bool:
         contabilizar_json = await self.post(self.Paths.Ventas.contabilizar, [str(id_documento)])
-        contabilizar_response = WOResponse(**contabilizar_json)
-        return contabilizar_response
+        contabilizar_response = WOContabilizarDocumentoVentaResponse(**contabilizar_json)
+        if not contabilizar_response.valid():
+            raise WOException(payload=contabilizar_json, url=self.current_url)
+        return True
 
     async def crear_tercero(self, wo_tercero_create: WOTerceroCreate) -> WOTercero:
         tercero_json = await self.post(

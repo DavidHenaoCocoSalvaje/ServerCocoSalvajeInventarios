@@ -3,10 +3,11 @@ from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 import re
 
+
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
 from app.models.pydantic.world_office.terceros import WOTerceroCreate
-from app.internal.integrations.world_office import WoClient
-from app.models.db.transacciones import Accion, PedidoCreate
+from app.internal.integrations.world_office import WOException, WoClient
+from app.models.db.transacciones import Pedido, PedidoCreate
 from app.models.db.session import AsyncSessionDep
 from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
@@ -182,18 +183,40 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
         webhook_data = await request.json()
         order_webhook = OrderWebHook(**webhook_data)
         # Se consulta la orden porque la ingormación que viene del webhook no incluye la información de la transacción.
-        order = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
-        order_response = OrderResponse(**order)
+        order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
+        order_response = OrderResponse(**order_json)
+        if not order_response.valid():
+            log_inventario_shopify.error(f'Order void: {order_response.model_dump_json()}')
+            return
+
+        # Registrar pedido
+        pedido_create = PedidoCreate(numero=str(order_response.data.order.number))
+        pedido = await pedido_query.create(session, pedido_create)
+
         log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
         if order_response.data.order is None:
             log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
         order = order_response.data.order
-    except Exception as e:
+        factura = await facturar_orden(order)
+
+        # Registrar número de factura
+        pedido_update = pedido.model_copy()
+        pedido_update.factura = str(factura.id)
+        pedido_update.factura_numero = str(factura.numero)
+        pedido = await pedido_query.update(session, pedido, pedido_update)
+
+        # Contabilizar pedido
+        contabilizar = await contabilizar_pedido(pedido)
+        # Registrar estado contabilización
+        pedido_update = pedido.model_copy()
+        pedido_update.contabilizado = contabilizar
+        pedido = await pedido_query.update(session, pedido, pedido_update)
+
+    except WOException as e:
         log_inventario_shopify.error(f'{e}')
-        # No se lanza HTTPException dado que es un webhook.
 
 
-async def facturar_pedido(order: Order):
+async def facturar_orden(order: Order):
     # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
     # 4 para contado, 5 para credito
     id_forma_pago = 4
@@ -285,4 +308,9 @@ async def facturar_pedido(order: Order):
         reglones=reglones,
     )
 
-    return wo_client.crear_factura_venta(wo_documento_venta_create)
+    return await wo_client.crear_factura_venta(wo_documento_venta_create)
+
+
+async def contabilizar_pedido(pedido: Pedido):
+    wo_client = WoClient()
+    return await wo_client.contabilizar_documento_venta(int(pedido.factura_id))

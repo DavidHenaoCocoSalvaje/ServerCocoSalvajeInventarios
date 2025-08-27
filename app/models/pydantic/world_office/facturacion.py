@@ -375,3 +375,8 @@ class WODocumentoVentaDetailResponse(WOResponse):
 
     def valid(self) -> bool:
         return self.status in ['ACCEPTED', 'CREATED']
+
+
+class WOContabilizarDocumentoVentaResponse(WOResponse):
+    def valid(self) -> bool:
+        return self.status == 'OK' and self.userMessage == 'CONTABILIZACION_EXITOSA'
