@@ -31,7 +31,7 @@ wo_log = factory_logger('world_office', file=True)
 
 
 class WOException(ClientException):
-    def __init__(*args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
 
