@@ -330,9 +330,10 @@ async def get_inventory_info():
                 variant.sku = sku_by_variant_id.get(variant.legacyResourceId, '')
 
     # Guardar resultados
-    output_json = product_response.model_dump_json(indent=2)
-    with open('shopify_inventory_data.json', 'w', encoding='utf-8') as f:
-        f.write(output_json)
+    if config.environment == 'development':
+        output_json = product_response.model_dump_json(indent=2)
+        with open('shopify_inventory_data.json', 'w', encoding='utf-8') as f:
+            f.write(output_json)
 
     return products
 
