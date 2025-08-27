@@ -162,7 +162,7 @@ async def sync_shopify():
     try:
         inventory_info = await get_inventory_info()
         await persistir_inventory_info(inventory_info)
-        log_inventario_shopify.info('Inventarios de Shopify sincronizado con éxito')
+        log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
     except Exception as e:
         log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')
