@@ -49,7 +49,7 @@ class OrderWebHook(Base):
     admin_graphql_api_id: str = ''  # Webhook con guiones bajos
 
 
-class BillingAddress(Base):
+class Address(Base):
     firstName: str = ''
     lastName: str = ''
     company: str = ''
@@ -60,6 +60,7 @@ class BillingAddress(Base):
     city: str = ''
     phone: str = ''
     zip: str = ''  # Se deja como str porque es un campo ingresado por el cliente y no se restringe su tipo.
+    formatted: list[str] = []
 
 
 class Customer(Base):
@@ -115,7 +116,8 @@ class Order(Base):
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []
-    billingAddress: BillingAddress = BillingAddress()
+    billingAddress: Address = Address()
+    shippingAddress: Address = Address()
     shippingLine: ShippingLine = ShippingLine()
     lineItems: LineItemsNodes = LineItemsNodes()
 

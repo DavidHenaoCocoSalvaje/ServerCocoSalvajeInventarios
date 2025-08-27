@@ -1,14 +1,15 @@
 # app/routers/inventario.py
 from enum import Enum
-from re import A
-from typing import Awaitable, Callable
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+import re
 
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
+from app.models.pydantic.world_office.terceros import WOTerceroCreate
+from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import Accion, PedidoCreate
 from app.models.db.session import AsyncSessionDep
 from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
-from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate
+from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
 
@@ -175,39 +176,113 @@ async def sync_shopify():
     dependencies=[Depends(hmac_validation_shopify)],
 )
 async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
-    query_shopify = QueryShopify()
-    # Obtener datos de pedido
-    webhook_data = await request.json()
-    order_webhook = OrderWebHook(**webhook_data)
-    # Se consulta la orden porque la ingormación que viene del webhook no incluye la información de la transacción.
-    order = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
-    order_response = OrderResponse(**order)
-    log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
-    if order_response.data.order is None:
-        log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
-    order = order_response.data.order
+    try:
+        query_shopify = QueryShopify()
+        # Obtener datos de pedido
+        webhook_data = await request.json()
+        order_webhook = OrderWebHook(**webhook_data)
+        # Se consulta la orden porque la ingormación que viene del webhook no incluye la información de la transacción.
+        order = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
+        order_response = OrderResponse(**order)
+        log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
+        if order_response.data.order is None:
+            log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
+        order = order_response.data.order
+    except Exception as e:
+        log_inventario_shopify.error(f'{e}')
+        # No se lanza HTTPException dado que es un webhook.
 
 
-async def facturar_pedido(order: Order, session: AsyncSessionDep):
-    if not order.fullyPaid:
-        # Se crea pedido porque se notifico dsede shopify, pero como no tiene pago aún no se factura.
-        pedido_create = PedidoCreate(numero=str(order.number), acccion=Accion.CREAR)
-        await pedido_query.create(session, pedido_create)
-        # pedido_query.create(session, Pedido(acccion=Accion.FACTURAR, order=order.id))
-        return
-
+async def facturar_pedido(order: Order):
     # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
     # 4 para contado, 5 para credito
-
-    # Verificar que todos sean womopi con all
-    id_forma_pago = 5
+    id_forma_pago = 4
     # if all(x.gateway == 'Addi Payment' for x in order.transactions):
 
-    factura_create = WODocumentoVentaCreate(
+    # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
+    wo_client = WoClient()
+    identificacion = order.billingAddress.company or order.shippingAddress.company
+    # Eliminar digíto de verificación si company contiene '-'
+    if '-' in identificacion:
+        identificacion = identificacion.split('-')[0]
+    # La identificación puede contener carácteres no válidos, ya que en Shopify no hay validación de tipos.
+    identificacion = re.sub(r'[^0-9]', '', identificacion)
+
+    ciudad = order.billingAddress.city or order.shippingAddress.city
+    departamento = order.billingAddress.province or order.shippingAddress.province
+    wo_ciudad = await wo_client.buscar_ciudad(departamento, ciudad)
+    ciudad_id = wo_ciudad.id
+
+    # El elemento 0 en la dirección es el documento de identidad, por lo cúal se omite.
+    address = (
+        ', '.join(order.billingAddress.formatted[1:])
+        if order.billingAddress.formatted
+        else ', '.join(order.shippingAddress.formatted[1:])
+    )
+
+    first_name = order.billingAddress.firstName or order.shippingAddress.firstName
+    primer_nombre = first_name.split(' ')[0]
+    segundo_nombre = first_name.split(' ')[1] if len(first_name.split(' ')) > 1 else ''
+
+    last_name = order.billingAddress.lastName or order.shippingAddress.lastName
+    primer_apellido = last_name.split(' ')[0]
+    segundo_apellido = last_name.split(' ')[1] if len(last_name.split(' ')) > 1 else ''
+
+    wo_tercero = await wo_client.get_tercero(identificacion)
+
+    if wo_tercero is None:
+        tercero_create = WOTerceroCreate(
+            idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
+            identificacion=order.billingAddress.company,
+            primerNombre=primer_nombre,
+            segundoNombre=segundo_nombre,
+            primerApellido=primer_apellido,
+            segundoApellido=segundo_apellido,
+            idCiudad=ciudad_id,
+            direccion=address,
+            idTerceroTipos=[4],  # Cliente
+        )
+        wo_tercero = await wo_client.crear_tercero(tercero_create)
+
+    if not wo_tercero.is_client():
+        id_tercero_tipos = wo_tercero.idTerceroTipos
+        id_tercero_tipos.append(4)  # Cliente
+        tercero_create = WOTerceroCreate(
+            id=wo_tercero.id,
+            idTerceroTipoIdentificacion=wo_tercero.terceroTipoIdentificacion.id,  # Cédula de ciudadanía
+            identificacion=wo_tercero.identificacion,
+            primerNombre=wo_tercero.primerNombre,
+            segundoNombre=wo_tercero.segundoNombre,
+            primerApellido=wo_tercero.primerApellido,
+            segundoApellido=wo_tercero.segundoApellido,
+            idCiudad=wo_tercero.ciudad.id,
+            idTerceroTipos=id_tercero_tipos,  # Cliente
+        )
+        wo_tercero = await wo_client.editar_tercero(tercero_create)
+
+    reglones: list[WOReglone] = []
+    for line_intem in order.lineItems.nodes:
+        amount = line_intem.originalUnitPriceSet.shopMoney.amount.split('.')[0]
+        reglones.append(
+            WOReglone(
+                idInventario=int(line_intem.sku),
+                unidadMedida='und',
+                cantidad=line_intem.quantity,
+                valorUnitario=int(amount),
+                idBodega=1,
+            )
+        )
+
+    wo_documento_venta_create = WODocumentoVentaCreate(
         prefijo=1,  # Sin prefijo
         documentoTipo='FV',
         concepto='Prueba API',
-        idEmpresa=1,
-        idTerceroExterno=1,
-        idFormaPago=1,
+        idEmpresa=1,  # CocoSalvaje
+        idTerceroExterno=wo_tercero.id,
+        idTerceroInterno=1,
+        idFormaPago=id_forma_pago,
+        idMoneda=31,
+        reglones=reglones,
     )
+
+    return wo_client.crear_factura_venta(wo_documento_venta_create)

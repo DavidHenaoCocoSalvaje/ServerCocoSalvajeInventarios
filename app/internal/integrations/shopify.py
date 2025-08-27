@@ -210,19 +210,33 @@ class QueryShopify:
                 transactions {
                     gateway
                     paymentId
+                },
+                shippingAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    province
+                    city
+                    country
+                    phone
+                    zip
+                    formatted
                 }
                 billingAddress {
-                firstName
-                lastName
-                company
-                address1
-                address2
-                province
-                country
-                city
-                phone
-                zip
-                },
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    province
+                    country
+                    city
+                    phone
+                    zip
+                    formatted
+                }
                 shippingLine {
                     originalPriceSet {
                         shopMoney {

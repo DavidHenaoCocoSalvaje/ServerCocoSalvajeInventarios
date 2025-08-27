@@ -1,5 +1,6 @@
 # app.models.pydantic.world_office.terceros
 
+from pydantic import computed_field
 from app.models.pydantic.world_office.base import WOResponse
 from app.models.pydantic.world_office.general import WOUbicacionDepartamento, WOCiudad
 from app.models.pydantic.base import Base
@@ -96,9 +97,22 @@ class WOTercero(Base):
     tieneDirPrincipal: bool = False
     direccionPrincipal: DireccionPrincipal = DireccionPrincipal()
 
+    def is_client(self):
+        # Verificar que alguno de los tipos sea 4
+        return any(x.id == 4 for x in self.terceroTipos)
+
+    @computed_field
+    @property
+    def idTerceroTipos(self):
+        return list(map(lambda x: x.id, self.terceroTipos))
+
 
 class WOTerceroResponse(WOResponse):
     data: WOTercero = WOTercero()
+
+    def valid(self) -> bool:
+        # Se asume NOT_FOUND found como valido ya que no representa un error.
+        return self.status in ['OK', 'NOT_FOUND', 'CREATED']
 
 
 class WOTerceroCreate(Base):
@@ -119,7 +133,7 @@ class WOTerceroCreate(Base):
         responsabilidadFiscal (list[int]): IDs de las responsabilidades fiscales.
     """
 
-    id: int = 0
+    id: int | None = None
     idTerceroTipoIdentificacion: int = 0
     identificacion: str = ''
     primerNombre: str = ''

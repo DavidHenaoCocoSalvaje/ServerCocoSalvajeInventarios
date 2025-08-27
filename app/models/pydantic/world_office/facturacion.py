@@ -14,7 +14,7 @@ class WOReglone(Base):
     cantidad: int = 0
     valorUnitario: int = 0
     idBodega: int = 0
-    idCentroCosto: int = 0
+    idCentroCosto: int | None = None
 
 
 class WORegloneEdit(WOReglone):
@@ -372,3 +372,6 @@ class WODocumentoVentaDetail(Base):
 
 class WODocumentoVentaDetailResponse(WOResponse):
     data: WODocumentoVentaDetail = WODocumentoVentaDetail()
+
+    def valid(self) -> bool:
+        return self.status in ['ACCEPTED', 'CREATED']

@@ -38,3 +38,6 @@ class WODataListCiudades(WODataList):
 
 class WOListaCiudadesResponse(WOResponse):
     data: WOContentCiudades = WOContentCiudades()
+
+    def valid(self) -> bool:
+        return self.status == 'OK'
