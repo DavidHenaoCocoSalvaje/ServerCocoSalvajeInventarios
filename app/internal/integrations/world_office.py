@@ -69,9 +69,9 @@ class WoClient(BaseClient):
             cls.__instance = super(WoClient, cls).__new__(cls)
         return cls.__instance
 
-    def __init__(self, host: str = 'https://api.worldoffice.cloud/api'):
+    def __init__(self, host: str = f'https://api.worldoffice.cloud/api/{config.wo_api_version}'):
         super().__init__()
-        self.host = f'{host}/{config.wo_api_version}'
+        self.host = host
         self.set_header('Content-Type', 'application/json')
         self.set_header('Authorization', f'WO {config.wo_api_key}')
 
@@ -137,7 +137,7 @@ class WoClient(BaseClient):
             raise WOException(url=self.url, payload=payload, response=tercero_json, msg=str(e))
 
         if not tercero_response.data:
-            raise WOException(url=self.url, payload=tercero_json, response=tercero_json)
+            raise WOException(url=self.url, payload=payload, response=tercero_json)
         return tercero_response.data
 
     async def editar_tercero(self, wo_tercero_edit: WOTerceroCreate) -> WOTercero:
@@ -169,10 +169,14 @@ class WoClient(BaseClient):
             tipoDato=TipoDatoWoFiltro.STRING,
             operador='AND',
         )
-        payload = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
-        ciudades_json = await self.post(
-            self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
-        )
+
+        try:
+            wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
+        except ValidationError as e:
+            raise WOException(msg=str(e))
+
+        payload = wo_listar.model_dump(exclude_none=True, mode='json')
+        ciudades_json = await self.post(self.Paths.Ciudad.listar_ciudades, payload=payload)
 
         try:
             ciudades_response = WOListaCiudadesResponse(**ciudades_json)
@@ -185,10 +189,8 @@ class WoClient(BaseClient):
                 atributo = 'ubicacionDepartamento.nombre'
                 filtro.atributo = atributo
                 filtro.valor = departamento
-                payload.filtros = [filtro]
-                ciudades_json = await self.post(
-                    self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
-                )
+                wo_listar.filtros = [filtro]
+                ciudades_json = await self.post(self.Paths.Ciudad.listar_ciudades, payload=payload)
 
                 try:
                     ciudades_response = WOListaCiudadesResponse(**ciudades_json)
@@ -256,12 +258,13 @@ class WoClient(BaseClient):
         try:
             factura_response = WODocumentoVentaDetailResponse(**factura_dict)
         except ValidationError as e:
-            raise WOException(url=self.url, payload=factura_dict, response=factura_dict, msg=str(e))
+            raise WOException(url=self.url, payload=payload, response=factura_dict, msg=str(e))
 
         if not factura_response.valid():
             raise WOException(
-                payload=factura_dict,
                 url=self.url,
+                payload=payload,
+                response=factura_dict,
             )
         return factura_response.data
 
