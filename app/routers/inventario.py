@@ -297,6 +297,9 @@ async def facturar_orden(order: Order):
         # World Office adiciona el IVA automáticamente, se envía el precio con IVA descontado.
         valor_unitario = line_intem.discounted_unit_price_iva_discount(iva)
 
+        kwargs = {}
+        if line_intem.porc_discount > 0:
+            kwargs['porDescuento'] = line_intem.porc_discount
         reglones.append(
             WOReglone(
                 idInventario=inventario.id,
@@ -304,11 +307,11 @@ async def facturar_orden(order: Order):
                 cantidad=line_intem.quantity,
                 valorUnitario=valor_unitario,
                 idBodega=1,
-                porDescuento=line_intem.porc_discount_unit_price,
+                **kwargs,
             )
         )
 
-    costo_envio = order.shippingLine.originalPriceSet.shopMoney.amount
+    costo_envio = int(order.shippingLine.originalPriceSet.shopMoney.amount)
     if costo_envio > 0:
         # El id de inventario que correspnde a FLETE en World Office es 1079
         reglones.append(

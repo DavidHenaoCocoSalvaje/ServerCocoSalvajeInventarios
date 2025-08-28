@@ -100,32 +100,32 @@ class LineItem(Base):
 
     @computed_field
     @property
-    def unit_price(self) -> float:
+    def unit_price(self) -> int:
         amount = self.originalUnitPriceSet.shopMoney.amount
         amount = amount if amount > 0 else self.variant.compareAtPrice
-        return amount if amount > 0 else 0
+        return round(amount) if amount > 0 else 0
 
     @computed_field
     @property
-    def discounted_unit_price(self) -> float:
+    def discounted_unit_price(self) -> int:
         amount = self.discountedUnitPriceSet.shopMoney.amount
         amount = amount if amount > 0 else self.unit_price
-        return amount if amount > 0 else 0
+        return round(amount) if amount > 0 else 0
 
     @computed_field
     @property
-    def porc_discount_unit_price(self) -> float:
+    def porc_discount(self) -> int:
         """_summary_
         Retorna el porcentaje de descuento expresado como un flotante entre 0 y 100.
         """
         if self.unit_price == 0:
-            return 100.0
+            return 100
         else:
             discount_amount = self.unit_price - self.discounted_unit_price
-            return round(divide(discount_amount, self.discounted_unit_price) * 100, 2)
+            return round(divide(discount_amount, self.discounted_unit_price) * 100)
 
-    def discounted_unit_price_iva_discount(self, IVA: float) -> float:
-        return self.discounted_unit_price / (1 + IVA)
+    def discounted_unit_price_iva_discount(self, IVA: float) -> int:
+        return round(self.discounted_unit_price / (1 + IVA))
 
 
 class PageInfo(Base):
