@@ -166,7 +166,7 @@ async def sync_shopify():
         return True
     except Exception as e:
         log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 # Pedidos
@@ -214,7 +214,8 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
 
     except WOException as e:
         log_inventario_shopify.error(f'{e}')
-        return
+    except Exception as e:
+        log_inventario_shopify.error(f'{e}')
 
 
 async def facturar_orden(order: Order):

@@ -114,7 +114,7 @@ class WoClient(BaseClient):
 
     async def crear_tercero(self, wo_tercero_create: WOTerceroCreate) -> WOTercero:
         tercero_json = await self.post(
-            self.Paths.Terceros.crear, payload=wo_tercero_create.model_dump(exclude_none=True)
+            self.Paths.Terceros.crear, payload=wo_tercero_create.model_dump(exclude_none=True, mode='json')
         )
         tercero_response = WOTerceroResponse(**tercero_json)
         if not tercero_response.data:
@@ -128,7 +128,9 @@ class WoClient(BaseClient):
         """
         if not wo_tercero_edit.id:
             raise WOException(msg='No se puede editar el tercero si no se proporciona un identificador')
-        tercero_json = await self.put(self.Paths.Terceros.editar, payload=wo_tercero_edit.model_dump(exclude_none=True))
+        tercero_json = await self.put(
+            self.Paths.Terceros.editar, payload=wo_tercero_edit.model_dump(exclude_none=True, mode='json')
+        )
         tercero_response = WOTerceroResponse(**tercero_json)
         if not tercero_response.valid():
             raise WOException(payload=tercero_json, url=self.current_url)
@@ -146,7 +148,7 @@ class WoClient(BaseClient):
         )
         payload = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
         ciudades_json = await self.post(
-            self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True)
+            self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
         )
         ciudades_response = WOListaCiudadesResponse(**ciudades_json)
 
@@ -158,7 +160,7 @@ class WoClient(BaseClient):
                 filtro.valor = departamento
                 payload.filtros = [filtro]
                 ciudades_json = await self.post(
-                    self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True)
+                    self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
                 )
                 ciudades_response = WOListaCiudadesResponse(**ciudades_json)
                 if not ciudades_response.valid():
@@ -187,7 +189,7 @@ class WoClient(BaseClient):
         )
         payload = WOListar(
             columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2]
-        ).model_dump(exclude_none=True)
+        ).model_dump(exclude_none=True, mode='json')
         facturas_json = await self.post(self.Paths.Ventas.listar_documentos_venta, payload=payload)
         facturas_response = WOListaDocumentosVentaResponse(**facturas_json)
         if not facturas_response.data.content or len(facturas_response.data.content) == 0:
@@ -211,8 +213,8 @@ class WoClient(BaseClient):
             )
         return productos_response.data.content
 
-    async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate) -> WODocumentoVentaDetail:
-        payload = factura_create.model_dump(exclude_none=True)
+    async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
+        payload = factura_create.model_dump(exclude_none=True, mode='json')
         factura_json = await self.post(self.Paths.Ventas.crear, payload=payload)
         factura_response = WODocumentoVentaDetailResponse(**factura_json)
         if not factura_response.valid():
@@ -223,7 +225,7 @@ class WoClient(BaseClient):
         return factura_response.data
 
     async def editar_factura_venta(self, factura_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
-        payload = factura_edit.model_dump(exclude_none=True)
+        payload = factura_edit.model_dump(exclude_none=True, mode='json')
         factura_json = await self.post(self.Paths.Ventas.editar, payload=payload)
         factura_response = WODocumentoVentaDetailResponse(**factura_json)
         if not factura_response.valid():
@@ -253,5 +255,6 @@ if __name__ == '__main__':
         assert isinstance(productos_factura[0], WOProductoDocumento)
         inventario = await wo_client.get_inventario_por_codigo('COL-DES-MIRAMAR-60')
         assert isinstance(inventario, WOInventario)
+        # documento_venta = await wo_client.crear_factura_venta(factura_create=WODocumentoVentaCreate())
 
     run(main())
