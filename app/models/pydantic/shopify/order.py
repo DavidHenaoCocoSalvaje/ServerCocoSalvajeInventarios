@@ -4,7 +4,8 @@
 
 from datetime import datetime
 from enum import Enum
-from pydantic import Field
+from pydantic import Field, computed_field
+from app.internal.gen.utilities import divide
 from app.models.pydantic.base import Base
 
 
@@ -70,7 +71,7 @@ class Customer(Base):
 
 
 class ShopMoney(Base):
-    amount: str = ''
+    amount: float = 0
     currencyCode: str = ''
 
 
@@ -78,11 +79,52 @@ class OriginalPriceSet(Base):
     shopMoney: ShopMoney = ShopMoney()
 
 
+class DiscountedUnitPriceSet(Base):
+    """_summary_
+    Representa el precio de venta luego de aplicar descuentos.
+    """
+
+    shopMoney: ShopMoney = ShopMoney()
+
+
 class LineItem(Base):
+    class Variant(Base):
+        compareAtPrice: float = 0
+
     name: str = ''
     quantity: int = 0
+    variant: Variant = Variant()
     originalUnitPriceSet: OriginalPriceSet = OriginalPriceSet()
+    discountedUnitPriceSet: DiscountedUnitPriceSet = DiscountedUnitPriceSet()
     sku: str = ''
+
+    @computed_field
+    @property
+    def unit_price(self) -> float:
+        amount = self.originalUnitPriceSet.shopMoney.amount
+        return amount if amount > 0 else 0
+
+    @computed_field
+    @property
+    def discounted_unit_price(self) -> float:
+        amount = self.discountedUnitPriceSet.shopMoney.amount
+        return amount if amount > 0 else 0
+
+    @computed_field
+    @property
+    def porc_discount_unit_price(self) -> float:
+        """_summary_
+        Retorna el porcentaje de descuento expresado como un flotante entre 0 y 100.
+        """
+        if self.unit_price == 0:
+            return 100.0
+        else:
+            discount_amount = self.unit_price - self.discounted_unit_price
+            return round(divide(discount_amount, self.discounted_unit_price) * 100, 2)
+
+    @computed_field
+    def discounted_unit_price_iva_discount(self, IVA: float) -> float:
+        return self.discounted_unit_price / (1 + IVA)
 
 
 class PageInfo(Base):

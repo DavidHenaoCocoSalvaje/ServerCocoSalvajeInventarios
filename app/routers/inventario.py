@@ -290,16 +290,30 @@ async def facturar_orden(order: Order):
     reglones: list[WOReglone] = []
     for line_intem in order.lineItems.nodes:
         inventario = await wo_client.get_inventario_por_codigo(line_intem.sku)
+        impuestos = inventario.impuestos
+        generator = (
+            impuesto_element.valor for impuesto_element in impuestos if impuesto_element.impuesto.tipo == 'IVA'
+        )
+        iva = next(generator, 0)
+        # World Office adiciona el IVA automáticamente, se envía el precio con IVA descontado.
+        valor_unitario = line_intem.discounted_unit_price_iva_discount(iva)
 
-        amount = line_intem.originalUnitPriceSet.shopMoney.amount.split('.')[0]
         reglones.append(
             WOReglone(
                 idInventario=inventario.id,
                 unidadMedida='und',
                 cantidad=line_intem.quantity,
-                valorUnitario=int(amount),
+                valorUnitario=valor_unitario,
                 idBodega=1,
+                porDescuento=line_intem.porc_discount_unit_price,
             )
+        )
+
+    costo_envio = order.shippingLine.originalPriceSet.shopMoney.amount
+    if costo_envio > 0:
+        # El id de inventario que correspnde a FLETE en World Office es 1079
+        reglones.append(
+            WOReglone(idInventario=1079, unidadMedida='und', cantidad=1, valorUnitario=costo_envio, idBodega=1)
         )
 
     wo_documento_venta_create = WODocumentoVentaCreate(

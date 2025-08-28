@@ -45,3 +45,13 @@ def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
             palabras_en_plural[i] = palabras_en_plural[i] + 'es'
 
     return sep.join(palabras_en_plural + palabras_en_singular)
+
+
+def divide(dividendo: int | float, divisor: int | float) -> float:
+    """
+    Evita ZeroDivisionError.
+    """
+    if divisor == 0:
+        return 0
+    else:
+        return dividendo / divisor

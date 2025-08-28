@@ -47,7 +47,7 @@ class InventarioTipoImpuestoVenta(Base):
 
 class ImpuestoElement(Base):
     id: int = 0
-    valor: str = ''
+    valor: float = 0
     senSumaAlCosto: bool = False
     idProceso: int = 0
     impuesto: Impuesto = Impuesto()

@@ -41,7 +41,8 @@ class ShopifyGraphQLClient(BaseClient):
         version: str = config.shop_version,
         access_token: str = config.api_key_shopify,
     ):
-        super().__init__(f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json')
+        super().__init__()
+        self.host = f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json'
         self.access_token = access_token
         self.headers = {
             'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ class QueryShopify:
         self.client = ShopifyGraphQLClient()
 
     class Variables(BaseModel):
-        num_items: int = 20
+        num_items: int = 10
         cursor: str | None = None
         search_query: str | None = None
         id: int | None = None
@@ -250,10 +251,19 @@ class QueryShopify:
                         name
                         quantity
                         sku
+                        variant {
+                            compareAtPrice
+                        }
                         originalUnitPriceSet {
                         shopMoney {
                             amount
                             currencyCode
+                        }
+                        discountedUnitPriceSet {
+                            shopMoney {
+                                amount
+                                currencyCode
+                            }
                         }
                     }
                 }

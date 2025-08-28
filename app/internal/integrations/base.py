@@ -4,6 +4,7 @@ from aiohttp import ClientSession
 class ClientException(Exception):
     def __init__(
         self,
+        *,
         payload: dict | None = None,
         url: str | None = None,
         response: dict | None = None,
@@ -19,9 +20,9 @@ class ClientException(Exception):
 
 
 class BaseClient:
-    def __init__(self, host: str, headers: dict | None = None):
-        self.host = host
-        self.current_url: str = ''
+    def __init__(self, headers: dict | None = None):
+        self.host: str = ''
+        self.url: str = ''
         self._headers = headers.copy() if headers else {}
 
     @property
@@ -39,13 +40,12 @@ class BaseClient:
         self._headers.update(headers)
 
     def _build_url(self, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        url = f'{self.host}{path}'
-        self.current_url = url
+        self.url = f'{self.host}{path}'
         if params:
-            url += f'/{"/".join(params)}'
+            self.url += f'/{"/".join(params)}'
         if query_params:
-            url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
-        return url
+            self.url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
+        return self.url
 
     async def _request(
         self,
