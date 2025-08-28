@@ -122,7 +122,6 @@ class LineItem(Base):
             discount_amount = self.unit_price - self.discounted_unit_price
             return round(divide(discount_amount, self.discounted_unit_price) * 100, 2)
 
-    @computed_field
     def discounted_unit_price_iva_discount(self, IVA: float) -> float:
         return self.discounted_unit_price / (1 + IVA)
 
