@@ -8,6 +8,7 @@ if __name__ == '__main__':
 # from random import randint
 
 
+from pydantic import ValidationError
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
@@ -76,7 +77,12 @@ class WoClient(BaseClient):
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
         tercero_json = await self.get(self.Paths.Terceros.identificacion, [identificacion])
-        tercero_response = WOTerceroResponse(**tercero_json)
+
+        try:
+            tercero_response = WOTerceroResponse(**tercero_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, response=tercero_json, msg=str(e))
+
         if tercero_response.valid():
             if tercero_response.data:
                 return tercero_response.data
@@ -87,30 +93,49 @@ class WoClient(BaseClient):
 
     async def get_documento_venta(self, id_documento: int) -> WODocumentoVentaDetail:
         documento_venta_json = await self.get(self.Paths.Ventas.documento_venta, [str(id_documento)])
-        documento_venta_response = WODocumentoVentaDetailResponse(**documento_venta_json)
+
+        try:
+            documento_venta_response = WODocumentoVentaDetailResponse(**documento_venta_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, response=documento_venta_json, msg=str(e))
+
         if not documento_venta_response.data:
             raise WOException(url=self.url, response=documento_venta_json)
         return documento_venta_response.data
 
     async def get_inventario_por_codigo(self, codigo: str) -> WOInventario:
         inventario_json = await self.get(self.Paths.Inventario.inventario_por_codigo, [codigo])
-        inventario_response = WOInventarioResponse(**inventario_json)
+
+        try:
+            inventario_response = WOInventarioResponse(**inventario_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, response=inventario_json, msg=str(e))
+
         if not inventario_response.valid():
             raise WOException(url=self.url, response=inventario_json)
         return inventario_response.data
 
     async def contabilizar_documento_venta(self, id_documento: int) -> bool:
         contabilizar_json = await self.post(self.Paths.Ventas.contabilizar, [str(id_documento)])
-        contabilizar_response = WOContabilizarDocumentoVentaResponse(**contabilizar_json)
+
+        try:
+            contabilizar_response = WOContabilizarDocumentoVentaResponse(**contabilizar_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, response=contabilizar_json, msg=str(e))
+
         if not contabilizar_response.valid():
             raise WOException(url=self.url, response=contabilizar_json)
         return True
 
     async def crear_tercero(self, wo_tercero_create: WOTerceroCreate) -> WOTercero:
-        tercero_json = await self.post(
-            self.Paths.Terceros.crear, payload=wo_tercero_create.model_dump(exclude_none=True, mode='json')
-        )
-        tercero_response = WOTerceroResponse(**tercero_json)
+        payload = wo_tercero_create.model_dump(exclude_none=True, mode='json')
+        tercero_json = await self.post(self.Paths.Terceros.crear, payload=payload)
+
+        try:
+            tercero_response = WOTerceroResponse(**tercero_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=tercero_json, msg=str(e))
+
         if not tercero_response.data:
             raise WOException(url=self.url, payload=tercero_json, response=tercero_json)
         return tercero_response.data
@@ -124,7 +149,12 @@ class WoClient(BaseClient):
             raise WOException(msg='No se puede editar el tercero si no se proporciona un identificador')
         payload = wo_tercero_edit.model_dump(exclude_none=True, mode='json')
         tercero_json = await self.put(self.Paths.Terceros.editar, payload=payload)
-        tercero_response = WOTerceroResponse(**tercero_json)
+
+        try:
+            tercero_response = WOTerceroResponse(**tercero_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=tercero_json, msg=str(e))
+
         if not tercero_response.valid():
             raise WOException(url=self.url, payload=payload, response=tercero_json)
         return tercero_response.data
@@ -143,7 +173,11 @@ class WoClient(BaseClient):
         ciudades_json = await self.post(
             self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
         )
-        ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+
+        try:
+            ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=ciudades_json, msg=str(e))
 
         # Si no se encuentra por nombre de ciudad, por posible escritura incorrecta, se busca por departamento.
         if not ciudades_response.valid():
@@ -155,7 +189,12 @@ class WoClient(BaseClient):
                 ciudades_json = await self.post(
                     self.Paths.Ciudad.listar_ciudades, payload=payload.model_dump(exclude_none=True, mode='json')
                 )
-                ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+
+                try:
+                    ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+                except ValidationError as e:
+                    raise WOException(url=self.url, payload=payload, response=ciudades_json, msg=str(e))
+
                 if not ciudades_response.valid():
                     raise WOException(url=self.url, payload=payload, response=ciudades_json)
 
@@ -181,7 +220,12 @@ class WoClient(BaseClient):
             columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2]
         ).model_dump(exclude_none=True, mode='json')
         facturas_json = await self.post(self.Paths.Ventas.listar_documentos_venta, payload=payload)
-        facturas_response = WOListaDocumentosVentaResponse(**facturas_json)
+
+        try:
+            facturas_response = WOListaDocumentosVentaResponse(**facturas_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=facturas_json, msg=str(e))
+
         if not facturas_response.data.content or len(facturas_response.data.content) == 0:
             raise WOException(url=self.url, payload=payload, response=facturas_json)
         return facturas_response.data.content[0]
@@ -195,18 +239,28 @@ class WoClient(BaseClient):
             params=[str(id_documento)],
             payload=payload,
         )
-        productos_response = WOListaProductosDocumentoVentaResponse(**productos_json)
+
+        try:
+            productos_response = WOListaProductosDocumentoVentaResponse(**productos_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=productos_json, msg=str(e))
+
         if not productos_response.data.content or len(productos_response.data.content) == 0:
             raise WOException(url=self.url, payload=productos_json, response=productos_json)
         return productos_response.data.content
 
     async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
         payload = factura_create.model_dump(exclude_none=True, mode='json')
-        factura_json = await self.post(self.Paths.Ventas.crear, payload=payload)
-        factura_response = WODocumentoVentaDetailResponse(**factura_json)
+        factura_dict = await self.post(self.Paths.Ventas.crear, payload=payload)
+
+        try:
+            factura_response = WODocumentoVentaDetailResponse(**factura_dict)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=factura_dict, response=factura_dict, msg=str(e))
+
         if not factura_response.valid():
             raise WOException(
-                payload=factura_json,
+                payload=factura_dict,
                 url=self.url,
             )
         return factura_response.data
@@ -214,7 +268,12 @@ class WoClient(BaseClient):
     async def editar_factura_venta(self, factura_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
         payload = factura_edit.model_dump(exclude_none=True, mode='json')
         factura_json = await self.put(self.Paths.Ventas.editar, payload=payload)
-        factura_response = WODocumentoVentaDetailResponse(**factura_json)
+
+        try:
+            factura_response = WODocumentoVentaDetailResponse(**factura_json)
+        except ValidationError as e:
+            raise WOException(url=self.url, payload=payload, response=factura_json, msg=str(e))
+
         if not factura_response.valid():
             raise WOException(url=self.url, payload=payload, response=factura_json)
         return factura_response.data
