@@ -13,10 +13,11 @@ class ClientException(Exception):
         self.url = url
         self.payload = payload
         self.response = response
+        self.msg = msg
         super().__init__(msg)
 
     def __str__(self):
-        return f'url: {self.url}\npayload: {self.payload}\nresponse: {self.response}'
+        return f'url: {self.url}\npayload: {self.payload}\nresponse: {self.response}\nmsg: {self.msg}'
 
 
 class BaseClient:

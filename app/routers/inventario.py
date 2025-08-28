@@ -6,7 +6,7 @@ import re
 
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
 from app.models.pydantic.world_office.terceros import WOTerceroCreate
-from app.internal.integrations.world_office import WOException, WoClient
+from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import Pedido, PedidoCreate
 from app.models.db.session import AsyncSessionDep
 from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
@@ -214,9 +214,6 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
         pedido_update.contabilizado = contabilizar
         pedido = await pedido_query.update(session, pedido, pedido_update)
 
-    except WOException as e:
-        log_inventario_shopify.error(f'{e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except Exception as e:
         log_inventario_shopify.error(f'{e}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

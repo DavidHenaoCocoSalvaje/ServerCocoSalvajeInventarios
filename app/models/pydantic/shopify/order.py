@@ -102,12 +102,14 @@ class LineItem(Base):
     @property
     def unit_price(self) -> float:
         amount = self.originalUnitPriceSet.shopMoney.amount
+        amount = amount if amount > 0 else self.variant.compareAtPrice
         return amount if amount > 0 else 0
 
     @computed_field
     @property
     def discounted_unit_price(self) -> float:
         amount = self.discountedUnitPriceSet.shopMoney.amount
+        amount = amount if amount > 0 else self.unit_price
         return amount if amount > 0 else 0
 
     @computed_field
