@@ -214,8 +214,10 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
 
     except WOException as e:
         log_inventario_shopify.error(f'{e}')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     except Exception as e:
         log_inventario_shopify.error(f'{e}')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 async def facturar_orden(order: Order):

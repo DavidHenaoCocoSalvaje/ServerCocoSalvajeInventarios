@@ -198,7 +198,7 @@ class WoClient(BaseClient):
 
     async def productos_documento_venta(self, id_documento: int) -> list[WOProductoDocumento]:
         payload = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[]).model_dump(
-            exclude_none=True
+            exclude_none=True, mode='json'
         )
         productos_json = await self.post(
             self.Paths.Ventas.listar_productos,
