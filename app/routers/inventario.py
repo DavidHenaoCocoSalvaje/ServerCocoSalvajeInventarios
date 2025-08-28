@@ -186,7 +186,9 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
         order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
         order_response = OrderResponse(**order_json)
         if not order_response.valid():
-            log_inventario_shopify.error(f'Order void: {order_response.model_dump_json()}')
+            log_inventario_shopify.error(
+                f'Order void: {order_response.model_dump_json()}, shopify_response: {order_json}'
+            )
             return
 
         # Registrar pedido

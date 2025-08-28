@@ -255,9 +255,10 @@ class QueryShopify:
                             compareAtPrice
                         }
                         originalUnitPriceSet {
-                        shopMoney {
-                            amount
-                            currencyCode
+                            shopMoney {
+                                amount
+                                currencyCode
+                            }
                         }
                         discountedUnitPriceSet {
                             shopMoney {
@@ -265,7 +266,6 @@ class QueryShopify:
                                 currencyCode
                             }
                         }
-                    }
                 }
                 pageInfo {
                     endCursor
