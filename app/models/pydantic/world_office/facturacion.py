@@ -12,7 +12,7 @@ class WOReglone(Base):
     idInventario: int = 0
     unidadMedida: str = ''
     cantidad: int = 0
-    valorUnitario: int = 0
+    valorUnitario: float = 0
     idBodega: int = 0
     porDescuento: int | None = None
     idCentroCosto: int | None = None

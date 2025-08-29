@@ -1,14 +1,14 @@
 # app/routers/inventario.py
 from enum import Enum
 import traceback
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 
 from app.internal.gen.utilities import DateTz
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
-from app.models.db.transacciones import Pedido, PedidoCreate
+from app.models.db.transacciones import PedidoCreate
 from app.models.db.session import AsyncSessionDep
 from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
@@ -177,13 +177,13 @@ async def sync_shopify():
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(hmac_validation_shopify)],
 )
-async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep, response: Response):
+async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
     try:
         query_shopify = QueryShopify()
         # Obtener datos de pedido
         webhook_data = await request.json()
         order_webhook = OrderWebHook(**webhook_data)
-        # Se consulta la orden porque la ingormación que viene del webhook no incluye la información de la transacción.
+        # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
         order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
         order_response = OrderResponse(**order_json)
         if not order_response.valid():
@@ -204,13 +204,25 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep, re
             pedido = await pedido_query.create(session, pedido_create)
 
         if not pedido.id:
-            log_inventario_shopify.error('No se pudo obtener el ID del pedido')
-            raise ValueError('No se pudo obtener el ID del pedido')
+            exception = Exception('No se pudo obtener el ID del pedido')
+            log_inventario_shopify.error(f'{exception}')
+            raise exception
 
         wo_client = WoClient()
 
         if not pedido.factura_id and pedido.id:
-            factura = await facturar_orden(session, wo_client, order, pedido)
+            # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
+            identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
+            if not identificacion_tercero:
+                msg = 'Falta documento de identidad'
+                pedido_update = pedido.model_copy()
+                pedido_update.log = msg
+                if pedido.id:
+                    await pedido_query.update(session, pedido, pedido_update, pedido.id)
+                exception = Exception(msg)
+                log_inventario_shopify.debug(f'{exception}')
+                raise exception
+            factura = await facturar_orden(wo_client, order, identificacion_tercero)
             # Se registra número de factura por si pasa algo antes de contabilizar.
             pedido_update = pedido.model_copy()
             pedido_update.factura_id = str(factura.id)
@@ -219,43 +231,22 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep, re
 
         factura = await wo_client.get_documento_venta(int(pedido.factura_id))
 
-        # Contabilizar pedido
-        contabilizar = await contabilizar_pedido(pedido)
-        # Registrar estado contabilización
-        pedido_update = pedido.model_copy()
-        pedido_update.contabilizado = contabilizar
-
-        if not pedido.id:
-            exception = ValueError('No se pudo obtener el ID del pedido')
-            log_inventario_shopify.error(f'{exception}')
-            raise exception
-
-        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        if not pedido.contabilizado and pedido.id:
+            contabilizar = await wo_client.contabilizar_documento_venta(int(pedido.factura_id))
+            pedido_update = pedido.model_copy()
+            pedido_update.contabilizado = contabilizar
+            pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
     except Exception as e:
         log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     # Se encuentra que el comportamiento de shopify al no recibir un status code 200 es notificar varias veces.
-    response.status_code = status.HTTP_200_OK
     return True
 
 
-async def facturar_orden(
-    session: AsyncSessionDep, wo_client: WoClient, order: Order, pedido: Pedido, pedido_query=pedido_query
-):
+async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str):
     # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
-    identificacion = order.billingAddress.identificacion or order.shippingAddress.identificacion
-    if not identificacion:
-        msg = 'Falta documento de identidad'
-        pedido_update = pedido.model_copy()
-        pedido_update.log = msg
-        if pedido.id:
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
-        exception = Exception(msg)
-        log_inventario_shopify.debug(f'{exception}')
-        raise exception
-
     ciudad = order.billingAddress.city or order.shippingAddress.city
     departamento = order.billingAddress.province or order.shippingAddress.province
     telefono = order.billingAddress.telefono or order.shippingAddress.telefono
@@ -278,7 +269,7 @@ async def facturar_orden(
     primer_apellido = last_name.split(' ')[0]
     segundo_apellido = last_name.split(' ')[1] if len(last_name.split(' ')) > 1 else ''
 
-    wo_tercero = await wo_client.get_tercero(identificacion)
+    wo_tercero = await wo_client.get_tercero(identificacion_tercero)
 
     """ Cuando se crea un tercero, 
     la dirección tienen un nombre, este causa error si es un mombre muy largo,
@@ -288,7 +279,7 @@ async def facturar_orden(
     if wo_tercero is None:
         tercero_create = WOTerceroCreate(
             idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
-            identificacion=identificacion,
+            identificacion=identificacion_tercero,
             primerNombre=primer_nombre,
             segundoNombre=segundo_nombre,
             primerApellido=primer_apellido,
@@ -312,7 +303,7 @@ async def facturar_orden(
         tercero_create = WOTerceroCreate(
             id=wo_tercero.id,
             idTerceroTipoIdentificacion=3,
-            identificacion=identificacion,
+            identificacion=identificacion_tercero,
             primerNombre=primer_nombre,
             segundoNombre=segundo_nombre,
             primerApellido=primer_apellido,
@@ -382,6 +373,18 @@ async def facturar_orden(
     return await wo_client.crear_factura_venta(wo_documento_venta_create)
 
 
-async def contabilizar_pedido(pedido: Pedido):
-    wo_client = WoClient()
-    return await wo_client.contabilizar_documento_venta(int(pedido.factura_id))
+# @shopify_router.post(
+#     '/pedido/update',
+#     status_code=status.HTTP_200_OK,
+# )
+# async def update_pedido(request: Request, session: AsyncSessionDep):
+#     try:
+#         query_shopify = QueryShopify()
+#         # Obtener datos de pedido
+#         webhook_data = await request.json()
+#         order_webhook = OrderWebHook(**webhook_data)
+#         # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
+#         order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
+#         order_response = OrderResponse(**order_json)
+#     except Exception as e:
+#         pass

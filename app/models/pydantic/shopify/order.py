@@ -119,17 +119,17 @@ class LineItem(Base):
 
     @computed_field
     @property
-    def unit_price(self) -> int:
+    def unit_price(self) -> float:
         amount = self.originalUnitPriceSet.shopMoney.amount
         amount = amount if amount > 0 else self.variant.compareAtPrice
-        return round(amount) if amount > 0 else 0
+        return round(amount, 2) if amount > 0 else 0
 
     @computed_field
     @property
-    def discounted_unit_price(self) -> int:
+    def discounted_unit_price(self) -> float:
         amount = self.discountedUnitPriceSet.shopMoney.amount
         amount = amount if amount > 0 else self.unit_price
-        return round(amount) if amount > 0 else 0
+        return round(amount, 2) if amount > 0 else 0
 
     @computed_field
     @property
@@ -143,8 +143,8 @@ class LineItem(Base):
             discount_amount = self.unit_price - self.discounted_unit_price
             return round(divide(discount_amount, self.discounted_unit_price) * 100)
 
-    def discounted_unit_price_iva_discount(self, IVA: float) -> int:
-        return round(self.discounted_unit_price / (1 + IVA))
+    def discounted_unit_price_iva_discount(self, IVA: float) -> float:
+        return round(divide(self.discounted_unit_price, 1 + IVA), 2)
 
 
 class PageInfo(Base):
