@@ -5,14 +5,14 @@ En este módulo se encuentran los modelos que representan los registros de trans
 """
 
 from datetime import datetime
-from sqlmodel import SQLModel, Field, DATE
+from sqlmodel import SQLModel, Field, TIMESTAMP
 
 from app.internal.gen.utilities import DateTz
 
 
 class TransaccionBase(SQLModel):
     __table_args__ = {'schema': 'transaccion'}
-    fecha: datetime = Field(sa_type=DATE, default_factory=DateTz.local)
+    fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=DateTz.local)
 
 
 class PedidoCreate(TransaccionBase):

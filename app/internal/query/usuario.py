@@ -30,6 +30,9 @@ usuario_query = UsuarioQuery()
 password_hasher = PasswordHasher()
 
 
+usuario_logger = factory_logger('usuario', file=True)
+
+
 async def set_admin_user(reset_password: bool = False):
     logger = factory_logger('main', file=False)
     session_gen = get_async_session()
@@ -52,7 +55,13 @@ async def set_admin_user(reset_password: bool = False):
             usuario_db = await usuario_query.get_by_username(session, 'admin')
             if usuario_db is None:
                 usuario_db = await usuario_query.create(session, usuario)
-            await usuario_query.update(session, usuario_db, usuario)
+
+            if usuario_db.id is None:
+                exception = ValueError('No se pudo obtener el ID del usuario')
+                usuario_logger.error(f'{exception}')
+                raise exception
+
+            await usuario_query.update(session, usuario_db, usuario, usuario_db.id)
     finally:
         # Cerrar el generador para limpiar la sesión
         await session_gen.aclose()

@@ -14,7 +14,7 @@ class WOReglone(Base):
     cantidad: int = 0
     valorUnitario: int = 0
     idBodega: int = 0
-    porDescuento: int = 0
+    porDescuento: int | None = None
     idCentroCosto: int | None = None
 
 

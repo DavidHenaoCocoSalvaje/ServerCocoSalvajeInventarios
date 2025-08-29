@@ -3,8 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
 from typing import Generic, TypeVar
 
+from app.internal.log import factory_logger
+
 ModelDB = TypeVar('ModelDB', bound=SQLModel)
 ModelCreate = TypeVar('ModelCreate', bound=SQLModel)
+
+
+log_base_query = factory_logger('base_query', file=True)
 
 
 class BaseQuery(Generic[ModelDB, ModelCreate]):
@@ -26,11 +31,12 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
     async def create(self, session: AsyncSession, obj: ModelCreate) -> ModelDB:
         """Crea un nuevo objeto de forma asíncrona."""
         obj_in_data = obj.model_dump()
-        base_obj = self.model_db(**obj_in_data)  # Se garantiza que el objeto sea del tipo correcto
-        merge_obj = await session.merge(base_obj)
+        create_model = self.model_create(**obj_in_data)  # Se garantiza que el objeto sea del tipo correcto
+        db_model = self.model_db(**create_model.model_dump())  # Modelo de retorno
+        session.add(db_model)
         await session.commit()
-        await session.refresh(merge_obj)  # Refresca para obtener el ID generado por la BD
-        return merge_obj
+        await session.refresh(db_model)  # Refresca para obtener el ID generado por la BD
+        return db_model
 
     async def bulk_insert(self, session: AsyncSession, objs: list[ModelDB]):
         """Inserta varios objetos de forma asíncrona."""
@@ -41,23 +47,25 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         session.add_all(base_objs)
         await session.commit()
 
-    async def update(self, session: AsyncSession, db_obj: SQLModel, obj: SQLModel):
+    async def update(self, session: AsyncSession, db_exist_obj: SQLModel, new_obj: SQLModel, pk: int | str) -> ModelDB:
         """Actualiza un objeto existente de forma asíncrona."""
-        # Obtiene los datos a actualizar, excluyendo los no proporcionados (None)
-        update_data = obj.model_dump(exclude_none=True)
-        if not update_data:  # Si no se proporcionaron datos para actualizar
-            return self.model_db(**db_obj.model_dump())  # Devuelve el usuario sin cambios
+        # Se garantiza que el objeto recibido si exista.
+        db_obj = await session.get(self.model_db, pk)
+        if not db_obj:
+            exception = ValueError(f'No existe el objeto con id {pk}')
+            log_base_query.error(f'{exception}')
+            raise exception
 
-        # Actualiza los campos del objeto SQLAlchemy
+        # Actualiza el objeto que ya está en la sesión
+        update_data = new_obj.model_dump(exclude_none=True, exclude_defaults=True)
         for key, value in update_data.items():
-            # Verifica si el atributo existe en el objeto
             if hasattr(db_obj, key) and getattr(db_obj, key) != value:
                 setattr(db_obj, key, value)
 
-        session.add(db_obj)  # Añade el objeto modificado a la sesión (necesario para commit)
+        session.add(db_obj)  # Añade el objeto modificado a la sesión
         await session.commit()
         await session.refresh(db_obj)
-        return self.model_db(**db_obj.model_dump())
+        return db_obj
 
     async def delete(self, session: AsyncSession, id: int | str) -> ModelDB | None:
         """Elimina un objeto de forma asíncrona."""

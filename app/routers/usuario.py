@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from string import punctuation
 
 # Modelos
+from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
 from app.models.db.usuario import UsuarioBase, UsuarioCreate, UsuarioDB
 
@@ -18,6 +19,8 @@ router = APIRouter(
     responses={404: {'description': 'No encontrado'}},
     dependencies=[Depends(validar_access_token)],
 )
+
+log_usuario = factory_logger('usuario', file=True)
 
 
 def verificar_complejidad_password(usuario: UsuarioCreate):
@@ -123,7 +126,13 @@ async def actualizar(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Usuario no encontrado',
         )
-    usuario_actualizado = await usuario_query.update(session, db_user, usuario)
+
+    if db_user.id is None:
+        exception = ValueError('No se pudo obtener el ID del usuario')
+        log_usuario.error(f'{exception}')
+        raise exception
+
+    usuario_actualizado = await usuario_query.update(session, db_user, usuario, db_user.id)
     return usuario_actualizado
 
 

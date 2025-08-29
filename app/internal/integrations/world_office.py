@@ -76,6 +76,11 @@ class WoClient(BaseClient):
         self.set_header('Authorization', f'WO {config.wo_api_key}')
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
+        if not identificacion:
+            exception = WOException(url=self.url, msg='Falta documento de identidad')
+            wo_log.error(f'{exception}')
+            raise exception
+
         tercero_json = await self.get(self.Paths.Terceros.identificacion, [identificacion])
 
         try:
@@ -86,14 +91,14 @@ class WoClient(BaseClient):
             raise exception
 
         if tercero_response.valid():
-            if tercero_response.data:
-                return tercero_response.data
-            else:
+            if not tercero_response.data.id:
                 return None
         else:
             exception = WOException(url=self.url, response=tercero_json)
             wo_log.error(f'No se pudo obtener tercero: {exception}')
             raise exception
+
+        return tercero_response.data
 
     async def get_documento_venta(self, id_documento: int) -> WODocumentoVentaDetail:
         documento_venta_json = await self.get(self.Paths.Ventas.documento_venta, [str(id_documento)])
@@ -161,9 +166,11 @@ class WoClient(BaseClient):
         Args:
             wo_tercero_edit (WOTerceroCreate): debe contar con el ID para editar el tercer.
         """
-        if not wo_tercero_edit.id:
-            raise WOException(msg='No se puede editar el tercero si no se proporciona un identificador')
         payload = wo_tercero_edit.model_dump(exclude_none=True, mode='json')
+        if not wo_tercero_edit.id:
+            raise WOException(
+                payload=payload, msg='No se puede editar el tercero si no se proporciona un identificador'
+            )
         tercero_json = await self.put(self.Paths.Terceros.editar, payload=payload)
 
         try:
@@ -328,7 +335,7 @@ if __name__ == '__main__':
     async def main():
         wo_client = WoClient()
         tercero = await wo_client.get_tercero('1094240554')
-        assert tercero.identificacion == '1094240554'
+        assert tercero is not None and tercero.identificacion == '1094240554'
         ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
         print(ciudad)
         assert isinstance(ciudad, WOCiudad)

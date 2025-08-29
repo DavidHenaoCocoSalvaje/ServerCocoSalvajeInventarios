@@ -3,6 +3,8 @@ from typing import Any
 from pydantic import BaseModel
 from pandas import DataFrame, merge, isna
 
+# from app.internal.log import LogLevel, factory_logger
+
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -32,6 +34,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from app.config import config
+
+# log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 class ShopifyGraphQLClient(BaseClient):
@@ -192,9 +196,9 @@ class QueryShopify:
             variables,
         )
 
-    async def get_order(self, order_gid: str, num_items: int = 40):
+    async def get_order(self, order_gid: str, num_items: int = 10):
         query = """
-        query GetOrder($gid: ID!, $num_items: Int!) {
+        query GetOrder($gid: ID!) {
             order(id: $gid) {
                 fullyPaid
                 email
@@ -246,6 +250,19 @@ class QueryShopify:
                         }
                     }
                 }
+            }
+        }
+        """
+        variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
+        order_json = await self.client.execute_query(query, **variables)
+        order_line_items_json = await self.get_order_line_items(order_gid, num_items)
+        order_json['data']['order']['lineItems'] = order_line_items_json['data']['order']['lineItems']
+        return order_json
+
+    async def get_order_line_items(self, order_gid: str, num_items: int = 10):
+        query = """
+        query GetLineItemsOrder($gid: ID!, $num_items: Int!) {
+            order(id: $gid) {
                 lineItems(first:$num_items) {
                     nodes {
                         name
@@ -266,17 +283,17 @@ class QueryShopify:
                                 currencyCode
                             }
                         }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
                 }
             }
         }
         """
         variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
-        return await self.client.execute_query(query, **variables)
+        return await self.client.get_all_recursively(query, ['data', 'order', 'lineItems'], variables)
 
 
 async def get_inventory_info():

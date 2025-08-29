@@ -1,7 +1,7 @@
 # app/routers/inventario.py
 from enum import Enum
+import traceback
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-import re
 
 
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
@@ -195,7 +195,6 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
         pedido_create = PedidoCreate(numero=str(order_response.data.order.number))
         pedido = await pedido_query.create(session, pedido_create)
 
-        log_inventario_shopify.info(f'\nPedido recibido: {order_response.model_dump_json()}')
         if order_response.data.order is None:
             log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
         order = order_response.data.order
@@ -203,19 +202,30 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
 
         # Registrar número de factura
         pedido_update = pedido.model_copy()
-        pedido_update.factura = str(factura.id)
+        pedido_update.factura_id = str(factura.id)
         pedido_update.factura_numero = str(factura.numero)
-        pedido = await pedido_query.update(session, pedido, pedido_update)
+
+        if not pedido.id:
+            log_inventario_shopify.error('No se pudo obtener el ID del pedido')
+            raise ValueError('No se pudo obtener el ID del pedido')
+
+        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
         # Contabilizar pedido
         contabilizar = await contabilizar_pedido(pedido)
         # Registrar estado contabilización
         pedido_update = pedido.model_copy()
         pedido_update.contabilizado = contabilizar
-        pedido = await pedido_query.update(session, pedido, pedido_update)
+
+        if not pedido.id:
+            exception = ValueError('No se pudo obtener el ID del pedido')
+            log_inventario_shopify.error(f'{exception}')
+            raise exception
+
+        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
     except Exception as e:
-        log_inventario_shopify.error(f'{e}')
+        log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
@@ -227,15 +237,16 @@ async def facturar_orden(order: Order):
 
     # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
     wo_client = WoClient()
-    identificacion = order.billingAddress.company or order.shippingAddress.company
-    # Eliminar digíto de verificación si company contiene '-'
-    if '-' in identificacion:
-        identificacion = identificacion.split('-')[0]
-    # La identificación puede contener carácteres no válidos, ya que en Shopify no hay validación de tipos.
-    identificacion = re.sub(r'[^0-9]', '', identificacion)
+    identificacion = order.billingAddress.identificacion or order.shippingAddress.identificacion
+    if not identificacion:
+        exception = Exception('Falta documento de identidad')
+        log_inventario_shopify.debug(f'{exception}')
+        raise exception
 
     ciudad = order.billingAddress.city or order.shippingAddress.city
     departamento = order.billingAddress.province or order.shippingAddress.province
+    telefono = order.billingAddress.telefono or order.shippingAddress.telefono
+    email = order.email if order.email else 'sinemail@mail.com'
     wo_ciudad = await wo_client.buscar_ciudad(departamento, ciudad)
     ciudad_id = wo_ciudad.id
 
@@ -259,7 +270,7 @@ async def facturar_orden(order: Order):
     if wo_tercero is None:
         tercero_create = WOTerceroCreate(
             idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
-            identificacion=order.billingAddress.company,
+            identificacion=identificacion,
             primerNombre=primer_nombre,
             segundoNombre=segundo_nombre,
             primerApellido=primer_apellido,
@@ -267,6 +278,12 @@ async def facturar_orden(order: Order):
             idCiudad=ciudad_id,
             direccion=address,
             idTerceroTipos=[4],  # Cliente
+            idTerceroTipoContribuyente=6,
+            idClasificacionImpuestos=1,
+            telefono=telefono,
+            email=email,
+            plazoDias=30,
+            responsabilidadFiscal=[7],
         )
         wo_tercero = await wo_client.crear_tercero(tercero_create)
 
@@ -275,14 +292,20 @@ async def facturar_orden(order: Order):
         id_tercero_tipos.append(4)  # Cliente
         tercero_create = WOTerceroCreate(
             id=wo_tercero.id,
-            idTerceroTipoIdentificacion=wo_tercero.terceroTipoIdentificacion.id,  # Cédula de ciudadanía
-            identificacion=wo_tercero.identificacion,
-            primerNombre=wo_tercero.primerNombre,
-            segundoNombre=wo_tercero.segundoNombre,
-            primerApellido=wo_tercero.primerApellido,
-            segundoApellido=wo_tercero.segundoApellido,
-            idCiudad=wo_tercero.ciudad.id,
-            idTerceroTipos=id_tercero_tipos,  # Cliente
+            identificacion=identificacion,
+            primerNombre=primer_nombre,
+            segundoNombre=segundo_nombre,
+            primerApellido=primer_apellido,
+            segundoApellido=segundo_apellido,
+            idCiudad=ciudad_id,
+            direccion=address,
+            idTerceroTipos=[4],  # Cliente
+            idTerceroTipoContribuyente=6,
+            idClasificacionImpuestos=1,
+            telefono=telefono,
+            email=email,
+            plazoDias=30,
+            responsabilidadFiscal=[7],
         )
         wo_tercero = await wo_client.editar_tercero(tercero_create)
 
@@ -324,7 +347,7 @@ async def facturar_orden(order: Order):
         concepto='Prueba API',
         idEmpresa=1,  # CocoSalvaje
         idTerceroExterno=wo_tercero.id,
-        idTerceroInterno=1,
+        idTerceroInterno=1834,
         idFormaPago=id_forma_pago,
         idMoneda=31,
         reglones=reglones,

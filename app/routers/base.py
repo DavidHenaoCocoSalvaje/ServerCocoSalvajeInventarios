@@ -98,7 +98,7 @@ class CRUD(Generic[Model]):
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f'{Model.__name__} con ID {resource_id} no encontrado',
                 )
-            updated_resource = await query.update(session, resourse_db, new_data)
+            updated_resource = await query.update(session, resourse_db, new_data, resourse_db.id)
             return updated_resource
 
         # DELETE - Eliminar un recurso

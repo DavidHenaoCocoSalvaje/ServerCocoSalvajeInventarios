@@ -72,7 +72,7 @@ def factory_logger(
         return logger
 
     formatter = logging.Formatter(
-        fmt=f'{DateTz.local().strftime("%Y-%m-%d %H:%M:%S")} - %(name)s - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
+        fmt=f'\n{DateTz.local().strftime("%Y-%m-%d %H:%M:%S")} - %(name)s - %(levelname)s - %(pathname)s:%(lineno)d\n%(message)s\n'
     )
 
     # Handler para consola (siempre presente)

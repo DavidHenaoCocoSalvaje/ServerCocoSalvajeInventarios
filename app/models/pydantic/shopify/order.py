@@ -2,10 +2,11 @@
 
 # Modelos de payloads enviados por Shopify en webhooks
 
-from datetime import datetime
+from datetime import date
 from enum import Enum
+import re
 from pydantic import Field, computed_field
-from app.internal.gen.utilities import divide
+from app.internal.gen.utilities import DateTz, divide
 from app.models.pydantic.base import Base
 
 
@@ -62,6 +63,22 @@ class Address(Base):
     phone: str = ''
     zip: str = ''  # Se deja como str porque es un campo ingresado por el cliente y no se restringe su tipo.
     formatted: list[str] = []
+
+    @computed_field
+    @property
+    def identificacion(self) -> str:
+        identificacion = self.company
+        if '-' in identificacion:
+            identificacion = self.company.split('-')[0]
+        return re.sub(r'[^0-9]', '', identificacion)
+
+    @computed_field
+    @property
+    def telefono(self) -> str:
+        telefono = self.phone
+        if telefono.startswith('+'):
+            telefono = telefono[3:]
+        return re.sub(r'[^0-9]', '', telefono)
 
 
 class Customer(Base):
@@ -155,7 +172,7 @@ class Order(Base):
     fullyPaid: bool = False
     email: str = ''
     number: int = 0
-    createdAt: datetime = Field(default_factory=datetime.now)
+    createdAt: date = Field(default_factory=DateTz.today)
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []
