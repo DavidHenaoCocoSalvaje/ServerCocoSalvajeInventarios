@@ -5,7 +5,9 @@
 from datetime import datetime
 from enum import Enum
 import re
-from pydantic import Field, computed_field
+from typing import Annotated
+from pydantic import Field, computed_field, SerializerFunctionWrapHandler
+from pydantic.functional_serializers import WrapSerializer
 from app.internal.gen.utilities import DateTz, divide
 from app.models.pydantic.base import Base
 
@@ -168,11 +170,15 @@ class App(Base):
     name: str = ''
 
 
+def created_at_serializer(value, nxt: SerializerFunctionWrapHandler):
+    return nxt(DateTz.from_isostring(value))
+
+
 class Order(Base):
     fullyPaid: bool = False
     email: str = ''
     number: int = 0
-    createdAt: datetime = Field(default_factory=DateTz.local)
+    createdAt: Annotated[datetime, WrapSerializer(created_at_serializer)] = Field(default_factory=DateTz.local)
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []

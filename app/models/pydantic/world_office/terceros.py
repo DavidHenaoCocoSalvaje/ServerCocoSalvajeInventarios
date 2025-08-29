@@ -62,9 +62,9 @@ class TerceroZonaPOJO(Base):
     borrador: bool = False
 
 
-class Direccion(Base):
+class WODireccion(Base):
     id: int = 0
-    nombre: str = ''
+    nombre: str
     terceroTipoDireccion: TerceroTipoDireccion = TerceroTipoDireccion()
     direccion: str = ''
     senPrincipal: bool = False
@@ -134,7 +134,7 @@ class WOTerceroCreate(Base):
     email: str
     plazoDias: int
     responsabilidadFiscal: list[int]
-    direcciones: list[Direccion] = []
+    direcciones: list[WODireccion]
     idListaPrecioPredeterminada: int = 0
     idTerceroVendedorPredeterminado: int = 0
     idFormaPagoPredeterminada: int = 0

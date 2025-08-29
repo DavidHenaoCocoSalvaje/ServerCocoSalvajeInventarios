@@ -20,6 +20,7 @@ class PedidoCreate(TransaccionBase):
     factura_id: str = ''  # Creación exitosa cuando se recibe número de factura
     factura_numero: str = ''  # Creación exitosa cuando se recibe número de factura
     contabilizado: bool = False
+    log: str = ''
 
 
 class Pedido(PedidoCreate, table=True):

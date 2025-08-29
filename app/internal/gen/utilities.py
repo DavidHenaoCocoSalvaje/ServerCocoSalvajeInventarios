@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from pytz import timezone
+from zoneinfo import ZoneInfo
 
 from app.config import config
 
@@ -7,15 +7,20 @@ from app.config import config
 class DateTz(datetime):
     @classmethod
     def local(cls, tz: str = config.local_timezone) -> datetime:
-        return cls.now(timezone(tz))
+        return cls.now(ZoneInfo(tz))
 
     @classmethod
     def local_date(cls, tz: str = config.local_timezone) -> datetime:
-        return cls.now(timezone(tz))
+        return cls.now(ZoneInfo(tz))
 
     @classmethod
     def today(cls, tz: str = config.local_timezone) -> date:
         return cls.local(tz).date().today()
+
+    @classmethod
+    def from_isostring(cls, isostring: str, tz: str = config.local_timezone) -> datetime:
+        isostring = isostring.replace('Z', '+00:00')
+        return cls.fromisoformat(isostring).astimezone(ZoneInfo(tz))
 
 
 def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:

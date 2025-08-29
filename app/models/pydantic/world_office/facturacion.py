@@ -23,7 +23,7 @@ class WORegloneEdit(WOReglone):
 
 
 class WODocumentoVentaCreateEditBase(Base):
-    fecha: date = Field(default_factory=DateTz.today)
+    fecha: date
     prefijo: int = 0
     documentoTipo: str = ''
     concepto: str = ''

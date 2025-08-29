@@ -1,11 +1,12 @@
 # app/routers/inventario.py
 from enum import Enum
 import traceback
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response
 
 
+from app.internal.gen.utilities import DateTz
 from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
-from app.models.pydantic.world_office.terceros import WOTerceroCreate
+from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import Pedido, PedidoCreate
 from app.models.db.session import AsyncSessionDep
@@ -176,7 +177,7 @@ async def sync_shopify():
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(hmac_validation_shopify)],
 )
-async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
+async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep, response: Response):
     try:
         query_shopify = QueryShopify()
         # Obtener datos de pedido
@@ -191,25 +192,32 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
             )
             return
 
-        # Registrar pedido
-        pedido_create = PedidoCreate(numero=str(order_response.data.order.number))
-        pedido = await pedido_query.create(session, pedido_create)
-
         if order_response.data.order is None:
             log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
         order = order_response.data.order
-        factura = await facturar_orden(order)
 
-        # Registrar número de factura
-        pedido_update = pedido.model_copy()
-        pedido_update.factura_id = str(factura.id)
-        pedido_update.factura_numero = str(factura.numero)
+        pedido = await pedido_query.get_by_number(session, order.number)
+
+        # Se registra pedido antes de crear factura por si algo sale mal tener un registro con el número de pedido y no duplicarlo.
+        if pedido is None:
+            pedido_create = PedidoCreate(numero=str(order_response.data.order.number))
+            pedido = await pedido_query.create(session, pedido_create)
 
         if not pedido.id:
             log_inventario_shopify.error('No se pudo obtener el ID del pedido')
             raise ValueError('No se pudo obtener el ID del pedido')
 
-        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        wo_client = WoClient()
+
+        if not pedido.factura_id and pedido.id:
+            factura = await facturar_orden(session, wo_client, order, pedido)
+            # Se registra número de factura por si pasa algo antes de contabilizar.
+            pedido_update = pedido.model_copy()
+            pedido_update.factura_id = str(factura.id)
+            pedido_update.factura_numero = str(factura.numero)
+            pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+
+        factura = await wo_client.get_documento_venta(int(pedido.factura_id))
 
         # Contabilizar pedido
         contabilizar = await contabilizar_pedido(pedido)
@@ -228,18 +236,23 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
         log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
+    # Se encuentra que el comportamiento de shopify al no recibir un status code 200 es notificar varias veces.
+    response.status_code = status.HTTP_200_OK
+    return True
 
-async def facturar_orden(order: Order):
-    # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
-    # 4 para contado, 5 para credito
-    id_forma_pago = 4
-    # if all(x.gateway == 'Addi Payment' for x in order.transactions):
 
+async def facturar_orden(
+    session: AsyncSessionDep, wo_client: WoClient, order: Order, pedido: Pedido, pedido_query=pedido_query
+):
     # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
-    wo_client = WoClient()
     identificacion = order.billingAddress.identificacion or order.shippingAddress.identificacion
     if not identificacion:
-        exception = Exception('Falta documento de identidad')
+        msg = 'Falta documento de identidad'
+        pedido_update = pedido.model_copy()
+        pedido_update.log = msg
+        if pedido.id:
+            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        exception = Exception(msg)
         log_inventario_shopify.debug(f'{exception}')
         raise exception
 
@@ -267,6 +280,11 @@ async def facturar_orden(order: Order):
 
     wo_tercero = await wo_client.get_tercero(identificacion)
 
+    """ Cuando se crea un tercero, 
+    la dirección tienen un nombre, este causa error si es un mombre muy largo,
+    por lo cúal hace falta especificar el nombre para evitar errores. """
+    direcciones = [WODireccion(nombre='Principal')]
+
     if wo_tercero is None:
         tercero_create = WOTerceroCreate(
             idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
@@ -277,6 +295,7 @@ async def facturar_orden(order: Order):
             segundoApellido=segundo_apellido,
             idCiudad=ciudad_id,
             direccion=address,
+            direcciones=direcciones,
             idTerceroTipos=[4],  # Cliente
             idTerceroTipoContribuyente=6,
             idClasificacionImpuestos=1,
@@ -300,6 +319,7 @@ async def facturar_orden(order: Order):
             segundoApellido=segundo_apellido,
             idCiudad=ciudad_id,
             direccion=address,
+            direcciones=direcciones,
             idTerceroTipos=[4],  # Cliente
             idTerceroTipoContribuyente=6,
             idClasificacionImpuestos=1,
@@ -342,7 +362,12 @@ async def facturar_orden(order: Order):
             WOReglone(idInventario=1079, unidadMedida='und', cantidad=1, valorUnitario=costo_envio, idBodega=1)
         )
 
+    # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
+    # 4 para contado, 5 para credito
+    id_forma_pago = 4
+    # if all(x.gateway == 'Addi Payment' for x in order.transactions):
     wo_documento_venta_create = WODocumentoVentaCreate(
+        fecha=DateTz.today(),
         prefijo=1,  # Sin prefijo
         documentoTipo='FV',
         concepto='Prueba API',

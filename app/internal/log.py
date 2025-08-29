@@ -2,11 +2,11 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from enum import Enum
+from zoneinfo import ZoneInfo
 from app.config import config
 from sys import stdout
 from os import path, makedirs
 import datetime
-import pytz
 
 from app.internal.gen.utilities import DateTz
 
@@ -91,7 +91,7 @@ def factory_logger(
         log_filename = path.join(logs_dir, f'{name}_{DateTz.local().strftime("%Y_%m_%d")}.log')
 
         # Configurar timezone de Colombia
-        bogota_tz = pytz.timezone('America/Bogota')
+        bogota_tz = ZoneInfo('America/Bogota')
         midnight_bogota = datetime.time(0, 0, 0, 0, bogota_tz)
 
         # TimedSizeRotatingFileHandler para rotación diaria y por tamaño
