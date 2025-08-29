@@ -147,7 +147,7 @@ class WoClient(BaseClient):
         return True
 
     async def crear_tercero(self, wo_tercero_create: WOTerceroCreate) -> WOTercero:
-        payload = wo_tercero_create.model_dump(exclude_none=True, mode='json')
+        payload = wo_tercero_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         tercero_json = await self.post(self.Paths.Terceros.crear, payload=payload)
 
         try:
@@ -166,7 +166,7 @@ class WoClient(BaseClient):
         Args:
             wo_tercero_edit (WOTerceroCreate): debe contar con el ID para editar el tercer.
         """
-        payload = wo_tercero_edit.model_dump(exclude_none=True, mode='json')
+        payload = wo_tercero_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         if not wo_tercero_edit.id:
             raise WOException(
                 payload=payload, msg='No se puede editar el tercero si no se proporciona un identificador'
@@ -200,7 +200,7 @@ class WoClient(BaseClient):
 
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
 
-        payload = wo_listar.model_dump(exclude_none=True, mode='json')
+        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         ciudades_json = await self.post(self.Paths.Ciudad.listar_ciudades, payload=payload)
 
         try:
@@ -218,7 +218,7 @@ class WoClient(BaseClient):
                 filtro.valor = departamento
 
                 wo_listar.filtros = [filtro]
-                payload = wo_listar.model_dump(exclude_none=True, mode='json')
+                payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
                 ciudades_json = await self.post(self.Paths.Ciudad.listar_ciudades, payload=payload)
 
                 try:
@@ -251,9 +251,8 @@ class WoClient(BaseClient):
             tipoDato=TipoDatoWoFiltro.NUMERIC,
             operador='AND',
         )
-        payload = WOListar(
-            columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2]
-        ).model_dump(exclude_none=True, mode='json')
+        wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2])
+        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         facturas_json = await self.post(self.Paths.Ventas.listar_documentos_venta, payload=payload)
 
         try:
@@ -271,9 +270,8 @@ class WoClient(BaseClient):
         return facturas_response.data.content[0]
 
     async def productos_documento_venta(self, id_documento: int) -> list[WOProductoDocumento]:
-        payload = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[]).model_dump(
-            exclude_none=True, mode='json'
-        )
+        wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[])
+        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         productos_json = await self.post(
             self.Paths.Ventas.listar_productos,
             params=[str(id_documento)],
@@ -294,7 +292,7 @@ class WoClient(BaseClient):
         return productos_response.data.content
 
     async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
-        payload = factura_create.model_dump(exclude_none=True, mode='json')
+        payload = factura_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_dict = await self.post(self.Paths.Ventas.crear, payload=payload)
 
         try:
@@ -311,7 +309,7 @@ class WoClient(BaseClient):
         return factura_response.data
 
     async def editar_factura_venta(self, factura_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
-        payload = factura_edit.model_dump(exclude_none=True, mode='json')
+        payload = factura_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_json = await self.put(self.Paths.Ventas.editar, payload=payload)
 
         try:
