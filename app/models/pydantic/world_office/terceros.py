@@ -116,41 +116,24 @@ class WOTerceroResponse(WOResponse):
 
 
 class WOTerceroCreate(Base):
-    """Crea un tercero en World Office, se listan las propiedades requeridas.
-    Args:
-        idTerceroTipoIdentificacion (int): ID del tipo de identificación.
-        identificacion (str): Número de identificación.
-        primerNombre (str): Primer nombre.
-        primerApellido (str): Primer apellido.
-        idCiudad (int): ID de la ciudad.
-        idTerceroTipos (list[int]): IDs de los tipos de tercero.
-        idTerceroTipoContribuyente (int): ID del tipo de contribuyente.
-        idClasificacionImpuestos (int): ID de la clasificación de impuestos.
-        direccion (str): Dirección.
-        telefono (str): Teléfono.
-        email (str): Email.
-        plazoDias (int): Plazo en días.
-        responsabilidadFiscal (list[int]): IDs de las responsabilidades fiscales.
-    """
-
     id: int | None = None
-    idTerceroTipoIdentificacion: int = 0
-    identificacion: str = ''
-    primerNombre: str = ''
+    idTerceroTipoIdentificacion: int
+    identificacion: str
+    primerNombre: str
     segundoNombre: str = ''
-    primerApellido: str = ''
+    primerApellido: str
     segundoApellido: str = ''
-    idCiudad: int = 0
+    idCiudad: int
     codigo: str = ''
     senActivo: bool = False
-    idTerceroTipos: list[int] = []
-    idTerceroTipoContribuyente: int = 0
-    idClasificacionImpuestos: int = 0
-    direccion: str = ''
-    telefono: str = ''
-    email: str = ''
-    plazoDias: int = 0
-    responsabilidadFiscal: list[int] = []
+    idTerceroTipos: list[int]
+    idTerceroTipoContribuyente: int
+    idClasificacionImpuestos: int
+    direccion: str
+    telefono: str
+    email: str
+    plazoDias: int
+    responsabilidadFiscal: list[int]
     direcciones: list[Direccion] = []
     idListaPrecioPredeterminada: int = 0
     idTerceroVendedorPredeterminado: int = 0

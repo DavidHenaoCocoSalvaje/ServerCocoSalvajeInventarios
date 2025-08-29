@@ -1,7 +1,7 @@
 # app.models.pydantic.world_office.inventario
 
 from app.models.pydantic.base import Base
-from .base import WOResponse
+from app.models.pydantic.world_office.base import WOResponse
 
 
 class Contabilizacion(Base):

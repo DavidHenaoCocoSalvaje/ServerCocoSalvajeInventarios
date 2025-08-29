@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from pytz import timezone
 
 from app.config import config
@@ -6,16 +6,16 @@ from app.config import config
 
 class DateTz(datetime):
     @classmethod
-    def local(cls, tz: str = config.local_timezone):
+    def local(cls, tz: str = config.local_timezone) -> datetime:
         return cls.now(timezone(tz))
 
     @classmethod
-    def local_date(cls, tz: str = config.local_timezone):
-        return cls.now(timezone(tz)).date()
+    def local_date(cls, tz: str = config.local_timezone) -> datetime:
+        return cls.now(timezone(tz))
 
     @classmethod
-    def today(cls, tz: str = config.local_timezone):
-        return cls.local(tz).date()
+    def today(cls, tz: str = config.local_timezone) -> date:
+        return cls.local(tz).date().today()
 
 
 def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:

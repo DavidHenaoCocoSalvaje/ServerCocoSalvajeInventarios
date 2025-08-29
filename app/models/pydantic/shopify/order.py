@@ -2,7 +2,7 @@
 
 # Modelos de payloads enviados por Shopify en webhooks
 
-from datetime import date
+from datetime import datetime
 from enum import Enum
 import re
 from pydantic import Field, computed_field
@@ -172,7 +172,7 @@ class Order(Base):
     fullyPaid: bool = False
     email: str = ''
     number: int = 0
-    createdAt: date = Field(default_factory=DateTz.today)
+    createdAt: datetime = Field(default_factory=DateTz.local)
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []

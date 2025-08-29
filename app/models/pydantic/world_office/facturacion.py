@@ -48,7 +48,7 @@ class WODocumentoVenta(Base):
     prefijo: str = ''
     idPrefijo: int = 0
     numero: int = 0
-    fecha: date = Field(default_factory=date.today)
+    fecha: date = Field(default_factory=DateTz.today)
     empresa: str = ''
     empresaPrefijo: str = ''
     idEmpresa: int = 0
@@ -309,7 +309,7 @@ class WODocAsociado(Base):
     id: int = 0
     prefijo: WOPrefijo = WOPrefijo()
     numero: int = 0
-    fecha: date = Field(default_factory=date.today)
+    fecha: date = Field(default_factory=DateTz.today)
     moneda: WOMoneda = WOMoneda()
     documentoTipo: WODocumentoTipo = WODocumentoTipo()
     trm: int = 0
@@ -342,7 +342,7 @@ class WOHistorialPrefijoPos(Base):
 
 class WODocumentoVentaDetail(Base):
     id: int = 0
-    fecha: date = Field(default_factory=date.today)
+    fecha: date = Field(default_factory=DateTz.today)
     numero: int = 0
     prefijo: WOPrefijo = WOPrefijo()
     documentoTipo: WODocumentoTipo = WODocumentoTipo()

@@ -98,7 +98,7 @@ class PreciosPorVarianteCreate(InventarioBase):
     variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
     tipo_precio_id: int = Field(foreign_key='inventario.tipos_precio.id')
     precio: float = Field(default=0.0)
-    fecha: date = Field(sa_type=DATE, default_factory=date.today)
+    fecha: date = Field(sa_type=DATE, default_factory=DateTz.today)
 
 
 class PreciosPorVariante(PreciosPorVarianteCreate, table=True):

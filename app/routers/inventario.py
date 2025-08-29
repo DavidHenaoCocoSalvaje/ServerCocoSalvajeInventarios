@@ -53,7 +53,7 @@ from app.internal.query.inventario import (
 from app.internal.query.transacciones import (
     pedido_query,
 )
-from .auth import validar_access_token
+from app.routers.auth import validar_access_token
 
 log_inventario = factory_logger('inventario', file=True)
 log_inventario_shopify = factory_logger('inventario_shopify', file=True)
@@ -292,6 +292,7 @@ async def facturar_orden(order: Order):
         id_tercero_tipos.append(4)  # Cliente
         tercero_create = WOTerceroCreate(
             id=wo_tercero.id,
+            idTerceroTipoIdentificacion=3,
             identificacion=identificacion,
             primerNombre=primer_nombre,
             segundoNombre=segundo_nombre,
