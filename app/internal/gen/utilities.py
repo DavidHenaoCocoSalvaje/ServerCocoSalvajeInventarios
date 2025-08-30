@@ -15,7 +15,7 @@ class DateTz(datetime):
 
     @classmethod
     def today(cls, tz: str = config.local_timezone) -> date:
-        return cls.local(tz).date().today()
+        return cls.local(tz).date()
 
     @classmethod
     def from_isostring(cls, isostring: str, tz: str = config.local_timezone) -> datetime:

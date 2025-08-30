@@ -1,9 +1,7 @@
 # app/routers/inventario.py
 from enum import Enum
 import traceback
-from typing import Annotated
-from asyncio import sleep
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
 
 from app.internal.gen.utilities import DateTz
@@ -11,7 +9,7 @@ from app.internal.integrations.shopify import ShopifyGraphQLClient, get_inventor
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import PedidoCreate
-from app.models.db.session import AsyncSessionDep
+from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
 from app.routers.base import CRUD
@@ -173,54 +171,49 @@ async def sync_shopify():
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-class CheckRequestPedido:
-    _old_requet: str | None = None
-    _new_request: str | None = None
-
-    @classmethod
-    async def verify_webhook_data(cls, request: Annotated[Request, Depends(hmac_validation_shopify)]) -> dict:
-        json_request = await request.json()
-        cls._new_request = str(json_request)
-        if cls._old_requet != cls._new_request:
-            cls._old_requet = cls._new_request
-            return json_request
-        return {}
-
-
 # Pedidos
 @shopify_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    dependencies=[Depends(hmac_validation_shopify)],
 )
-async def procesar_pedido_shopify(
-    webhook_data: Annotated[dict, CheckRequestPedido.verify_webhook_data], session: AsyncSessionDep
+async def recibir_pedido_shopify(
+    request: Request,
+    background_tasks: BackgroundTasks,
 ):
-    # Se valida si se recibe un request nuevo para no procesar el mismo pedido al mismo tiempo.
-    if not webhook_data:
+    request_json = await request.json()
+    shopify_client = ShopifyGraphQLClient()
+    # Obtener datos de pedido
+    order_webhook = OrderWebHook(**request_json)
+    # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
+    order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
+    order_response = OrderResponse(**order_json)
+    if not order_response.valid():
+        log_inventario_shopify.error(f'Order void: {order_response.model_dump_json()}, shopify_response: {order_json}')
         return
+
+    if order_response.data.order is None:
+        log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
+    order = order_response.data.order
+
+    """Se evidencia que shopify en ocasiones intenta enviar el mismo pedido varias veces.
+    Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
+    background_tasks.add_task(procesar_pedido_shopify, order)
+
+    return True
+
+
+async def procesar_pedido_shopify(order: Order):
+    session_gen = get_async_session()
+    session = await anext(session_gen)
+
     try:
-        shopify_client = ShopifyGraphQLClient()
-        # Obtener datos de pedido
-        order_webhook = OrderWebHook(**webhook_data)
-        # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
-        order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
-        order_response = OrderResponse(**order_json)
-        if not order_response.valid():
-            log_inventario_shopify.error(
-                f'Order void: {order_response.model_dump_json()}, shopify_response: {order_json}'
-            )
-            return
-
-        if order_response.data.order is None:
-            log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
-        order = order_response.data.order
-
         pedido = await pedido_query.get_by_number(session, order.number)
 
         # Se registra pedido antes de crear factura por si algo sale mal tener un registro con el número de pedido y no duplicarlo.
         if pedido is None:
-            pedido_create = PedidoCreate(numero=str(order_response.data.order.number))
+            pedido_create = PedidoCreate(numero=str(order.number))
             pedido = await pedido_query.create(session, pedido_create)
 
         if not pedido.id:
@@ -249,7 +242,6 @@ async def procesar_pedido_shopify(
             pedido_update.factura_numero = str(factura.numero)
             pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
-        await sleep(3)  # Esprar para que el documento reciente creado esté disponible.
         factura = await wo_client.get_documento_venta(int(pedido.factura_id))
 
         if not pedido.contabilizado and pedido.id:
@@ -258,14 +250,13 @@ async def procesar_pedido_shopify(
             pedido_update.contabilizado = contabilizar
             pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
+        log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
+
     except Exception as e:
-        log_inventario_shopify.error(f'pedido no procesado: {webhook_data}')
         log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-    # Se encuentra que el comportamiento de shopify al no recibir un status code 200 es notificar varias veces.
-    log_debug.info(f'pedido procesado:\n{webhook_data}')
-    return True
+    finally:
+        await session_gen.aclose()
 
 
 async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str):

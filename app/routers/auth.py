@@ -107,7 +107,7 @@ async def validar_access_token(token: Annotated[str, Depends(oauth2_scheme)], se
 
 
 # Webhooks Shopify
-async def hmac_validation_shopify(request: Request) -> Request:
+async def hmac_validation_shopify(request: Request) -> None:
     """
     Valida una firma de webhook de Shopify transcribiendo la lógica
     oficial de la documentación de Shopify (Node.js) a Python.
@@ -132,7 +132,6 @@ async def hmac_validation_shopify(request: Request) -> Request:
     verify = hmac.compare_digest(calculated_hmac_base64, received_hmac)
     if not verify:
         raise AuthException.hmac_validation_failed
-    return request
 
 
 @router.post('/login')
