@@ -3,8 +3,6 @@ from typing import Any
 from pydantic import BaseModel
 from pandas import DataFrame, merge, isna
 
-# from app.internal.log import LogLevel, factory_logger
-
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -12,7 +10,9 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
-from app.internal.integrations.base import BaseClient
+from app.internal.log import factory_logger
+
+from app.internal.integrations.base import BaseClient, ClientException
 from app.models.db.inventario import Bodega, Elemento, Movimiento, PreciosPorVariante, VarianteElemento
 from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.inventario import (
@@ -35,10 +35,29 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import config
 
-# log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
+log_shopify = factory_logger('shopify', file=True)
+
+
+class ShopifyException(ClientException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class ShopifyGraphQLClient(BaseClient):
+    __instance = None
+
+    class Variables(BaseModel):
+        num_items: int = 10
+        cursor: str | None = None
+        search_query: str | None = None
+        id: int | None = None
+        gid: str | None = None
+
+    def __new__(cls):
+        if cls.__instance is None:
+            cls.__instance = super(ShopifyGraphQLClient, cls).__new__(cls)
+        return cls.__instance
+
     def __init__(
         self,
         shop: str = config.shop_shopify,
@@ -53,13 +72,12 @@ class ShopifyGraphQLClient(BaseClient):
             'X-Shopify-Access-Token': access_token,
         }
 
-    async def execute_query(self, query: str, **variables) -> dict:
+    async def _execute_query(self, query: str, **variables) -> dict:
         """Ejecuta una consulta GraphQL"""
-        payload = {'query': query, 'variables': variables or {}}
+        self.payload = {'query': query, 'variables': variables or {}}
+        return await self.request('POST', self.headers, self.host, payload=self.payload)
 
-        return await self.post('', payload=payload)
-
-    async def get_all_recursively(
+    async def _get_all_recursively(
         self,
         query: str,
         keys: list[str],
@@ -69,12 +87,25 @@ class ShopifyGraphQLClient(BaseClient):
         """
         :param keys: Lista de claves para acceder a los nodos y page_info de la respuesta
         """
-        query_result = await self.execute_query(query, **variables)
+        query_result = await self._execute_query(query, **variables)
         page_info = query_result.copy()
 
         for key in keys:
-            page_info = page_info[key][0] if isinstance(page_info[key], list) else page_info[key]
-        page_info = page_info['pageInfo']
+            page_info = (
+                page_info.get(key, [])[0]
+                if isinstance(page_info.get(key, None), list) and len(page_info.get(key, [])) > 0
+                else page_info.get(key, {})
+            )
+            if not page_info:
+                exception = ShopifyException(url=self.host, payload=self.payload, response=query_result)
+                log_shopify.error(f'No se pudo obtener {key} de la respuesta {exception}')
+                raise exception
+
+        page_info = page_info.get('pageInfo', None)
+        if not page_info:
+            exception = ShopifyException(url=self.host, payload=self.payload, response=query_result)
+            log_shopify.error(f'No se pudo obtener pageInfo de la respuesta {exception}')
+            raise exception
 
         if result:
             nodes_query_result = query_result
@@ -88,27 +119,15 @@ class ShopifyGraphQLClient(BaseClient):
                 if i == len(keys) - 1:
                     nodes_query_result = nodes_query_result['nodes']
                     nodes_result = nodes_result['nodes']
-                    nodes_query_result.extend(nodes_result)
+                    nodes_result.extend(nodes_query_result)
         else:
             result = query_result
 
-        if page_info.get('hasNextPage', False):
+        if page_info and page_info.get('hasNextPage', False):
             variables['cursor'] = page_info.get('endCursor', None)
-            return await self.get_all_recursively(query, keys, variables, query_result)
+            return await self._get_all_recursively(query, keys, variables, result)
 
         return result
-
-
-class QueryShopify:
-    def __init__(self):
-        self.client = ShopifyGraphQLClient()
-
-    class Variables(BaseModel):
-        num_items: int = 10
-        cursor: str | None = None
-        search_query: str | None = None
-        id: int | None = None
-        gid: str | None = None
 
     async def get_products(self) -> dict[str, Any]:
         query = """
@@ -126,7 +145,7 @@ class QueryShopify:
             }
         """
         variables = self.Variables().model_dump(exclude_none=True)
-        return await self.client.get_all_recursively(query, ['data', 'products'], variables)
+        return await self._get_all_recursively(query, ['data', 'products'], variables)
 
     async def get_variants(self, product_id: int):
         query = """
@@ -152,7 +171,7 @@ class QueryShopify:
             }
         """
         variables = self.Variables(search_query=f'product_id:{product_id}').model_dump(exclude_none=True)
-        return await self.client.get_all_recursively(query, ['data', 'productVariants'], variables)
+        return await self._get_all_recursively(query, ['data', 'productVariants'], variables)
 
     async def get_inventory_levels(self, inventory_item_id: int):
         query = """
@@ -190,7 +209,7 @@ class QueryShopify:
             }
         """
         variables = self.Variables(search_query=f'id:{inventory_item_id}').model_dump(exclude_none=True)
-        return await self.client.get_all_recursively(
+        return await self._get_all_recursively(
             query,
             ['data', 'inventoryItems', 'nodes', 'inventoryLevels'],
             variables,
@@ -254,8 +273,19 @@ class QueryShopify:
         }
         """
         variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
-        order_json = await self.client.execute_query(query, **variables)
+        order_json = await self._execute_query(query, **variables)
         order_line_items_json = await self.get_order_line_items(order_gid, num_items)
+        order = order_json.get('data', {}).get('order', {})
+        line_items = order_line_items_json.get('data', {}).get('order', {}).get('lineItems', {})
+        if not order:
+            exception = ShopifyException(url=self.host, payload=self.payload, response=order_json)
+            log_shopify.error(f'No se pudo obtener orden:{exception}')
+            raise exception
+        if not line_items:
+            exception = ShopifyException(url=self.host, payload=self.payload, response=order_line_items_json)
+            log_shopify.error(f'No se pudo obtener line_items:{exception}')
+            raise exception
+
         order_json['data']['order']['lineItems'] = order_line_items_json['data']['order']['lineItems']
         return order_json
 
@@ -293,15 +323,13 @@ class QueryShopify:
         }
         """
         variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
-        return await self.client.get_all_recursively(query, ['data', 'order', 'lineItems'], variables)
+        return await self._get_all_recursively(query, ['data', 'order', 'lineItems'], variables)
 
 
-async def get_inventory_info():
+async def get_inventory_info(shopify_client: ShopifyGraphQLClient):
     """Función principal optimizada con procesamiento concurrente por lotes"""
-    query = QueryShopify()
-
     # Obtener todos los productos
-    product_data = await query.get_products()
+    product_data = await shopify_client.get_products()
     product_response = ProductsResponse(**product_data)
 
     products = product_response.data.products.nodes
@@ -315,7 +343,7 @@ async def get_inventory_info():
         product_ids = [product.legacyResourceId for product in batch_products]
 
         # Obtener todas las variantes del lote concurrentemente
-        tasks = [query.get_variants(product_id) for product_id in product_ids]
+        tasks = [shopify_client.get_variants(product_id) for product_id in product_ids]
         variants_results = await gather(*tasks)
         variants_responses = [VariantsResponse(**result) for result in variants_results]
 
@@ -334,7 +362,7 @@ async def get_inventory_info():
             inventory_item_ids.extend([variant.inventoryItem.legacyResourceId for variant in product.variants])
 
         # Obtener todos los niveles de inventario del lote concurrentemente
-        tasks = [query.get_inventory_levels(item_id) for item_id in inventory_item_ids]
+        tasks = [shopify_client.get_inventory_levels(item_id) for item_id in inventory_item_ids]
         inventory_levels_results = await gather(*tasks)
 
         inventory_levels_responses = [InventoryLevelsResponse(**result) for result in inventory_levels_results]
@@ -605,7 +633,8 @@ if __name__ == '__main__':
     from asyncio import run
 
     async def main():
-        products = await get_inventory_info()
+        client = ShopifyGraphQLClient()
+        products = await get_inventory_info(client)
         await persistir_inventory_info(products)
 
     run(main())

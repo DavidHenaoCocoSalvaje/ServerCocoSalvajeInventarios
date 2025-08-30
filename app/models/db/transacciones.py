@@ -12,7 +12,7 @@ from app.internal.gen.utilities import DateTz
 
 class TransaccionBase(SQLModel):
     __table_args__ = {'schema': 'transaccion'}
-    fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=DateTz.local)
+    fecha: datetime = Field(sa_type=TIMESTAMP(timezone=True), default_factory=DateTz.local)  # type: ignore
 
 
 class PedidoCreate(TransaccionBase):

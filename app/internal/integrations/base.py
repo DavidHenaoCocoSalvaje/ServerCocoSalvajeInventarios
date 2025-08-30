@@ -17,71 +17,29 @@ class ClientException(Exception):
         super().__init__(msg)
 
     def __str__(self):
-        return f'url: {self.url}\npayload: {self.payload}\nresponse: {self.response}\nmsg: {self.msg}'
+        _str = f'\nurl: {self.url}' if self.url else ''
+        _str += f'\npayload: {self.payload}' if self.payload else ''
+        _str += f'\nresponse: {self.response}' if self.response else ''
+        _str += f'\nmsg: {self.msg}' if self.msg else ''
+        return _str
 
 
 class BaseClient:
-    def __init__(self, headers: dict | None = None):
-        self.host: str = ''
-        self.url: str = ''
-        self._headers = headers.copy() if headers else {}
-
-    @property
-    def headers(self):
-        return self._headers.copy()
-
-    @headers.setter
-    def headers(self, headers: dict):
-        self._headers = headers.copy()
-
-    def set_header(self, key: str, value: str):
-        self._headers[key] = value
-
-    def update_headers(self, headers: dict):
-        self._headers.update(headers)
-
-    def _build_url(self, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        self.url = f'{self.host}{path}'
+    def build_url(self, host: str, path: str, params: list[str] | None = None, query_params: dict | None = None):
+        url = f'{host}{path}'
         if params:
-            self.url += f'/{"/".join(params)}'
+            url += f'/{"/".join(params)}'
         if query_params:
-            self.url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
-        return self.url
+            url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
+        return url
 
-    async def _request(
+    async def request(
         self,
         method: str,
-        path: str,
-        params: list[str] | None = None,
-        query_params: dict | None = None,
+        headers: dict,
+        url: str,
         payload: dict | None = None,
     ):
-        url = self._build_url(path, params, query_params)
-
         async with ClientSession() as session:
-            async with session.request(method, url, headers=self.headers, json=payload) as response:
+            async with session.request(method, url, headers=headers, json=payload) as response:
                 return await response.json()
-
-    async def get(self, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        return await self._request('GET', path, params, query_params)
-
-    async def post(
-        self, path: str, params: list[str] | None = None, query_params: dict | None = None, payload: dict | None = None
-    ):
-        return await self._request('POST', path, params, query_params, payload)
-
-    async def put(
-        self, path: str, params: list[str] | None = None, query_params: dict | None = None, payload: dict | None = None
-    ):
-        return await self._request('PUT', path, params, query_params, payload)
-
-    async def patch(
-        self, path: str, params: list[str] | None = None, query_params: dict | None = None, payload: dict | None = None
-    ):
-        return await self._request('PATCH', path, params, query_params, payload)
-
-    async def delete(self, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        return await self._request('DELETE', path, params, query_params)
-
-    async def options(self, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        return await self._request('OPTIONS', path, params, query_params)

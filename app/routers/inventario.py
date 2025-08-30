@@ -1,11 +1,13 @@
 # app/routers/inventario.py
 from enum import Enum
 import traceback
+from typing import Annotated
+from asyncio import sleep
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 
 from app.internal.gen.utilities import DateTz
-from app.internal.integrations.shopify import QueryShopify, get_inventory_info, persistir_inventory_info
+from app.internal.integrations.shopify import ShopifyGraphQLClient, get_inventory_info, persistir_inventory_info
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import PedidoCreate
@@ -161,7 +163,8 @@ CRUD[EstadoVariante](
 async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
-        inventory_info = await get_inventory_info()
+        shopify_client = ShopifyGraphQLClient()
+        inventory_info = await get_inventory_info(shopify_client)
         await persistir_inventory_info(inventory_info)
         log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
@@ -170,21 +173,38 @@ async def sync_shopify():
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
+class CheckRequestPedido:
+    _old_requet: str | None = None
+    _new_request: str | None = None
+
+    @classmethod
+    async def verify_webhook_data(cls, request: Annotated[Request, Depends(hmac_validation_shopify)]) -> dict:
+        json_request = await request.json()
+        cls._new_request = str(json_request)
+        if cls._old_requet != cls._new_request:
+            cls._old_requet = cls._new_request
+            return json_request
+        return {}
+
+
 # Pedidos
 @shopify_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
-    dependencies=[Depends(hmac_validation_shopify)],
 )
-async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
+async def procesar_pedido_shopify(
+    webhook_data: Annotated[dict, CheckRequestPedido.verify_webhook_data], session: AsyncSessionDep
+):
+    # Se valida si se recibe un request nuevo para no procesar el mismo pedido al mismo tiempo.
+    if not webhook_data:
+        return
     try:
-        query_shopify = QueryShopify()
+        shopify_client = ShopifyGraphQLClient()
         # Obtener datos de pedido
-        webhook_data = await request.json()
         order_webhook = OrderWebHook(**webhook_data)
         # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
-        order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
+        order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
         order_response = OrderResponse(**order_json)
         if not order_response.valid():
             log_inventario_shopify.error(
@@ -229,6 +249,7 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
             pedido_update.factura_numero = str(factura.numero)
             pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
+        await sleep(3)  # Esprar para que el documento reciente creado esté disponible.
         factura = await wo_client.get_documento_venta(int(pedido.factura_id))
 
         if not pedido.contabilizado and pedido.id:
@@ -238,10 +259,12 @@ async def procesar_pedido_shopify(request: Request, session: AsyncSessionDep):
             pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
     except Exception as e:
+        log_inventario_shopify.error(f'pedido no procesado: {webhook_data}')
         log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
     # Se encuentra que el comportamiento de shopify al no recibir un status code 200 es notificar varias veces.
+    log_debug.info(f'pedido procesado:\n{webhook_data}')
     return True
 
 
