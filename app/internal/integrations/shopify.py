@@ -77,7 +77,7 @@ class ShopifyGraphQLClient(BaseClient):
         self.payload = {'query': query, 'variables': variables or {}}
         return await self.request('POST', self.headers, self.host, payload=self.payload)
 
-    async def _get_all_recursively(
+    async def _get_all(
         self,
         query: str,
         keys: list[str],
@@ -87,45 +87,50 @@ class ShopifyGraphQLClient(BaseClient):
         """
         :param keys: Lista de claves para acceder a los nodos y page_info de la respuesta
         """
-        query_result = await self._execute_query(query, **variables)
-        page_info = query_result.copy()
+        while True:
+            query_result = await self._execute_query(query, **variables)
+            page_info = query_result
 
-        for key in keys:
-            page_info = (
-                page_info.get(key, [])[0]
-                if isinstance(page_info.get(key, None), list) and len(page_info.get(key, [])) > 0
-                else page_info.get(key, {})
-            )
+            for key in keys:
+                page_info = (
+                    page_info.get(key, [])[0]
+                    if isinstance(page_info.get(key, None), list) and len(page_info.get(key, [])) > 0
+                    else page_info.get(key, {})
+                )
+                if not page_info:
+                    exception = ShopifyException(url=self.host, payload=self.payload, response=query_result)
+                    log_shopify.error(f'No se pudo obtener {key} de la respuesta {exception}')
+                    raise exception
+
+            page_info = page_info.get('pageInfo', None)
+
             if not page_info:
                 exception = ShopifyException(url=self.host, payload=self.payload, response=query_result)
-                log_shopify.error(f'No se pudo obtener {key} de la respuesta {exception}')
+                log_shopify.error(f'No se pudo obtener pageInfo de la respuesta {exception}')
                 raise exception
 
-        page_info = page_info.get('pageInfo', None)
-        if not page_info:
-            exception = ShopifyException(url=self.host, payload=self.payload, response=query_result)
-            log_shopify.error(f'No se pudo obtener pageInfo de la respuesta {exception}')
-            raise exception
+            if result:
+                nodes_query_result = query_result
+                nodes_result = result
+                for i in range(len(keys)):
+                    key = keys[i]
+                    nodes_query_result = (
+                        nodes_query_result[key][0]
+                        if isinstance(nodes_query_result[key], list)
+                        else nodes_query_result[key]
+                    )
+                    nodes_result = nodes_result[key] if isinstance(nodes_result[key], list) else nodes_result[key]
+                    if i == len(keys) - 1:
+                        nodes_query_result = nodes_query_result['nodes']
+                        nodes_result = nodes_result['nodes']
+                        nodes_result.extend(nodes_query_result)
+            else:
+                result = query_result
 
-        if result:
-            nodes_query_result = query_result
-            nodes_result = result
-            for i in range(len(keys)):
-                key = keys[i]
-                nodes_query_result = (
-                    nodes_query_result[key][0] if isinstance(nodes_query_result[key], list) else nodes_query_result[key]
-                )
-                nodes_result = nodes_result[key] if isinstance(nodes_result[key], list) else nodes_result[key]
-                if i == len(keys) - 1:
-                    nodes_query_result = nodes_query_result['nodes']
-                    nodes_result = nodes_result['nodes']
-                    nodes_result.extend(nodes_query_result)
-        else:
-            result = query_result
+            if not page_info.get('hasNextPage', False):
+                break
 
-        if page_info and page_info.get('hasNextPage', False):
             variables['cursor'] = page_info.get('endCursor', None)
-            return await self._get_all_recursively(query, keys, variables, result)
 
         return result
 
@@ -145,7 +150,7 @@ class ShopifyGraphQLClient(BaseClient):
             }
         """
         variables = self.Variables().model_dump(exclude_none=True)
-        return await self._get_all_recursively(query, ['data', 'products'], variables)
+        return await self._get_all(query, ['data', 'products'], variables)
 
     async def get_variants(self, product_id: int):
         query = """
@@ -171,7 +176,7 @@ class ShopifyGraphQLClient(BaseClient):
             }
         """
         variables = self.Variables(search_query=f'product_id:{product_id}').model_dump(exclude_none=True)
-        return await self._get_all_recursively(query, ['data', 'productVariants'], variables)
+        return await self._get_all(query, ['data', 'productVariants'], variables)
 
     async def get_inventory_levels(self, inventory_item_id: int):
         query = """
@@ -209,7 +214,7 @@ class ShopifyGraphQLClient(BaseClient):
             }
         """
         variables = self.Variables(search_query=f'id:{inventory_item_id}').model_dump(exclude_none=True)
-        return await self._get_all_recursively(
+        return await self._get_all(
             query,
             ['data', 'inventoryItems', 'nodes', 'inventoryLevels'],
             variables,
@@ -323,7 +328,7 @@ class ShopifyGraphQLClient(BaseClient):
         }
         """
         variables = self.Variables(gid=order_gid, num_items=num_items).model_dump(exclude_none=True)
-        return await self._get_all_recursively(query, ['data', 'order', 'lineItems'], variables)
+        return await self._get_all(query, ['data', 'order', 'lineItems'], variables)
 
 
 async def get_inventory_info(shopify_client: ShopifyGraphQLClient):
