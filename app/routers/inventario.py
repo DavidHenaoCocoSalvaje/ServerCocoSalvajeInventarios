@@ -204,7 +204,7 @@ async def recibir_pedido_shopify(
     return True
 
 
-async def procesar_pedido_shopify(order: Order):
+async def procesar_pedido_shopify(order: Order):  # BackgroundTasks
     session_gen = get_async_session()
     session = await anext(session_gen)
 
@@ -253,8 +253,8 @@ async def procesar_pedido_shopify(order: Order):
         log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
 
     except Exception as e:
+        # No se lanza la excepción porque es un background task, se registra únicamente en el log
         log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     finally:
         await session_gen.aclose()
 
@@ -385,20 +385,3 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
     )
 
     return await wo_client.crear_factura_venta(wo_documento_venta_create)
-
-
-# @shopify_router.post(
-#     '/pedido/update',
-#     status_code=status.HTTP_200_OK,
-# )
-# async def update_pedido(request: Request, session: AsyncSessionDep):
-#     try:
-#         query_shopify = QueryShopify()
-#         # Obtener datos de pedido
-#         webhook_data = await request.json()
-#         order_webhook = OrderWebHook(**webhook_data)
-#         # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
-#         order_json = await query_shopify.get_order(order_webhook.admin_graphql_api_id)
-#         order_response = OrderResponse(**order_json)
-#     except Exception as e:
-#         pass

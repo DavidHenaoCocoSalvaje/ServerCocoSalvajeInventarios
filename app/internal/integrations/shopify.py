@@ -1,3 +1,4 @@
+import traceback
 from typing import Any
 from pydantic import BaseModel
 from pandas import DataFrame, merge, isna
@@ -46,7 +47,7 @@ class ShopifyException(ClientException):
 class ShopifyGraphQLClient(BaseClient):
     __instance = None
     _last_request_time: float = 0
-    _min_interval: float = 1.0  # 1 segundo entre peticiones
+    _min_interval: float = 1.0
 
     class Variables(BaseModel):
         num_items: int = 10
@@ -100,8 +101,8 @@ class ShopifyGraphQLClient(BaseClient):
             return self.response
         except Exception as e:
             exception = ShopifyException(url=self.host, payload=self.payload, msg=type(e).__name__)
-            log_shopify.error(f'Error al ejecutar consulta GraphQL: {exception}')
-            return {}
+            log_shopify.error(f'Error al ejecutar consulta GraphQL: {exception} {traceback.format_exc()}')
+            raise exception
 
     def get_specific_obj_response(self, response: dict, keys: list[str], sub_keys: list[str]):
         obj = response
