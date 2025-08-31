@@ -5,7 +5,7 @@ En este módulo se encuentran los modelos que representan los registros de trans
 """
 
 from datetime import datetime
-from sqlmodel import SQLModel, Field, TIMESTAMP
+from sqlmodel import SQLModel, Field, TIMESTAMP, TEXT
 
 from app.internal.gen.utilities import DateTz
 
@@ -20,7 +20,7 @@ class PedidoCreate(TransaccionBase):
     factura_id: str = ''  # Creación exitosa cuando se recibe número de factura
     factura_numero: str = ''  # Creación exitosa cuando se recibe número de factura
     contabilizado: bool = False
-    log: str = ''
+    log: str = Field(sa_type=TEXT, default='')
 
 
 class Pedido(PedidoCreate, table=True):
