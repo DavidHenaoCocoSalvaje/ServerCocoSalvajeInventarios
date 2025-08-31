@@ -175,7 +175,7 @@ def created_at_serializer(value, nxt: SerializerFunctionWrapHandler):
 
 
 class Order(Base):
-    fullyPaid: FinancialStatus = FinancialStatus.PENDING
+    fullyPaid: bool = False
     email: str = ''
     number: int = 0
     createdAt: Annotated[datetime, WrapSerializer(created_at_serializer)] = Field(default_factory=DateTz.local)

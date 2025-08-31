@@ -9,13 +9,12 @@ from app.internal.query.transacciones import pedido_query
 
 
 class Tags(Enum):
-    INVENTARIO = 'Inventario'
-    SHOPIFY = 'Shopify'
+    TRANSACCIONES = 'Transacciones'
 
 
 router = APIRouter(
     prefix='/transacciones',
-    tags=[Tags.INVENTARIO],
+    tags=[Tags.TRANSACCIONES],
     responses={404: {'description': 'No encontrado'}},
     dependencies=[Depends(validar_access_token)],
 )
