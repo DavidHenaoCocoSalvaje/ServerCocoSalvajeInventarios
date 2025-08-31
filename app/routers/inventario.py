@@ -10,7 +10,7 @@ from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCrea
 from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import PedidoCreate
 from app.models.db.session import get_async_session
-from app.models.pydantic.shopify.order import Order, OrderResponse, OrderWebHook
+from app.models.pydantic.shopify.order import FinancialStatus, Order, OrderResponse, OrderWebHook
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -235,6 +235,12 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
 
             log_inventario_shopify.debug(msg)
             return
+
+    if order.fullyPaid != FinancialStatus.PAID:
+        msg = f'No se registra pago: financial_status: {order.fullyPaid}'
+        pedido_update = pedido.model_copy()
+        pedido_update.log = msg
+        await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
     try:
         factura = await facturar_orden(wo_client, order, identificacion_tercero)

@@ -4,9 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 
-from app.routers import usuario
-from app.routers import auth
-from app.routers import inventario
+from app.routers import transacciones, usuario, inventario, auth
 from app.models.db.session import create_db_and_tables
 from app.internal.log import factory_logger
 from app.internal.query.inventario import seed_data_inventario
@@ -51,6 +49,7 @@ app.include_router(auth.router)
 # Incluye el router de elementos de inventario y shopify
 app.include_router(inventario.router)
 app.include_router(inventario.shopify_router)
+app.include_router(transacciones.router)
 
 
 # Ruta raíz simple para verificar que la API está funcionando
