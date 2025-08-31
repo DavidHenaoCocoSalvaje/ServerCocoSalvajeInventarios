@@ -232,9 +232,9 @@ async def procesar_pedido_shopify(order: Order):
                 pedido_update.log = msg
                 if pedido.id:
                     await pedido_query.update(session, pedido, pedido_update, pedido.id)
-                exception = Exception(msg)
-                log_inventario_shopify.debug(f'{exception}')
-                raise exception
+
+                log_inventario_shopify.debug(msg)
+                return
             factura = await facturar_orden(wo_client, order, identificacion_tercero)
             # Se registra número de factura por si pasa algo antes de contabilizar.
             pedido_update = pedido.model_copy()

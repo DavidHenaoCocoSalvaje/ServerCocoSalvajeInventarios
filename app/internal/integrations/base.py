@@ -1,4 +1,4 @@
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 
 
 class ClientException(Exception):
@@ -33,13 +33,8 @@ class BaseClient:
             url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
         return url
 
-    async def request(
-        self,
-        method: str,
-        headers: dict,
-        url: str,
-        payload: dict | None = None,
-    ):
+    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 30):
+        client_timeout = ClientTimeout(total=timeout)
         async with ClientSession() as session:
-            async with session.request(method, url, headers=headers, json=payload) as response:
+            async with session.request(method, url, headers=headers, json=payload, timeout=client_timeout) as response:
                 return await response.json()
