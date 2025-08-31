@@ -187,7 +187,13 @@ async def recibir_pedido_shopify(
     # Obtener datos de pedido
     order_webhook = OrderWebHook(**request_json)
     # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
-    order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
+    try:
+        order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
+    except Exception as e:
+        # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
+        log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
+        return True
+
     order_response = OrderResponse(**order_json)
     if not order_response.valid():
         log_inventario_shopify.error(f'Order void: {order_response.model_dump_json()}, shopify_response: {order_json}')
