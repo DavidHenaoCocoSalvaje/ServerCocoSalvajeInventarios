@@ -333,12 +333,12 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         )
         wo_tercero = await wo_client.crear_tercero(tercero_create)
 
-    if not wo_tercero.is_client():
+    if not wo_tercero.is_client() and wo_tercero.tieneDirPrincipal and wo_tercero.direccionPrincipal.direccion:
         id_tercero_tipos = wo_tercero.idTerceroTipos
         id_tercero_tipos.append(4)  # Cliente
         tercero_create = WOTerceroCreate(
             id=wo_tercero.id,
-            idTerceroTipoIdentificacion=3,
+            idTerceroTipoIdentificacion=wo_tercero.terceroTipoIdentificacion.id,
             identificacion=identificacion_tercero,
             primerNombre=primer_nombre,
             segundoNombre=segundo_nombre,
@@ -347,7 +347,7 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
             idCiudad=ciudad_id,
             direccion=address,
             direcciones=direcciones,
-            idTerceroTipos=[4],  # Cliente
+            idTerceroTipos=id_tercero_tipos,  # Cliente
             idTerceroTipoContribuyente=6,
             idClasificacionImpuestos=1,
             telefono=telefono,
