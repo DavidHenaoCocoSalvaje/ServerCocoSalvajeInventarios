@@ -302,7 +302,7 @@ class WoClient(BaseClient):
     async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
         url = self.build_url(self.host, self.Paths.Ventas.crear)
         payload = factura_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
-        factura_dict = await self.request('POST', self.headers, url, payload=payload)
+        factura_dict = await self.request('POST', self.headers, url, payload=payload, timeout=60)
 
         try:
             factura_response = WODocumentoVentaDetailResponse(**factura_dict)
