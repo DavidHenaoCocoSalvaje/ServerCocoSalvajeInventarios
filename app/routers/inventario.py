@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request,
 
 from app.internal.gen.utilities import DateTz
 from app.internal.integrations.shopify import ShopifyGraphQLClient, get_inventory_info, persistir_inventory_info
+from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
 from app.models.db.transacciones import PedidoCreate
@@ -310,7 +311,18 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
     """ Cuando se crea un tercero, 
     la dirección tienen un nombre, este causa error si es un mombre muy largo,
     por lo cúal hace falta especificar el nombre para evitar errores. """
-    direcciones = [WODireccion(nombre='Principal')]
+    direcciones = [
+        WODireccion(
+            nombre='Principal',
+            direccion=address,
+            senPrincipal=True,
+            emailPrincipal=email,
+            telefonoPrincipal=telefono,
+            ubicacionCiudad=WOCiudad(
+                id=ciudad_id,
+            ),
+        )
+    ]
 
     if wo_tercero is None:
         tercero_create = WOTerceroCreate(
