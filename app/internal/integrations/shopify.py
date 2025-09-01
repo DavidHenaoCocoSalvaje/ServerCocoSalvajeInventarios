@@ -47,7 +47,7 @@ class ShopifyException(ClientException):
 class ShopifyGraphQLClient(BaseClient):
     __instance = None
     _last_request_time: float = 0
-    _min_interval: float = 0.2
+    _min_interval: float = 0.1
 
     class Variables(BaseModel):
         num_items: int = 10
@@ -664,6 +664,7 @@ async def persistir_inventory_info(products: list[Product]):
             )
             movimientos_db['diferencia'] = movimientos_db['cantidad'] - movimientos_db['cantidad_db']
             movimientos_db = movimientos_db[movimientos_db['diferencia'] != 0]
+            movimientos_df['cantidad'] = movimientos_db['diferencia']
             insert_records = movimientos_db.to_dict('records')
             insert_models = [Movimiento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
             await movimiento_query.bulk_insert(session, insert_models)
