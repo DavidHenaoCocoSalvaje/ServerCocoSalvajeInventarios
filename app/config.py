@@ -62,6 +62,10 @@ class Config:
         self.wo_api_key: str = getenv('WO_API_KEY', '')
         self.wo_api_version: str = getenv('WO_API_VERSION', 'v1')
 
+        # Facturación
+        self.wo_prefijo: int = int(getenv('WO_PREFIJO', 1))
+        self.wo_concepto: str = getenv('WO_CONCEPTO', '')
+
     @property
     def production(self) -> bool:
         """

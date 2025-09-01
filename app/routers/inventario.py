@@ -18,6 +18,8 @@ from app.internal.log import LogLevel, factory_logger
 # Seguridad
 from app.routers.auth import hmac_validation_shopify
 
+# Facturacion
+from app.config import config
 
 from app.models.db.inventario import (
     Bodega,
@@ -392,9 +394,9 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
     # if all(x.gateway == 'Addi Payment' for x in order.transactions):
     wo_documento_venta_create = WODocumentoVentaCreate(
         fecha=DateTz.today(),
-        prefijo=1,  # Sin prefijo
+        prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FEFE
         documentoTipo='FV',
-        concepto='Prueba API',
+        concepto=config.wo_concepto,
         idEmpresa=1,  # CocoSalvaje
         idTerceroExterno=wo_tercero.id,
         idTerceroInterno=1834,
