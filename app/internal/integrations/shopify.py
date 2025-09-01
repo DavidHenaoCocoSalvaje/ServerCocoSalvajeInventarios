@@ -47,7 +47,7 @@ class ShopifyException(ClientException):
 class ShopifyGraphQLClient(BaseClient):
     __instance = None
     _last_request_time: float = 0
-    _min_interval: float = 1.0
+    _min_interval: float = 0.2
 
     class Variables(BaseModel):
         num_items: int = 10
