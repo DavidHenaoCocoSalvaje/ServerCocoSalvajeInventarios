@@ -237,7 +237,7 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
             return
 
     if not order.fullyPaid:
-        msg = f'No se registra pago: financial_status: {order.fullyPaid}'
+        msg = f'No se registra pago: fyllyPaid: {order.fullyPaid}'
         pedido_update = pedido.model_copy()
         pedido_update.log = msg
         await pedido_query.update(session, pedido, pedido_update, pedido.id)
