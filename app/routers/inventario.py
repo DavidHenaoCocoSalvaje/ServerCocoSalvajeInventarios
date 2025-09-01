@@ -243,6 +243,7 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
         pedido_update = pedido.model_copy()
         pedido_update.log = msg
         await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        return
 
     try:
         factura = await facturar_orden(wo_client, order, identificacion_tercero)
@@ -399,7 +400,7 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         concepto=config.wo_concepto,
         idEmpresa=1,  # CocoSalvaje
         idTerceroExterno=wo_tercero.id,
-        idTerceroInterno=1, # 1 CocoSalvaje, 1834 Lucy
+        idTerceroInterno=1,  # 1 CocoSalvaje, 1834 Lucy
         idFormaPago=id_forma_pago,
         idMoneda=31,
         reglones=reglones,
