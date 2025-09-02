@@ -249,17 +249,12 @@ class WoClient(BaseClient):
 
         try:
             ciudades_response = WOListaCiudadesResponse(**ciudades_json)
-            if not ciudades_response.valid():
-                msg = f'No se encontró ciudad, ciudad: {ciudad}, departamento: {departamento}'
-                exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-                wo_log.error(str(exception))
-                raise exception
         except ValidationError as e:
             msg = f'ValidarionError, ciudad: {ciudad}, departamento: {departamento}'
             msg += f'\n{repr(e.errors())}'
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
             wo_log.error(str(exception))
-            raise exception
+            ciudades_response = WOListaCiudadesResponse()
 
         # Si no se encuentra por nombre de ciudad, por posible escritura incorrecta, se busca por departamento.
         if not ciudades_response.valid():
