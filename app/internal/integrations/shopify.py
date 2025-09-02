@@ -286,6 +286,7 @@ class ShopifyGraphQLClient(BaseClient):
         query GetOrder($gid: ID!) {
             order(id: $gid) {
                 fullyPaid
+                displayFinancialStatus
                 email
                 number
                 createdAt

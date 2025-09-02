@@ -39,14 +39,14 @@ class FinancialStatus(Enum):
     Displayed as Voided. An unpaid (payment authorized but not captured) order was manually canceled.
     """
 
-    PAID = 'paid'
-    PARTIALLY_PAID = 'partially_paid'
-    PARTIALLY_REFUNDED = 'partially_refunded'
-    PENDING = 'pending'
-    AUTHORIZED = 'authorized'
-    EXPIRED = 'expired'
-    REFUNDED = 'refunded'
-    VOIDED = 'voided'
+    PAID = 'PAID'
+    PARTIALLY_PAID = 'PARTIALLY_PAID'
+    PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED'
+    PENDING = 'PENDING'
+    AUTHORIZED = 'AUTHORIZED'
+    EXPIRED = 'EXPIRED'
+    REFUNDED = 'REFUNDED'
+    VOIDED = 'VOIDED'
 
 
 class OrderWebHook(Base):
@@ -176,6 +176,7 @@ def created_at_serializer(value, nxt: SerializerFunctionWrapHandler):
 
 class Order(Base):
     fullyPaid: bool = False
+    displayFinancialStatus: FinancialStatus = FinancialStatus.PENDING
     email: str = ''
     number: int = 0
     createdAt: Annotated[datetime, WrapSerializer(created_at_serializer)] = Field(default_factory=DateTz.local)
