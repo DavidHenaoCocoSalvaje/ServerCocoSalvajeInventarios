@@ -128,8 +128,7 @@ class LineItem(Base):
     @property
     def discounted_unit_price(self) -> float:
         amount = self.discountedUnitPriceSet.shopMoney.amount
-        amount = amount if amount > 0 else self.unit_price
-        return round(amount, 2) if amount > 0 else 0
+        return round(amount, 2)
 
     @computed_field
     @property
