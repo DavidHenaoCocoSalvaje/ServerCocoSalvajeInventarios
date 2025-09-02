@@ -248,7 +248,6 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
         try:
             factura = await facturar_orden(wo_client, order, identificacion_tercero)
         except Exception as e:
-            log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
             pedido_update = pedido.model_copy()
             pedido_update.log = str(e)
             await pedido_query.update(session, pedido, pedido_update, pedido.id)
@@ -270,8 +269,8 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
                 pedido_update = pedido.model_copy()
                 pedido_update.contabilizado = contabilizar
                 pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+
         except Exception as e:
-            log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
             pedido_update = pedido.model_copy()
             pedido_update.log = str(e)
             await pedido_query.update(session, pedido, pedido_update, pedido.id)
