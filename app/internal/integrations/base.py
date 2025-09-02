@@ -17,10 +17,10 @@ class ClientException(Exception):
         super().__init__(msg)
 
     def __str__(self):
-        _str = f'\nurl: {self.url}' if self.url else ''
+        _str = f'\nmsg: {self.msg}' if self.msg else ''
+        _str += f'\nurl: {self.url}' if self.url else ''
         _str += f'\npayload: {self.payload}' if self.payload else ''
         _str += f'\nresponse: {self.response}' if self.response else ''
-        _str += f'\nmsg: {self.msg}' if self.msg else ''
         return _str
 
 
