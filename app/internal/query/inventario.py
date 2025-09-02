@@ -126,9 +126,7 @@ async def seed_data_inventario():
     with open(data_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
-    session_gen = get_async_session()
-    session: AsyncSession = await anext(session_gen)
-    try:
+    async for session in get_async_session():
         # Upserts (ON CONFLICT DO UPDATE) por tabla, en orden de dependencias
         # Nota: se usa conflicto por PK 'id' y se actualizan todas las columnas excepto la PK
         pares = [
@@ -159,6 +157,3 @@ async def seed_data_inventario():
             )
             await session.execute(stmt)
         await session.commit()
-
-    finally:
-        await session_gen.aclose()

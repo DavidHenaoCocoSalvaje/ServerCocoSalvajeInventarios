@@ -35,10 +35,8 @@ usuario_logger = factory_logger('usuario', file=True)
 
 async def set_admin_user(reset_password: bool = False):
     logger = factory_logger('main', file=False)
-    session_gen = get_async_session()
-    session: AsyncSession = await anext(session_gen)
 
-    try:
+    async for session in get_async_session():
         usuario = await usuario_query.get_by_username(session, 'admin')
         if usuario is None:
             password = password_hasher.hash(config.admin_password)
@@ -62,6 +60,3 @@ async def set_admin_user(reset_password: bool = False):
                 raise exception
 
             await usuario_query.update(session, usuario_db, usuario, usuario_db.id)
-    finally:
-        # Cerrar el generador para limpiar la sesión
-        await session_gen.aclose()
