@@ -214,72 +214,70 @@ async def recibir_pedido_shopify(
 
 
 async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar excepciones.
-    session_gen = get_async_session()
-    session = await anext(session_gen)
-    pedido = await pedido_query.get_by_number(session, order.number)
+    async for session in get_async_session():
+        pedido = await pedido_query.get_by_number(session, order.number)
 
-    # Se registra pedido antes de crear factura por si algo sale mal tener un registro con el número de pedido y no duplicarlo.
-    if pedido is None:
-        pedido_create = PedidoCreate(numero=str(order.number))
-        pedido = await pedido_query.create(session, pedido_create)
+        # Se registra pedido antes de crear factura por si algo sale mal tener un registro con el número de pedido y no duplicarlo.
+        if pedido is None:
+            pedido_create = PedidoCreate(numero=str(order.number))
+            pedido = await pedido_query.create(session, pedido_create)
 
-    if not pedido.id:
-        return
+        if not pedido.id:
+            return
 
-    wo_client = WoClient()
-    identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
-    if not pedido.factura_id:
-        # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
-        if not identificacion_tercero:
-            msg = 'Falta documento de identidad'
+        wo_client = WoClient()
+        identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
+        if not pedido.factura_id:
+            # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
+            if not identificacion_tercero:
+                msg = 'Falta documento de identidad'
+                pedido_update = pedido.model_copy()
+                pedido_update.log = msg
+                await pedido_query.update(session, pedido, pedido_update, pedido.id)
+
+                log_inventario_shopify.debug(msg)
+                return
+
+        if not order.fullyPaid:
+            msg = f'No se registra pago: fyllyPaid: {order.fullyPaid}'
             pedido_update = pedido.model_copy()
             pedido_update.log = msg
             await pedido_query.update(session, pedido, pedido_update, pedido.id)
-
-            log_inventario_shopify.debug(msg)
             return
 
-    if not order.fullyPaid:
-        msg = f'No se registra pago: fyllyPaid: {order.fullyPaid}'
-        pedido_update = pedido.model_copy()
-        pedido_update.log = msg
-        await pedido_query.update(session, pedido, pedido_update, pedido.id)
-        return
-
-    try:
-        factura = await facturar_orden(wo_client, order, identificacion_tercero)
-    except Exception as e:
-        log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
-        pedido_update = pedido.model_copy()
-        pedido_update.log = str(e)
-        await pedido_query.update(session, pedido, pedido_update, pedido.id)
-        return
-
-    # Se registra número de factura por si pasa algo antes de contabilizar.
-    pedido_update = pedido.model_copy()
-    pedido_update.factura_id = str(factura.id)
-    pedido_update.factura_numero = str(factura.numero)
-
-    pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
-    if not pedido.id:
-        return
-
-    try:
-        factura = await wo_client.get_documento_venta(int(pedido.factura_id))
-        contabilizar = await wo_client.contabilizar_documento_venta(int(pedido.factura_id))
-        if not pedido.contabilizado:
+        try:
+            factura = await facturar_orden(wo_client, order, identificacion_tercero)
+        except Exception as e:
+            log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
             pedido_update = pedido.model_copy()
-            pedido_update.contabilizado = contabilizar
-            pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
-    except Exception as e:
-        log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
-        pedido_update = pedido.model_copy()
-        pedido_update.log = str(e)
-        await pedido_query.update(session, pedido, pedido_update, pedido.id)
-        return
+            pedido_update.log = str(e)
+            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            return
 
-    log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
-    await session_gen.aclose()
+        # Se registra número de factura por si pasa algo antes de contabilizar.
+        pedido_update = pedido.model_copy()
+        pedido_update.factura_id = str(factura.id)
+        pedido_update.factura_numero = str(factura.numero)
+
+        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        if not pedido.id:
+            return
+
+        try:
+            factura = await wo_client.get_documento_venta(int(pedido.factura_id))
+            contabilizar = await wo_client.contabilizar_documento_venta(int(pedido.factura_id))
+            if not pedido.contabilizado:
+                pedido_update = pedido.model_copy()
+                pedido_update.contabilizado = contabilizar
+                pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        except Exception as e:
+            log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
+            pedido_update = pedido.model_copy()
+            pedido_update.log = str(e)
+            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            return
+
+        log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
 
 
 async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str):

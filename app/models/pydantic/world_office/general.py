@@ -27,6 +27,9 @@ class WOCiudad(Base):
     senSistema: bool = False
     ubicacionDepartamento: WOUbicacionDepartamento = WOUbicacionDepartamento()
 
+    def valid(self):
+        return bool(self.id)
+
 
 class WOContentCiudades(Base):
     content: list[WOCiudad] = []

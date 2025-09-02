@@ -210,10 +210,20 @@ class WoClient(BaseClient):
 
         url = self.build_url(self.host, self.Paths.Ciudad.listar_ciudades)
         payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
-        ciudades_json = await self.request('POST', self.headers, url, payload=payload)
+        try:
+            ciudades_json = await self.request('POST', self.headers, url, payload=payload)
+        except Exception as e:
+            msg = f'Error al buscar ciudad: {e}'
+            exception = WOException(url=url, payload=payload, response=None, msg=msg)
+            wo_log.error(f'{exception}')
+            raise exception
 
         try:
             ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+            if not ciudades_response.valid():
+                exception = WOException(url=url, payload=payload, response=ciudades_json)
+                wo_log.error(f'No se pudo buscar ciudad: {exception}')
+                raise exception
         except ValidationError as e:
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=str(e))
             wo_log.error(f'Error al buscar ciudad: {exception}')
