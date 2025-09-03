@@ -52,6 +52,15 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
                 log_inventario_shopify.debug(msg)
                 return
 
+        order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
+        if 'no_facturar' in order_tags_lower:
+            msg = 'No facturar'
+            pedido_update = pedido.model_copy()
+            pedido_update.log = msg
+            pedido_update.q_intentos = 0
+            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            return
+
         if not order.fullyPaid:
             msg = f'financialStatus: {order.displayFinancialStatus}'
             pedido_update = pedido.model_copy()

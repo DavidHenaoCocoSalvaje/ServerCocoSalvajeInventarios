@@ -309,6 +309,7 @@ class ShopifyGraphQLClient(BaseClient):
                 id
                 fullyPaid
                 displayFinancialStatus
+                tags
                 email
                 number
                 createdAt
@@ -392,6 +393,7 @@ class ShopifyGraphQLClient(BaseClient):
                     id
                     fullyPaid
                     displayFinancialStatus
+                    tags
                     email
                     number
                     createdAt

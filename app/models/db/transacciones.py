@@ -5,7 +5,7 @@ En este módulo se encuentran los modelos que representan los registros de trans
 """
 
 from datetime import datetime
-from sqlmodel import SQLModel, Field, TIMESTAMP, TEXT
+from sqlmodel import SQLModel, Field, TIMESTAMP, TEXT, SMALLINT
 
 from app.internal.gen.utilities import DateTz
 
@@ -22,6 +22,9 @@ class PedidoCreate(TransaccionBase):
     contabilizado: bool = False
     pago: bool = False
     log: str = Field(sa_type=TEXT, default='')
+    q_intentos: int = Field(
+        sa_type=SMALLINT, default=3
+    )  # Determina los intentos de reprocesar si el pedido no está facturado/contabilizado
 
 
 class Pedido(PedidoCreate, table=True):
