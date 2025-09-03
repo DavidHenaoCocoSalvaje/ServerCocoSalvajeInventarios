@@ -177,6 +177,7 @@ def created_at_serializer(value, nxt: SerializerFunctionWrapHandler):
 
 
 class Order(Base):
+    id: str = ''
     fullyPaid: bool = False
     displayFinancialStatus: FinancialStatus = FinancialStatus.PENDING
     email: str = ''
@@ -200,3 +201,18 @@ class OrderResponse(Base):
 
     def valid(self) -> bool:
         return self.data.order.number != 0
+
+
+class OrdersNodes(Base):
+    nodes: list[Order] = []
+
+
+class OrdersData(Base):
+    orders: OrdersNodes = OrdersNodes()
+
+
+class OrdersResponse(Base):
+    data: OrdersData = OrdersData()
+
+    def valid(self) -> bool:
+        return True if self.data.orders.nodes and self.data.orders.nodes[0].number != 0 else False

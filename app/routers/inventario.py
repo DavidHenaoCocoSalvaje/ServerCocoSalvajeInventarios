@@ -4,7 +4,7 @@ import traceback
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
 
-from app.internal.integrations.shopify import ShopifyGraphQLClient, get_inventory_info, persistir_inventory_info
+from app.internal.integrations.shopify import ShopifyGraphQLClient, persistir_inventory_info
 from app.models.pydantic.shopify.order import OrderResponse, OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -155,7 +155,7 @@ async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
         shopify_client = ShopifyGraphQLClient()
-        inventory_info = await get_inventory_info(shopify_client)
+        inventory_info = await shopify_client.get_inventory_info()
         await persistir_inventory_info(inventory_info)
         log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
