@@ -337,6 +337,69 @@ class ShopifyGraphQLClient(BaseClient):
         order_json['data']['order']['lineItems'] = order_line_items_json['data']['order']['lineItems']
         return order_json
 
+    async def get_order_by_number(self, order_number: int):
+        query = """
+        query GetOrderByNumber($search_query: String!) {
+            orders(first: 1, query: $search_query) {
+                nodes {
+                    fullyPaid
+                    displayFinancialStatus
+                    email
+                    number
+                    createdAt
+                    app {
+                        name
+                    }
+                    customer {
+                        firstName
+                        lastName
+                        id
+                    }
+                    transactions {
+                        gateway
+                        paymentId
+                    }
+                    shippingAddress {
+                        firstName
+                        lastName
+                        company
+                        address1
+                        address2
+                        province
+                        city
+                        country
+                        phone
+                        zip
+                        formatted
+                    }
+                    billingAddress {
+                        firstName
+                        lastName
+                        company
+                        address1
+                        address2
+                        province
+                        country
+                        city
+                        phone
+                        zip
+                        formatted
+                    }
+                    shippingLine {
+                        originalPriceSet {
+                            shopMoney {
+                                amount
+                                currencyCode
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """
+        variables = self.Variables(search_query=f'name:#{order_number}').model_dump(exclude_none=True)
+        return await self._execute_query(query, **variables)
+
     async def get_order_line_items(self, order_gid: str):
         query = """
         query GetLineItemsOrder($gid: ID!, $num_items: Int!, $cursor: String) {
@@ -654,7 +717,10 @@ if __name__ == '__main__':
 
     async def main():
         client = ShopifyGraphQLClient()
-        await get_inventory_info(client)
+        # await get_inventory_info(client)
+        order_26492 = await client.get_order_by_number(26492)
+        assert order_26492['data']['orders']['nodes'][0]['number'] == 26492
+        # assert order_26492['data']['orders']['nodes'][0]['number'] == 26492
         # await persistir_inventory_info(products)
 
     run(main())
