@@ -1,6 +1,6 @@
 import traceback
 from typing import Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from pandas import DataFrame, merge, isna
 from re import findall
 
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     sys_path.append(abspath('.'))
 
 from app.internal.log import factory_logger
-
+from app.models.pydantic.shopify.order import OrdersResponse
 from app.internal.integrations.base import BaseClient, ClientException
 from app.models.db.inventario import Bodega, Elemento, Movimiento, PreciosPorVariante, VarianteElemento
 from app.models.db.session import get_async_session
@@ -397,21 +397,24 @@ class ShopifyGraphQLClient(BaseClient):
         orders_json = await self._execute_query(query, **variables)
         try:
             gid = orders_json['data']['orders']['nodes'][0]['id']
-        except KeyError:
-            msg = 'KeyError'
-            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
-            raise exception
-
-        order_line_items_json = await self.get_order_line_items(gid)
-
-        try:
+            order_line_items_json = await self.get_order_line_items(gid)
             orders_json['data']['orders']['nodes'][0]['lineItems'] = order_line_items_json['data']['order']['lineItems']
+            orders_response = OrdersResponse(**orders_json)
+        except ValidationError as e:
+            msg = f'{type(e)} {OrdersResponse.__name__}'
+            msg += f'\n{repr(e.errors())}'
+            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
+            raise exception
         except KeyError:
             msg = 'KeyError'
             exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
             raise exception
+        except IndexError:
+            msg = 'IndexError'
+            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
+            raise exception
 
-        return orders_json
+        return orders_response
 
     async def get_order_line_items(self, order_gid: str):
         query = """
@@ -731,8 +734,9 @@ if __name__ == '__main__':
         client = ShopifyGraphQLClient()
         # await get_inventory_info(client)
         order_26492 = await client.get_order_by_number(26492)
-        assert order_26492['data']['orders']['nodes'][0]['number'] == 26492
-        assert len(order_26492['data']['orders']['nodes'][0]['lineItems']['nodes']) > 0
+        assert order_26492.data.orders.nodes[0].number == 26492
+        assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
+
         # assert order_26492['data']['orders']['nodes'][0]['number'] == 26492
         # await persistir_inventory_info(products)
 
