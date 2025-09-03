@@ -49,6 +49,7 @@ async def create_db_and_tables():
     """Crea los esquemas y las tablas de la base de datos si no existen."""
     async with async_engine.begin() as conn:
         # Crear schema si no existe
+        await conn.execute(text("SET TIME ZONE 'America/Bogota'"))
         await conn.execute(text('CREATE SCHEMA IF NOT EXISTS public'))
         await conn.execute(text('CREATE SCHEMA IF NOT EXISTS inventario'))
         await conn.execute(text('CREATE SCHEMA IF NOT EXISTS transaccion'))
