@@ -1,11 +1,10 @@
 # app/routers/inventario.py
 from enum import Enum
-import traceback
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
 
 from app.internal.integrations.shopify import ShopifyGraphQLClient, persistir_inventory_info
-from app.models.pydantic.shopify.order import OrderResponse, OrderWebHook
+from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
 
@@ -181,16 +180,11 @@ async def recibir_pedido_shopify(
     order_webhook = OrderWebHook(**request_json)
     # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
     try:
-        order_json = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
+        order_response = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
     except Exception as e:
         # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
-        log_inventario_shopify.error(f'{e}, {traceback.format_exc()}')
+        log_inventario_shopify.error(str(e))
         return True
-
-    order_response = OrderResponse(**order_json)
-    if not order_response.valid():
-        log_inventario_shopify.error(f'Order void: {order_response.model_dump_json()}, shopify_response: {order_json}')
-        return
 
     if order_response.data.order is None:
         log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
