@@ -2,8 +2,6 @@ import traceback
 from typing import Any
 from pydantic import BaseModel
 from pandas import DataFrame, merge, isna
-from asyncio import sleep
-from time import time
 from re import findall
 
 
@@ -45,8 +43,6 @@ class ShopifyException(ClientException):
 
 class ShopifyGraphQLClient(BaseClient):
     __instance = None
-    _last_request_time: float = 0
-    _min_interval: float = 0.1
 
     class Variables(BaseModel):
         num_items: int = 10
@@ -66,7 +62,7 @@ class ShopifyGraphQLClient(BaseClient):
         version: str = config.shop_version,
         access_token: str = config.api_key_shopify,
     ):
-        super().__init__()
+        super().__init__(min_interval=0.1)
         self.host = f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json'
         self.access_token = access_token
         self.headers = {
@@ -76,22 +72,7 @@ class ShopifyGraphQLClient(BaseClient):
         self.payload = {}
         self.response = {}
 
-    async def _rate_limit(self):
-        """Aplica rate limiting para asegurar 1 petición por segundo"""
-        current_time = time()
-        time_since_last_request = current_time - self._last_request_time
-
-        if time_since_last_request < self._min_interval:
-            sleep_time = self._min_interval - time_since_last_request
-            await sleep(sleep_time)
-
-        self._last_request_time = time()
-
     async def _execute_query(self, query: str, **variables) -> dict:
-        """Ejecuta una consulta GraphQL con rate limiting"""
-        # Aplicar rate limiting antes de la petición
-        await self._rate_limit()
-
         self.payload = {'query': query, 'variables': variables or {}}
         self.response = {}
 
@@ -673,7 +654,7 @@ if __name__ == '__main__':
 
     async def main():
         client = ShopifyGraphQLClient()
-        products = await get_inventory_info(client)
-        await persistir_inventory_info(products)
+        await get_inventory_info(client)
+        # await persistir_inventory_info(products)
 
     run(main())

@@ -114,13 +114,15 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         else ', '.join(order.shippingAddress.formatted[1:])
     )
 
-    first_name = order.billingAddress.firstName or order.shippingAddress.firstName
-    primer_nombre = first_name.split(' ')[0]
-    segundo_nombre = first_name.split(' ')[1] if len(first_name.split(' ')) > 1 else ''
+    names = order.billingAddress.firstName or order.shippingAddress.firstName
+    names_split = names.split(' ')
+    primer_nombre = names_split[0]
+    segundo_nombre = ' '.join(names_split[1:]) if len(names_split) > 1 else ''
 
     last_name = order.billingAddress.lastName or order.shippingAddress.lastName
-    primer_apellido = last_name.split(' ')[0]
-    segundo_apellido = last_name.split(' ')[1] if len(last_name.split(' ')) > 1 else ''
+    last_name_split = last_name.split(' ')
+    primer_apellido = last_name_split[0]
+    segundo_apellido = ' '.join(last_name_split[1:]) if len(last_name_split) > 1 else ''
 
     wo_tercero = await wo_client.get_tercero(identificacion_tercero)
 
