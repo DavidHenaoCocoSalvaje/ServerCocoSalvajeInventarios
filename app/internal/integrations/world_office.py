@@ -70,7 +70,7 @@ class WoClient(BaseClient):
         return cls.__instance
 
     def __init__(self, host: str = f'https://api.worldoffice.cloud/api/{config.wo_api_version}'):
-        super().__init__()
+        super().__init__(min_interval=1)
         self.host = host
         self.headers = {
             'Content-Type': 'application/json',
@@ -400,7 +400,6 @@ if __name__ == '__main__':
         tercero = await wo_client.get_tercero('1094240554')
         assert tercero is not None and tercero.identificacion == '1094240554'
         ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
-        print(ciudad)
         assert isinstance(ciudad, WOCiudad)
         factura = await wo_client.buscar_documento_venta(id_factura=31735)
         assert factura.id == 31735
