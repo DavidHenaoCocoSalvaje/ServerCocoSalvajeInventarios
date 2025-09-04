@@ -46,7 +46,7 @@ from app.internal.query.inventario import (
     estado_elemento_query,
 )
 from app.routers.auth import validar_access_token
-from app.routers.ul.ul_inventario import procesar_pedido_shopify
+from app.routers.ul.facturacion import procesar_pedido_shopify
 
 log_inventario = factory_logger('inventario', file=True)
 log_inventario_shopify = factory_logger('inventario_shopify', file=True)
