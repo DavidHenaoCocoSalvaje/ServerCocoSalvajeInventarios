@@ -72,16 +72,17 @@ async def procesar_pedido_shopify(order: Order, edit: bool = False):  # Backgrou
                 return
 
         order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
-        if 'no_facturar' in order_tags_lower:
-            msg = 'No facturar'
-            pedido_update = pedido.model_copy()
-            pedido_update.log = msg
-            pedido_update.q_intentos = 0
-            await pedido_query.update(session, pedido_update, pedido.id)
-            return
+        for tag in order_tags_lower:
+            if 'no_facturar' in tag:
+                msg = 'No facturar'
+                pedido_update = pedido.model_copy()
+                pedido_update.log = msg
+                pedido_update.q_intentos = 0
+                await pedido_query.update(session, pedido_update, pedido.id)
+                return
 
         try:
-            factura = await facturar_orden(wo_client, order, identificacion_tercero)
+            factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower)
         except Exception as e:
             pedido_update = pedido.model_copy()
             pedido_update.log = str(e)
@@ -114,7 +115,7 @@ async def procesar_pedido_shopify(order: Order, edit: bool = False):  # Backgrou
         log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
 
 
-async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str):
+async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str, tags: list[str]):
     # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
     ciudad = order.billingAddress.city or order.shippingAddress.city
     departamento = order.billingAddress.province or order.shippingAddress.province
@@ -238,6 +239,11 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
     # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
     # 4 para contado, 5 para credito
     id_forma_pago = 4
+    for tag in tags:
+        if 'credito' in tag:
+            id_forma_pago = 5
+            break
+
     # if all(x.gateway == 'Addi Payment' for x in order.transactions):
     wo_documento_venta_create = WODocumentoVentaCreate(
         fecha=DateTz.today(),
