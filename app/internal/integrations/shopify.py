@@ -100,7 +100,7 @@ class ShopifyGraphQLClient(BaseClient):
                 obj = obj[0]
 
             if not obj:
-                msg = f'No se pudo obtener {key}'
+                msg = f'No se pudo obtener {key}, keys: {keys}'
                 exception = ShopifyException(payload=self.payload, response=response, msg=msg)
                 log_shopify.error(str(exception))
                 raise exception
