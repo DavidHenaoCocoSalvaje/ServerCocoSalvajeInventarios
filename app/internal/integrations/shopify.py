@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
-from app.internal.log import factory_logger
+from app.internal.log import factory_logger, LogLevel
 from app.models.pydantic.shopify.order import OrderResponse, OrdersResponse
 from app.internal.integrations.base import BaseClient, ClientException
 from app.models.db.inventario import Bodega, Elemento, Movimiento, PreciosPorVariante, VarianteElemento
@@ -34,6 +34,7 @@ from app.internal.query.inventario import (
 from app.config import config
 
 log_shopify = factory_logger('shopify', file=True)
+log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 class ShopifyException(ClientException):
@@ -100,7 +101,7 @@ class ShopifyGraphQLClient(BaseClient):
                 obj = obj[0]
 
             if not obj:
-                msg = f'No se pudo obtener {key}, keys: {keys}'
+                msg = f'No se pudo obtener {key}, keys: {keys}, sub_keys: {sub_keys}'
                 exception = ShopifyException(payload=self.payload, response=response, msg=msg)
                 log_shopify.error(str(exception))
                 raise exception
@@ -304,7 +305,7 @@ class ShopifyGraphQLClient(BaseClient):
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         return await self._get_all(query, ['data', 'order', 'lineItems'], variables)
 
-    async def get_order(self, order_gid: str):
+    async def get_order(self, order_gid: str) -> OrderResponse:
         query = """
         query GetOrder($gid: ID!) {
             order(id: $gid) {
@@ -366,6 +367,7 @@ class ShopifyGraphQLClient(BaseClient):
         """
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         order_json = await self._execute_query(query, **variables)
+        log_debug.debug(order_gid)
         order_line_items_json = await self._get_order_line_items(order_gid)
         try:
             order_json['data']['order']['lineItems'] = order_line_items_json['data']['order']['lineItems']

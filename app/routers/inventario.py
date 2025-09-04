@@ -199,12 +199,12 @@ async def recibir_pedido_shopify(
 
 
 @shopify_router.post(
-    '/pedido_edit',
+    '/pedido-update',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(hmac_validation_shopify)],
 )
-async def recibir_edicion_pedido_shopify(
+async def recibir_actualizacion_pedido_shopify(
     request: Request,
     background_tasks: BackgroundTasks,
 ):

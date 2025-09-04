@@ -123,7 +123,8 @@ async def procesar_pedido_shopify(order: Order, edit: bool = False):  # Backgrou
 
             #     )
 
-            log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
+            msg = f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}, q_intentos: {pedido.q_intentos}'
+            log_debug.debug(msg)
 
 
 async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str, tags: list[str]):
