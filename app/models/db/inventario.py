@@ -1,6 +1,12 @@
 # app/models/inventario.py
 from datetime import datetime, date
-from sqlmodel import Field, Relationship, SQLModel, SMALLINT, DATE, TEXT, BIGINT, TIMESTAMP
+from sqlmodel import SQLModel, Field, Relationship, SMALLINT, DATE, TEXT, BIGINT, TIMESTAMP
+
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
 
 from app.internal.gen.utilities import DateTz
 
@@ -240,3 +246,8 @@ class ComponentesPorVariante(ComponentesPorVarianteCreate, table=True):
         back_populates='derivados',
         sa_relationship_kwargs={'foreign_keys': 'ComponentesPorVariante.variante_padre_id'},
     )
+
+
+if __name__ == '__main__':
+    for item, key in Elemento.model_fields.items():
+        print(item, key)

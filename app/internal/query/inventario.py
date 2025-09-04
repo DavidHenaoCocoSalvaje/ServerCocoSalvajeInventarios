@@ -3,6 +3,8 @@ import json
 from os import path
 from typing import Generic
 from sqlmodel import select, desc
+
+
 from app.models.db.inventario import (
     BodegaCreate,
     ComponentesPorVarianteCreate,
@@ -145,16 +147,13 @@ async def seed_data_inventario():
                 if not items:
                     continue
 
+                models = [Model(**item) for item in items]
                 table = Model.__table__  # type: ignore[attr-defined]
-                insert_stmt = insert(table).values(items)
+                models_dump = [model.model_dump() for model in models]
+                insert_stmt = insert(table).values(models_dump)
 
-                # Construir set_ dinámico: todas las columnas excepto la PK 'id'
-                update_cols = [c.name for c in table.c if c.name != 'id']
-                set_dict = {col: getattr(insert_stmt.excluded, col) for col in update_cols}
-
-                stmt = insert_stmt.on_conflict_do_update(
-                    index_elements=[table.c.id],
-                    set_=set_dict,
+                stmt = insert_stmt.on_conflict_do_nothing(
+                    index_elements=['id'],
                 )
                 await session.execute(stmt)
             await session.commit()

@@ -247,6 +247,7 @@ class ShopifyGraphQLClient(BaseClient):
                                         province
                                         country
                                         address1
+                                        formatted
                                     }
                                 }
                             }
@@ -596,13 +597,13 @@ async def persistir_inventory_info(products: list[Product]):
                 if not bodegas_db:
                     insert_records = bodegas_df.to_dict('records')
                     insert_models = [Bodega(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
-                    await bodega_query.bulk_insert(session, insert_models)
+                    await bodega_query.safe_bulk_insert(session, insert_models)
                 else:
                     bodegas_db_df = DataFrame([x.model_dump() for x in bodegas_db])
                     bodegas_df = bodegas_df[~bodegas_df['shopify_id'].isin(bodegas_db_df['shopify_id'])]
                     insert_records = bodegas_df.to_dict('records')
                     insert_models = [Bodega(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records]
-                    await bodega_query.bulk_insert(session, insert_models)
+                    await bodega_query.safe_bulk_insert(session, insert_models)
 
             bodegas_db = await bodega_query.get_by_shopify_ids(session, bodegas_shopify_ids)
             bodegas_db_df = DataFrame([x.model_dump() for x in bodegas_db])
@@ -616,7 +617,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         Elemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await elemento_query.bulk_insert(session, insert_models)
+                    await elemento_query.safe_bulk_insert(session, insert_models)
                 else:
                     elementos_db_df = DataFrame([x.model_dump() for x in elementos_db])
                     elementos_df = elementos_df[~elementos_df['shopify_id'].isin(elementos_db_df['shopify_id'])]
@@ -624,7 +625,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         Elemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await elemento_query.bulk_insert(session, insert_models)
+                    await elemento_query.safe_bulk_insert(session, insert_models)
 
             elementos_db = await elemento_query.get_by_shopify_ids(session, elementos_shopify_ids)
             elementos_db_df = DataFrame([x.model_dump() for x in elementos_db])
@@ -649,7 +650,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         VarianteElemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await variante_elemento_query.bulk_insert(session, insert_models)
+                    await variante_elemento_query.safe_bulk_insert(session, insert_models)
                 else:
                     variantes_db_df = DataFrame([x.model_dump() for x in variantes_db])
                     variantes_df = variantes_df[~variantes_df['shopify_id'].isin(variantes_db_df['shopify_id'])]
@@ -657,7 +658,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         VarianteElemento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await variante_elemento_query.bulk_insert(session, insert_models)
+                    await variante_elemento_query.safe_bulk_insert(session, insert_models)
 
             variantes_db = await variante_elemento_query.get_by_shopify_ids(session, variantes_shopify_ids)
             variantes_db_df = DataFrame([x.model_dump() for x in variantes_db])
@@ -682,7 +683,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         PreciosPorVariante(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await precio_variante_query.bulk_insert(session, insert_models)
+                    await precio_variante_query.safe_bulk_insert(session, insert_models)
                 else:
                     precio_varaintes_db_df = DataFrame([x.model_dump() for x in precio_varaintes_db])
                     # Comparar precio de la bd con el de shopify
@@ -700,7 +701,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         PreciosPorVariante(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await precio_variante_query.bulk_insert(session, insert_models)
+                    await precio_variante_query.safe_bulk_insert(session, insert_models)
 
             precio_varaintes_db = await precio_variante_query.get_lasts(session, variante_ids, 1)
             precio_varaintes_db_df = DataFrame([x.model_dump() for x in precio_varaintes_db])
@@ -735,7 +736,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         Movimiento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await movimiento_query.bulk_insert(session, insert_models)
+                    await movimiento_query.safe_bulk_insert(session, insert_models)
                 else:
                     movimientos_db_df = DataFrame([x.model_dump() for x in movimientos_db])
                     movimientos_db_df = movimientos_db_df.groupby(['variante_id', 'bodega_id']).agg(
@@ -757,7 +758,7 @@ async def persistir_inventory_info(products: list[Product]):
                     insert_models = [
                         Movimiento(**{str(k): v for k, v in x.items() if not isna(v)}) for x in insert_records
                     ]
-                    await movimiento_query.bulk_insert(session, insert_models)
+                    await movimiento_query.safe_bulk_insert(session, insert_models)
 
 
 if __name__ == '__main__':

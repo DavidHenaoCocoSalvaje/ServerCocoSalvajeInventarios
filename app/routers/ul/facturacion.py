@@ -113,6 +113,16 @@ async def procesar_pedido_shopify(order: Order, edit: bool = False):  # Backgrou
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
+            # for line_item in order.lineItems.nodes:
+            #     bodega = await bodega
+
+            #     movimiento = MovimientoCreate(
+            #         tipo_movimiento_id=4,  # Salida
+            #         tipo_soporte_id=2,  # Pedido
+            #         cantidad=line_item.quantity,
+
+            #     )
+
             log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
 
 

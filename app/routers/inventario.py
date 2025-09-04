@@ -184,6 +184,7 @@ async def recibir_pedido_shopify(
     except Exception as e:
         # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
         log_inventario_shopify.error(str(e))
+        log_inventario_shopify.debug(request_json)
         return True
 
     if order_response.data.order is None:
@@ -217,6 +218,7 @@ async def recibir_edicion_pedido_shopify(
     except Exception as e:
         # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
         log_inventario_shopify.error(str(e))
+        log_inventario_shopify.debug(request_json)
         return True
 
     if order_response.data.order is None:

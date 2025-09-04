@@ -3,16 +3,17 @@
 from app.models.pydantic.base import Base
 
 
-class Address(Base):
+class AddressLocation(Base):
     city: str = ''
     province: str = ''
     country: str = ''
     address1: str = ''
+    formatted: list[str] = []
 
 
 class Location(Base):
     legacyResourceId: int = 0
-    address: Address = Address()
+    address: AddressLocation = AddressLocation()
 
 
 class Quantitie(Base):

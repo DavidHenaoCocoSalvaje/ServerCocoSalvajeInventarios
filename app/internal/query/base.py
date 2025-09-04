@@ -47,13 +47,26 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         session.add_all(base_objs)
         await session.commit()
 
-    async def update(self, session: AsyncSession, new_obj: SQLModel, pk: int | str) -> ModelDB:
+    async def safe_bulk_insert(self, session: AsyncSession, objs: list[ModelDB]):
+        """
+        Solo usar si los objetos tienen id
+        """
+        objs = [obj for obj in objs if getattr(obj, 'id', None)]
+        update_objs = []
+        for obj in objs:
+            update_obj = await self.upsert(session, obj)
+            if update_obj:
+                update_objs.append(update_obj)
+
+        return update_objs
+
+    async def update(self, session: AsyncSession, new_obj: ModelDB, pk: int | str) -> ModelDB:
         """Actualiza un objeto existente de forma asíncrona."""
         # Se garantiza que el objeto recibido si exista.
         db_obj = await session.get(self.model_db, pk)
         if not db_obj:
             exception = ValueError(f'No existe el objeto con id {pk}')
-            log_base_query.error(f'{exception}')
+            log_base_query.error(str(exception))
             raise exception
 
         # Actualiza el objeto que ya está en la sesión
@@ -66,6 +79,22 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         await session.commit()
         await session.refresh(db_obj)
         return db_obj
+
+    async def upsert(self, session: AsyncSession, obj: ModelDB):
+        id = getattr(obj, 'id', None)
+        if id is None:
+            log_base_query.debug(f'No hay id para actualizar, {obj.model_dump_json()}')
+            return None
+
+        if getattr(obj, 'id', None):
+            db_obj = await self.get(session, id=id)
+            if db_obj:
+                return await self.update(session, obj, id)
+            else:
+                model_create = self.model_create(**obj.model_dump())
+                return await self.create(session, model_create)
+
+        return None
 
     async def delete(self, session: AsyncSession, id: int | str) -> ModelDB | None:
         """Elimina un objeto de forma asíncrona."""
