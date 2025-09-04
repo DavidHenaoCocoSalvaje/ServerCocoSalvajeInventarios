@@ -59,4 +59,4 @@ async def set_admin_user(reset_password: bool = False):
                 usuario_logger.error(f'{exception}')
                 raise exception
 
-            await usuario_query.update(session, usuario_db, usuario, usuario_db.id)
+            await usuario_query.update(session, usuario, usuario_db.id)

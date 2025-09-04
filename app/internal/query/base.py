@@ -47,7 +47,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         session.add_all(base_objs)
         await session.commit()
 
-    async def update(self, session: AsyncSession, db_exist_obj: SQLModel, new_obj: SQLModel, pk: int | str) -> ModelDB:
+    async def update(self, session: AsyncSession, new_obj: SQLModel, pk: int | str) -> ModelDB:
         """Actualiza un objeto existente de forma asíncrona."""
         # Se garantiza que el objeto recibido si exista.
         db_obj = await session.get(self.model_db, pk)

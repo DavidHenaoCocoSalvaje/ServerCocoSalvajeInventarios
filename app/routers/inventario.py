@@ -195,3 +195,35 @@ async def recibir_pedido_shopify(
     background_tasks.add_task(procesar_pedido_shopify, order)
 
     return True
+
+
+@shopify_router.post(
+    '/pedido_edit',
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    dependencies=[Depends(hmac_validation_shopify)],
+)
+async def recibir_edicion_pedido_shopify(
+    request: Request,
+    background_tasks: BackgroundTasks,
+):
+    """Si se recibe una edición de un pedido, es posible que se haya añadido información que haya impedido la facturación previamente."""
+    request_json = await request.json()
+    shopify_client = ShopifyGraphQLClient()
+    # Obtener datos de pedido
+    order_webhook = OrderWebHook(**request_json)
+    try:
+        order_response = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
+    except Exception as e:
+        # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
+        log_inventario_shopify.error(str(e))
+        return True
+
+    if order_response.data.order is None:
+        log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
+    order = order_response.data.order
+    """Se evidencia que shopify en ocasiones intenta enviar el mismo pedido varias veces.
+    Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
+    background_tasks.add_task(procesar_pedido_shopify, order, True)
+
+    return True

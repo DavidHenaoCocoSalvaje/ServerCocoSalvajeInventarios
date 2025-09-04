@@ -132,7 +132,7 @@ async def actualizar(
         log_usuario.error(f'{exception}')
         raise exception
 
-    usuario_actualizado = await usuario_query.update(session, db_user, usuario, db_user.id)
+    usuario_actualizado = await usuario_query.update(session, usuario, db_user.id)
     return usuario_actualizado
 
 

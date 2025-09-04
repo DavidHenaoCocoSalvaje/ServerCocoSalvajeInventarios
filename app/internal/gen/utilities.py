@@ -1,6 +1,12 @@
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
+
 from app.config import config
 
 
@@ -60,3 +66,7 @@ def divide(dividendo: int | float, divisor: int | float) -> float:
         return 0
     else:
         return dividendo / divisor
+
+
+if __name__ == '__main__':
+    print(DateTz.local())

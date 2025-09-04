@@ -27,17 +27,36 @@ log_inventario_shopify = factory_logger('inventario_shopify', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
-async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar excepciones.
+async def procesar_pedido_shopify(order: Order, edit: bool = False):  # BackgroundTasks No lanzar excepciones.
     async for session in get_async_session():
         pedido = await pedido_query.get_by_number(session, order.number)
 
-        # Se registra pedido antes de crear factura por si algo sale mal tener un registro con el número de pedido y no duplicarlo.
+        # Si es un pedido que se está editando, se verifica si ya existe y si no está facturado para evitar duplicar registros
+        if edit and pedido and pedido.factura_id and pedido.id:
+            pedido_create = pedido.model_copy()
+            pedido_create.log = 'Pedido editado, ya facturado'
+            await pedido_query.update(session, pedido_create, pedido.id)
+            return
+
+        # Se registra pedido antes de crear factura por si algo sale mal tener un registro.
         if pedido is None:
             pedido_create = PedidoCreate(numero=str(order.number))
             pedido = await pedido_query.create(session, pedido_create)
 
         if not pedido.id:
             return
+
+        if not order.fullyPaid:
+            msg = f'financialStatus: {order.displayFinancialStatus}'
+            pedido_update = pedido.model_copy()
+            pedido_update.log = msg
+            await pedido_query.update(session, pedido_update, pedido.id)
+            return
+        else:
+            # Se registra pago
+            pedido_update = pedido.model_copy()
+            pedido_update.pago = order.fullyPaid
+            await pedido_query.update(session, pedido_update, pedido.id)
 
         wo_client = WoClient()
         identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
@@ -47,7 +66,7 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
                 msg = 'Falta documento de identidad'
                 pedido_update = pedido.model_copy()
                 pedido_update.log = msg
-                await pedido_query.update(session, pedido, pedido_update, pedido.id)
+                await pedido_query.update(session, pedido_update, pedido.id)
 
                 log_inventario_shopify.debug(msg)
                 return
@@ -58,27 +77,15 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
             pedido_update = pedido.model_copy()
             pedido_update.log = msg
             pedido_update.q_intentos = 0
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            await pedido_query.update(session, pedido_update, pedido.id)
             return
-
-        if not order.fullyPaid:
-            msg = f'financialStatus: {order.displayFinancialStatus}'
-            pedido_update = pedido.model_copy()
-            pedido_update.log = msg
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
-            return
-        else:
-            # Se registra pago
-            pedido_update = pedido.model_copy()
-            pedido_update.pago = order.fullyPaid
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
 
         try:
             factura = await facturar_orden(wo_client, order, identificacion_tercero)
         except Exception as e:
             pedido_update = pedido.model_copy()
             pedido_update.log = str(e)
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            await pedido_query.update(session, pedido_update, pedido.id)
             return
 
         # Se registra número de factura por si pasa algo antes de contabilizar.
@@ -86,7 +93,7 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
         pedido_update.factura_id = str(factura.id)
         pedido_update.factura_numero = str(factura.numero)
 
-        pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+        pedido = await pedido_query.update(session, pedido_update, pedido.id)
         if not pedido.id:
             return
 
@@ -96,12 +103,12 @@ async def procesar_pedido_shopify(order: Order):  # BackgroundTasks No lanzar ex
             if not pedido.contabilizado:
                 pedido_update = pedido.model_copy()
                 pedido_update.contabilizado = contabilizar
-                pedido = await pedido_query.update(session, pedido, pedido_update, pedido.id)
+                pedido = await pedido_query.update(session, pedido_update, pedido.id)
 
         except Exception as e:
             pedido_update = pedido.model_copy()
             pedido_update.log = str(e)
-            await pedido_query.update(session, pedido, pedido_update, pedido.id)
+            await pedido_query.update(session, pedido_update, pedido.id)
             return
 
         log_debug.info(f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}')
