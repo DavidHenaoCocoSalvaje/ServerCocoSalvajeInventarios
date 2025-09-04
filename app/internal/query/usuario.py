@@ -37,26 +37,27 @@ async def set_admin_user(reset_password: bool = False):
     logger = factory_logger('main', file=False)
 
     async for session in get_async_session():
-        usuario = await usuario_query.get_by_username(session, 'admin')
-        if usuario is None:
-            password = password_hasher.hash(config.admin_password)
-            usuario = UsuarioDB(username='admin', password=password)
-            usuario = await usuario_query.create(session, usuario)
-            logger.info('✅ Usuario creado')
-        if reset_password:
-            password = getpass('Ingrese una contraseña para el usuario admin:\n')
-            retype_password = getpass('Confirme la contraseña:\n')
-            if password != retype_password:
-                logger.error('❌ Las contraseñas no coinciden. Por favor, vuelva a intentarlo.')
-                return await set_admin_user(reset_password=reset_password)
-            usuario.password = password_hasher.hash(password)
-            usuario_db = await usuario_query.get_by_username(session, 'admin')
-            if usuario_db is None:
-                usuario_db = await usuario_query.create(session, usuario)
+        async with session:
+            usuario = await usuario_query.get_by_username(session, 'admin')
+            if usuario is None:
+                password = password_hasher.hash(config.admin_password)
+                usuario = UsuarioDB(username='admin', password=password)
+                usuario = await usuario_query.create(session, usuario)
+                logger.info('✅ Usuario creado')
+            if reset_password:
+                password = getpass('Ingrese una contraseña para el usuario admin:\n')
+                retype_password = getpass('Confirme la contraseña:\n')
+                if password != retype_password:
+                    logger.error('❌ Las contraseñas no coinciden. Por favor, vuelva a intentarlo.')
+                    return await set_admin_user(reset_password=reset_password)
+                usuario.password = password_hasher.hash(password)
+                usuario_db = await usuario_query.get_by_username(session, 'admin')
+                if usuario_db is None:
+                    usuario_db = await usuario_query.create(session, usuario)
 
-            if usuario_db.id is None:
-                exception = ValueError('No se pudo obtener el ID del usuario')
-                usuario_logger.error(f'{exception}')
-                raise exception
+                if usuario_db.id is None:
+                    exception = ValueError('No se pudo obtener el ID del usuario')
+                    usuario_logger.error(f'{exception}')
+                    raise exception
 
-            await usuario_query.update(session, usuario, usuario_db.id)
+                await usuario_query.update(session, usuario, usuario_db.id)

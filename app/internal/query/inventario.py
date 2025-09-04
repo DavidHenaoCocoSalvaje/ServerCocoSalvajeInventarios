@@ -127,33 +127,34 @@ async def seed_data_inventario():
         data = json.load(file)
 
     async for session in get_async_session():
-        # Upserts (ON CONFLICT DO UPDATE) por tabla, en orden de dependencias
-        # Nota: se usa conflicto por PK 'id' y se actualizan todas las columnas excepto la PK
-        pares = [
-            (EstadoVariante, 'estados_variante'),
-            (TipoMovimiento, 'tipos_movimiento'),
-            (TipoPrecio, 'tipos_precios'),
-            (Grupo, 'grupos'),
-            (TiposMedida, 'tipos_medida'),
-            (TipoSoporte, 'tipos_soporte'),
-            (Medida, 'medidas'),
-        ]
+        async with session:
+            # Upserts (ON CONFLICT DO UPDATE) por tabla, en orden de dependencias
+            # Nota: se usa conflicto por PK 'id' y se actualizan todas las columnas excepto la PK
+            pares = [
+                (EstadoVariante, 'estados_variante'),
+                (TipoMovimiento, 'tipos_movimiento'),
+                (TipoPrecio, 'tipos_precios'),
+                (Grupo, 'grupos'),
+                (TiposMedida, 'tipos_medida'),
+                (TipoSoporte, 'tipos_soporte'),
+                (Medida, 'medidas'),
+            ]
 
-        for Model, key in pares:
-            items = data.get(key, [])
-            if not items:
-                continue
+            for Model, key in pares:
+                items = data.get(key, [])
+                if not items:
+                    continue
 
-            table = Model.__table__  # type: ignore[attr-defined]
-            insert_stmt = insert(table).values(items)
+                table = Model.__table__  # type: ignore[attr-defined]
+                insert_stmt = insert(table).values(items)
 
-            # Construir set_ dinámico: todas las columnas excepto la PK 'id'
-            update_cols = [c.name for c in table.c if c.name != 'id']
-            set_dict = {col: getattr(insert_stmt.excluded, col) for col in update_cols}
+                # Construir set_ dinámico: todas las columnas excepto la PK 'id'
+                update_cols = [c.name for c in table.c if c.name != 'id']
+                set_dict = {col: getattr(insert_stmt.excluded, col) for col in update_cols}
 
-            stmt = insert_stmt.on_conflict_do_update(
-                index_elements=[table.c.id],
-                set_=set_dict,
-            )
-            await session.execute(stmt)
-        await session.commit()
+                stmt = insert_stmt.on_conflict_do_update(
+                    index_elements=[table.c.id],
+                    set_=set_dict,
+                )
+                await session.execute(stmt)
+            await session.commit()
