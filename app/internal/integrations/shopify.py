@@ -2,6 +2,7 @@ import traceback
 from pydantic import BaseModel, ValidationError
 from pandas import DataFrame, merge, isna
 from re import findall
+from asyncio import gather
 
 
 if __name__ == '__main__':
@@ -61,7 +62,7 @@ class ShopifyGraphQLClient(BaseClient):
         version: str = config.shop_version,
         access_token: str = config.api_key_shopify,
     ):
-        super().__init__(min_interval=0.1)
+        super().__init__(min_interval=0)
         self.host = f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json'
         self.access_token = access_token
         self.headers = {
@@ -471,14 +472,12 @@ class ShopifyGraphQLClient(BaseClient):
         return orders_response
 
     async def get_inventory_info(self) -> list[Product]:
-        """Función principal optimizada con procesamiento secuencial por producto"""
+        """Función principal optimizada con procesamiento en lotes de 5 productos"""
         # Obtener todos los productos
         product_response = await self.get_products()
-
         products = product_response.data.products.nodes
 
-        # Procesar cada producto individualmente
-        for product in products:
+        async def get_inventory_levels_product(product):
             # Obtener variantes del producto actual
             variants_response = await self.get_variants(product.legacyResourceId)
 
@@ -500,6 +499,14 @@ class ShopifyGraphQLClient(BaseClient):
                 else:
                     variant.inventoryLevels = []
                     variant.sku = ''
+
+        # Procesar productos en lotes de 5
+        batch_size = 5
+        for i in range(0, len(products), batch_size):
+            batch = products[i : i + batch_size]
+
+            # Procesar cada lote de productos concurrentemente
+            await gather(*[get_inventory_levels_product(product) for product in batch])
 
         # Guardar resultados
         if config.environment == 'development':
@@ -755,15 +762,20 @@ async def persistir_inventory_info(products: list[Product]):
 
 if __name__ == '__main__':
     from asyncio import run
+    from time import time
 
     async def main():
         client = ShopifyGraphQLClient()
-        await client.get_inventory_info()
+        ini_time = time()
+        print(ini_time)
+        products = await client.get_inventory_info()
+        fin_time = time()
+        print(fin_time, fin_time - ini_time)
+        print(time())
         order_26492 = await client.get_order_by_number(26492)
         assert order_26492.data.orders.nodes[0].number == 26492
         assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
 
-        products = await client.get_inventory_info()
         await persistir_inventory_info(products)
 
     run(main())
