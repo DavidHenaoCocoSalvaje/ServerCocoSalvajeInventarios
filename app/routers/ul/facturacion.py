@@ -42,9 +42,6 @@ async def procesar_pedido_shopify(order: Order, update: bool = False):  # Backgr
                 return
             # Si es un pedido que se está editando, se verifica si ya existe y si no está facturado para evitar duplicar registros
             if update and pedido and pedido.factura_id and pedido.id:
-                pedido_create = pedido.model_copy()
-                pedido_create.log = 'Pedido editado, ya facturado'
-                await pedido_query.update(session, pedido_create, pedido.id)
                 return
 
             # Se registra pedido antes de crear factura por si algo sale mal tener un registro.
