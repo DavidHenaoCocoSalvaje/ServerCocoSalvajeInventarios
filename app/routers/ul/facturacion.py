@@ -197,10 +197,10 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         tercero_create = WOTerceroCreate(
             idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
             identificacion=identificacion_tercero,
-            primerNombre=primer_nombre,
-            segundoNombre=segundo_nombre,
-            primerApellido=primer_apellido,
-            segundoApellido=segundo_apellido,
+            primerNombre=primer_nombre.capitalize(),
+            segundoNombre=segundo_nombre.capitalize(),
+            primerApellido=primer_apellido.capitalize(),
+            segundoApellido=segundo_apellido.capitalize(),
             idCiudad=ciudad_id,
             direccion=address,
             direcciones=direcciones,
