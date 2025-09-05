@@ -10,6 +10,7 @@ from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
 from app.internal.log import LogLevel, factory_logger
+from asyncio import sleep
 
 # Seguridad
 
@@ -28,6 +29,10 @@ log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 async def procesar_pedido_shopify(order: Order, update: bool = False):  # BackgroundTasks No lanzar excepciones.
+    if update:
+        # Se crea un delay para evitar que se lance la facturación en paralelo.
+        await sleep(3)
+
     async for session in get_async_session():
         async with session:
             pedido = await pedido_query.get_by_number(session, order.number)
