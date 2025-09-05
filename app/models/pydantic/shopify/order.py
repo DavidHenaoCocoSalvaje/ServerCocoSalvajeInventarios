@@ -140,7 +140,7 @@ class LineItem(Base):
             return 100
         else:
             discount_amount = self.unit_price - self.discounted_unit_price
-            return round(divide(discount_amount, self.discounted_unit_price) * 100)
+            return round(divide(discount_amount, self.unit_price) * 100)
 
     def discounted_unit_price_iva_discount(self, IVA: float) -> float:
         # Si el descuento es del 100%, se debe tomar el precio sin descuento.
