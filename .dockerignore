@@ -88,3 +88,6 @@ htmlcov/
 .coverage
 .coverage.*
 coverage.xml
+
+# Ansible
+ansible/
