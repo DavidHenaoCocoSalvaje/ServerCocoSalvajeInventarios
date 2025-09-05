@@ -227,19 +227,16 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         # World Office adiciona el IVA automáticamente, se envía el precio con IVA descontado.
         valor_unitario = line_intem.discounted_unit_price_iva_discount(iva)
 
-        kwargs = {}
-        if line_intem.porc_discount > 0:
-            kwargs['porDescuento'] = line_intem.porc_discount
-        reglones.append(
-            WOReglone(
-                idInventario=inventario.id,
-                unidadMedida='und',
-                cantidad=line_intem.quantity,
-                valorUnitario=valor_unitario,
-                idBodega=1,
-                **kwargs,
-            )
+        reglone = WOReglone(
+            idInventario=inventario.id,
+            unidadMedida='und',
+            cantidad=line_intem.quantity,
+            valorUnitario=valor_unitario,
+            idBodega=1,
         )
+        if line_intem.porc_discount > 0:
+            reglone.porDescuento = line_intem.porc_discount
+        reglones.append(reglone)
 
     costo_envio = int(order.shippingLine.originalPriceSet.shopMoney.amount)
     if costo_envio > 0:
