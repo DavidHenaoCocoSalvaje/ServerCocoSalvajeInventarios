@@ -1,7 +1,7 @@
 # Dockerfile para API de Inventarios Coco Salvaje
 
 # Usa una imagen base oficial de Python 3.13 slim bookworm
-FROM python:3.13-slim-bookworm
+FROM python:3-slim-trixie
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
