@@ -167,13 +167,15 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
 
     names = order.billingAddress.firstName or order.shippingAddress.firstName
     names_split = names.split(' ')
-    primer_nombre = names_split[0]
-    segundo_nombre = ' '.join(names_split[1:]) if len(names_split) > 1 else ''
+    names_split_capitalized = [x.capitalize() for x in names_split]
+    primer_nombre = names_split_capitalized[0]
+    segundo_nombre = ' '.join(names_split_capitalized[1:]) if len(names_split) > 1 else ''
 
     last_name = order.billingAddress.lastName or order.shippingAddress.lastName
     last_name_split = last_name.split(' ')
-    primer_apellido = last_name_split[0]
-    segundo_apellido = ' '.join(last_name_split[1:]) if len(last_name_split) > 1 else ''
+    last_name_split_capitalized = [x.capitalize() for x in last_name_split]
+    primer_apellido = last_name_split_capitalized[0]
+    segundo_apellido = ' '.join(last_name_split_capitalized[1:]) if len(last_name_split) > 1 else ''
 
     wo_tercero = await wo_client.get_tercero(identificacion_tercero)
 
@@ -197,10 +199,10 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         tercero_create = WOTerceroCreate(
             idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
             identificacion=identificacion_tercero,
-            primerNombre=primer_nombre.capitalize(),
-            segundoNombre=segundo_nombre.capitalize(),
-            primerApellido=primer_apellido.capitalize(),
-            segundoApellido=segundo_apellido.capitalize(),
+            primerNombre=primer_nombre,
+            segundoNombre=segundo_nombre,
+            primerApellido=primer_apellido,
+            segundoApellido=segundo_apellido,
             idCiudad=ciudad_id,
             direccion=address,
             direcciones=direcciones,

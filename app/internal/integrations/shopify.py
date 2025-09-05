@@ -281,6 +281,12 @@ class ShopifyGraphQLClient(BaseClient):
                         variant {
                             compareAtPrice
                         }
+                        originalUnitPriceSet {
+                            shopMoney {
+                                amount
+                                currencyCode
+                            }
+                        }
                         discountedUnitPriceAfterAllDiscountsSet {
                             shopMoney {
                                 amount

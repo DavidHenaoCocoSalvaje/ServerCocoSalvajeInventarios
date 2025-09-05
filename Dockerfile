@@ -29,11 +29,11 @@ COPY app/default_data/ ./app/default_data/
 COPY ./reset_admin_pwd.py ./
 
 # Crea un usuario no-root para ejecutar la aplicación (buena práctica de seguridad)
-RUN adduser --disabled-password --gecos '' appuser && \
-    chown -R appuser:appuser /app
+RUN adduser --disabled-password --gecos '' coco && \
+    chown -R coco:coco /app
 
 # Cambia al usuario no-root
-USER appuser
+USER coco
 
 # Expone el puerto 8000
 EXPOSE 8000
