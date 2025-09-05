@@ -136,7 +136,7 @@ class LineItem(Base):
         """_summary_
         Retorna el porcentaje de descuento expresado como un flotante entre 0 y 100.
         """
-        if self.unit_price == 0:
+        if self.originalUnitPriceSet.shopMoney.amount == 0:
             return 100
         else:
             discount_amount = self.unit_price - self.discounted_unit_price
