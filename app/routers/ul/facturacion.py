@@ -72,32 +72,32 @@ async def procesar_pedido_shopify(order: Order, edit: bool = False):  # Backgrou
                     log_inventario_shopify.debug(msg)
                     return
 
-            order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
-            for tag in order_tags_lower:
-                if 'no_facturar' in tag:
-                    msg = 'No facturar'
+                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
+                for tag in order_tags_lower:
+                    if 'no_facturar' in tag:
+                        msg = 'No facturar'
+                        pedido_update = pedido.model_copy()
+                        pedido_update.log = msg
+                        pedido_update.q_intentos = 0
+                        await pedido_query.update(session, pedido_update, pedido.id)
+                        return
+
+                try:
+                    factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower)
+                except Exception as e:
                     pedido_update = pedido.model_copy()
-                    pedido_update.log = msg
-                    pedido_update.q_intentos = 0
+                    pedido_update.log = str(e)
                     await pedido_query.update(session, pedido_update, pedido.id)
                     return
 
-            try:
-                factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower)
-            except Exception as e:
+                # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
-                pedido_update.log = str(e)
-                await pedido_query.update(session, pedido_update, pedido.id)
-                return
+                pedido_update.factura_id = str(factura.id)
+                pedido_update.factura_numero = str(factura.numero)
 
-            # Se registra número de factura por si pasa algo antes de contabilizar.
-            pedido_update = pedido.model_copy()
-            pedido_update.factura_id = str(factura.id)
-            pedido_update.factura_numero = str(factura.numero)
-
-            pedido = await pedido_query.update(session, pedido_update, pedido.id)
-            if not pedido.id:
-                return
+                pedido = await pedido_query.update(session, pedido_update, pedido.id)
+                if not pedido.id:
+                    return
 
             try:
                 factura = await wo_client.get_documento_venta(int(pedido.factura_id))
