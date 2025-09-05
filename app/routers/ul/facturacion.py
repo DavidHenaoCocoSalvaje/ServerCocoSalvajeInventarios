@@ -27,13 +27,16 @@ log_inventario_shopify = factory_logger('inventario_shopify', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
-async def procesar_pedido_shopify(order: Order, edit: bool = False):  # BackgroundTasks No lanzar excepciones.
+async def procesar_pedido_shopify(order: Order, update: bool = False):  # BackgroundTasks No lanzar excepciones.
     async for session in get_async_session():
         async with session:
             pedido = await pedido_query.get_by_number(session, order.number)
 
+            # Si el pedido no está registrado en la base de datos se debe omitir ya que puede ser un pedido anterior a la implementación.
+            if update and not pedido:
+                return
             # Si es un pedido que se está editando, se verifica si ya existe y si no está facturado para evitar duplicar registros
-            if edit and pedido and pedido.factura_id and pedido.id:
+            if update and pedido and pedido.factura_id and pedido.id:
                 pedido_create = pedido.model_copy()
                 pedido_create.log = 'Pedido editado, ya facturado'
                 await pedido_query.update(session, pedido_create, pedido.id)
