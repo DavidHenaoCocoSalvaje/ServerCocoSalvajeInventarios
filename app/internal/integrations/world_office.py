@@ -280,7 +280,7 @@ class WoClient(BaseClient):
                     raise exception
 
                 if not ciudades_response.valid():
-                    msg = 'No se encontró ciudad, ciudad: {ciudad}, departamento: {departamento}'
+                    msg = f'No se encontró ciudad, ciudad: {ciudad}, departamento: {departamento}'
                     exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
                     wo_log.error(str(exception))
                     raise exception
