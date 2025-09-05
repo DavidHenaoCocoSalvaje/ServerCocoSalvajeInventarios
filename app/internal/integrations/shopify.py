@@ -367,7 +367,6 @@ class ShopifyGraphQLClient(BaseClient):
         """
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         order_json = await self._execute_query(query, **variables)
-        log_debug.debug(order_gid)
         order_line_items_json = await self._get_order_line_items(order_gid)
         try:
             order_json['data']['order']['lineItems'] = order_line_items_json['data']['order']['lineItems']
