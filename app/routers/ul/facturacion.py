@@ -264,6 +264,7 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         idTerceroInterno=1,  # 1 CocoSalvaje, 1834 Lucy
         idFormaPago=id_forma_pago,
         idMoneda=31,
+        porcentajeDescuento=True,
         reglones=reglones,
     )
 

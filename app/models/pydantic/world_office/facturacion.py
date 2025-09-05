@@ -32,6 +32,7 @@ class WODocumentoVentaCreateEditBase(Base):
     idTerceroInterno: int = 0
     idFormaPago: int = 0
     idMoneda: int = 0
+    porcentajeDescuento: bool = False
 
 
 class WODocumentoVentaCreate(WODocumentoVentaCreateEditBase):
