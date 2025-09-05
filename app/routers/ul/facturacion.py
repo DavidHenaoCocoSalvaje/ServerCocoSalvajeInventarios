@@ -271,5 +271,4 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         reglones=reglones,
     )
 
-    log_debug.debug(wo_documento_venta_create.model_dump_json(exclude_none=True, exclude_unset=True))
     return await wo_client.crear_factura_venta(wo_documento_venta_create)
