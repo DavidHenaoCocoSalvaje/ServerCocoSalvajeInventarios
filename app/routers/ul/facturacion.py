@@ -31,7 +31,7 @@ log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 async def procesar_pedido_shopify(order: Order, update: bool = False):  # BackgroundTasks No lanzar excepciones.
     if update:
         # Se crea un delay para evitar que se lance la facturación en paralelo.
-        await sleep(3)
+        await sleep(5)
 
     async for session in get_async_session():
         async with session:
