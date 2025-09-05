@@ -2,6 +2,7 @@
 
 
 from app.internal.gen.utilities import DateTz
+from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
@@ -23,15 +24,31 @@ from app.internal.query.transacciones import (
     pedido_query,
 )
 
-log_inventario = factory_logger('inventario', file=True)
-log_inventario_shopify = factory_logger('inventario_shopify', file=True)
+log_facturacion = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
-async def procesar_pedido_shopify(order: Order, update: bool = False):  # BackgroundTasks No lanzar excepciones.
+async def procesar_pedido_shopify(
+    update: bool = False, pedido_number: str | None = None, order_gid: str | None = None
+):  # BackgroundTasks No lanzar excepciones.
     if update:
         # Se crea un delay para evitar que se lance la facturación en paralelo.
+        await sleep(60)
+    else:
+        # Cuando un pedido está recien creado se pueden agregar muestras automáticamente, esperar un momento para consultar.
         await sleep(30)
+
+    shopify_graphql_client = ShopifyGraphQLClient()
+    if pedido_number and not order_gid:
+        orders_response = await shopify_graphql_client.get_order_by_number(int(pedido_number))
+        order = orders_response.data.orders.nodes[0]
+    elif order_gid and not pedido_number:
+        order_response = await shopify_graphql_client.get_order(order_gid)
+        order = order_response.data.order
+    else:
+        msg = 'No se proporciono order_gid ni pedido_number'
+        log_facturacion.error(msg)
+        return
 
     async for session in get_async_session():
         async with session:
@@ -74,7 +91,7 @@ async def procesar_pedido_shopify(order: Order, update: bool = False):  # Backgr
                     pedido_update.log = msg
                     await pedido_query.update(session, pedido_update, pedido.id)
 
-                    log_inventario_shopify.debug(msg)
+                    log_facturacion.debug(msg)
                     return
 
                 order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]

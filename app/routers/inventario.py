@@ -175,25 +175,11 @@ async def recibir_pedido_shopify(
     background_tasks: BackgroundTasks,
 ):
     request_json = await request.json()
-    shopify_client = ShopifyGraphQLClient()
     # Obtener datos de pedido
     order_webhook = OrderWebHook(**request_json)
-    # Se consulta la orden porque la información que viene del webhook no incluye la información de la transacción.
-    try:
-        order_response = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
-    except Exception as e:
-        # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
-        log_inventario_shopify.error(str(e))
-        log_inventario_shopify.debug(request_json)
-        return True
-
-    if order_response.data.order is None:
-        log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
-    order = order_response.data.order
-
     """Se evidencia que shopify en ocasiones intenta enviar el mismo pedido varias veces.
     Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
-    background_tasks.add_task(procesar_pedido_shopify, order)
+    background_tasks.add_task(procesar_pedido_shopify, False, None, order_webhook.admin_graphql_api_id)
 
     return True
 
@@ -210,22 +196,10 @@ async def recibir_actualizacion_pedido_shopify(
 ):
     """Si se recibe una edición de un pedido, es posible que se haya añadido información que haya impedido la facturación previamente."""
     request_json = await request.json()
-    shopify_client = ShopifyGraphQLClient()
     # Obtener datos de pedido
     order_webhook = OrderWebHook(**request_json)
-    try:
-        order_response = await shopify_client.get_order(order_webhook.admin_graphql_api_id)
-    except Exception as e:
-        # No se lanza excepción porque es un webhook, se registra únicamente en el log y se responde Ok para no recibir el mismo webhook.
-        log_inventario_shopify.error(str(e))
-        log_inventario_shopify.debug(request_json)
-        return True
-
-    if order_response.data.order is None:
-        log_inventario_shopify.error(f'Order not found: {order_response.model_dump_json()}')
-    order = order_response.data.order
     """Se evidencia que shopify en ocasiones intenta enviar el mismo pedido varias veces.
     Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
-    background_tasks.add_task(procesar_pedido_shopify, order, True)
+    background_tasks.add_task(procesar_pedido_shopify, True, None, order_webhook.admin_graphql_api_id)
 
     return True

@@ -8,7 +8,6 @@ from app.models.db.transacciones import Pedido
 from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
 from app.internal.query.transacciones import pedido_query
-from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.routers.ul.facturacion import procesar_pedido_shopify
 
 
@@ -57,9 +56,6 @@ async def facturar_pendientes(
 
 
 async def task_facturar_pendientes(pedidos: list[Pedido]):
-    shopify_graphql_client = ShopifyGraphQLClient()
     for pedido in pedidos:
-        orders_response = await shopify_graphql_client.get_order_by_number(int(pedido.numero))
-        order = orders_response.data.orders.nodes[0]
-        await procesar_pedido_shopify(order)
+        await procesar_pedido_shopify(pedido_number=pedido.numero)
     log_transacciones.info(f'Se intentaron facturar los pedidos: {", ".join([str(x.numero) for x in pedidos])}')

@@ -98,7 +98,7 @@ class OriginalPriceSet(Base):
     shopMoney: ShopMoney = ShopMoney()
 
 
-class DiscountedUnitPriceSet(Base):
+class DiscountedUnitPriceAfterAllDiscountsSet(Base):
     """_summary_
     Representa el precio de venta luego de aplicar descuentos.
     """
@@ -114,7 +114,10 @@ class LineItem(Base):
     quantity: int = 0
     variant: Variant = Variant()
     originalUnitPriceSet: OriginalPriceSet = OriginalPriceSet()
-    discountedUnitPriceSet: DiscountedUnitPriceSet = DiscountedUnitPriceSet()
+    discountedUnitPriceAfterAllDiscountsSet: DiscountedUnitPriceAfterAllDiscountsSet = (
+        DiscountedUnitPriceAfterAllDiscountsSet()
+    )  # Descuento sobre el elemento
+
     sku: str = ''
 
     @computed_field
@@ -127,7 +130,7 @@ class LineItem(Base):
     @computed_field
     @property
     def discounted_unit_price(self) -> float:
-        amount = self.discountedUnitPriceSet.shopMoney.amount
+        amount = self.discountedUnitPriceAfterAllDiscountsSet.shopMoney.amount
         return round(amount, 2)
 
     @computed_field
