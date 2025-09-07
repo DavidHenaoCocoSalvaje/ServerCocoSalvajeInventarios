@@ -21,7 +21,7 @@ class PedidoCreate(TransaccionBase):
     factura_numero: int | None = None  # Creación exitosa cuando se recibe número de factura
     contabilizado: bool = False
     pago: bool = False
-    log: str = Field(sa_type=TEXT, default='')
+    log: str | None = Field(sa_type=TEXT, default=None)
     q_intentos: int = Field(
         sa_type=SMALLINT, default=3
     )  # Determina los intentos de reprocesar si el pedido no está facturado/contabilizado
