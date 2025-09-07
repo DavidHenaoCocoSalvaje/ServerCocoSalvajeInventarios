@@ -1,5 +1,5 @@
 ---
-- name: deploy server
+- name: Deploy server
   hosts: hostinger
   vars:
       # La variable git_branch se pasa como un extra-var desde el script de shell
@@ -14,47 +14,48 @@
       remote_folder: "/home/coco/images/backend/integraciones/{{ git_branch }}"
 
   tasks:
-    - name: Send docker-image
-      ansible.builtin.copy:
-        src: "{{ local_image_path }}"
-        dest: "{{ remote_folder }}/{{ image_name }}.tar"
-        mode: 0644
+      - name: Send docker-image
+        ansible.builtin.copy:
+            src: "{{ local_image_path }}"
+            dest: "{{ remote_folder }}/{{ image_name }}.tar"
+            mode: "0644"
 
-    - name: Send .env
-      ansible.builtin.copy:
-        src: "{{ local_env_path }}"
-        dest: "{{ remote_folder }}/.env"
-        mode: 0600
-        
-    - name: Send docker compose file
-      ansible.builtin.copy:
-        src: "{{ local_compose_path }}"
-        dest: "{{ remote_folder }}/docker-compose.yml"
-        mode: 0600
+      - name: Send .env
+        ansible.builtin.copy:
+            src: "{{ local_env_path }}"
+            dest: "{{ remote_folder }}/.env"
+            mode: "0600"
 
-    - name: Load docker-image
-      ansible.builtin.shell:
-        cmd: "docker load -i {{ remote_folder }}/{{ image_name }}.tar"
-      
-    - name: Mkdir logs
-      ansible.builtin.file:
-        path: "{{ remote_folder }}/logs"
-        state: directory
-        mode: 0755
-    
-    - name: chown logs
-      ansible.builtin.shell:
-        cmd: "chown -R {{ ansible_user }}:{{ ansible_user }} {{ remote_folder }}/logs"
-    
-    - name: chmod logs
-      ansible.builtin.shell:
-        cmd: "chmod -R 755 {{ remote_folder }}/logs"
-    
-    - name: Run container
-      ansible.builtin.shell:
-        cmd: "docker compose up -d"
-        chdir: "{{ remote_folder }}"
-    
-    - name: Clean docker
-      ansible.builtin.shell:
-        cmd: "docker system prune -a -f"
+      - name: Send docker compose file
+        ansible.builtin.copy:
+            src: "{{ local_compose_path }}"
+            dest: "{{ remote_folder }}/docker-compose.yml"
+            mode: "0600"
+
+      - name: Load docker-image
+        ansible.builtin.command:
+            cmd: "docker load -i {{ remote_folder }}/{{ image_name }}.tar"
+        register: load_result
+        changed_when: "'Loaded image' in load_result.stderr"
+
+      - name: Ensure logs directory exists and has correct permissions
+        ansible.builtin.file:
+            path: "{{ remote_folder }}/logs"
+            state: directory
+            mode: "0755"
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+            recurse: true
+
+      - name: Run container
+        ansible.builtin.command:
+            cmd: "docker compose up -d"
+            chdir: "{{ remote_folder }}"
+        register: run_result
+        changed_when: "'Creating' in run_result.stdout or 'Recreating' in run_result.stdout"
+
+      - name: Clean docker
+        ansible.builtin.command:
+            cmd: "docker system prune -a -f"
+        register: clean_result
+        changed_when: "'Total reclaimed space' in clean_result.stdout"
