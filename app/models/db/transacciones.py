@@ -16,9 +16,9 @@ class TransaccionBase(SQLModel):
 
 
 class PedidoCreate(TransaccionBase):
-    numero: str = ''  # Número de pedido shopify ej. #1234
-    factura_id: str = ''  # Creación exitosa cuando se recibe número de factura
-    factura_numero: str = ''  # Creación exitosa cuando se recibe número de factura
+    numero: int | None = None  # Número de pedido shopify ej. #1234
+    factura_id: int | None = None  # Creación exitosa cuando se recibe número de factura
+    factura_numero: int | None = None  # Creación exitosa cuando se recibe número de factura
     contabilizado: bool = False
     pago: bool = False
     log: str = Field(sa_type=TEXT, default='')

@@ -29,7 +29,7 @@ log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 async def procesar_pedido_shopify(
-    update: bool = False, pedido_number: str | None = None, order_gid: str | None = None
+    update: bool = False, pedido_number: int | None = None, order_gid: str | None = None
 ):  # BackgroundTasks No lanzar excepciones.
     if update:
         # Se crea un delay para evitar que se lance la facturación en paralelo.
@@ -63,7 +63,7 @@ async def procesar_pedido_shopify(
 
             # Se registra pedido antes de crear factura por si algo sale mal tener un registro.
             if pedido is None:
-                pedido_create = PedidoCreate(numero=str(order.number))
+                pedido_create = PedidoCreate(numero=order.number)
                 pedido = await pedido_query.create(session, pedido_create)
 
             if not pedido.id:
@@ -114,16 +114,16 @@ async def procesar_pedido_shopify(
 
                 # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
-                pedido_update.factura_id = str(factura.id)
-                pedido_update.factura_numero = str(factura.numero)
+                pedido_update.factura_id = factura.id
+                pedido_update.factura_numero = factura.numero
 
                 pedido = await pedido_query.update(session, pedido_update, pedido.id)
-                if not pedido.id:
+                if not pedido.id or not pedido.factura_id:
                     return
 
             try:
-                factura = await wo_client.get_documento_venta(int(pedido.factura_id))
-                contabilizar = await wo_client.contabilizar_documento_venta(int(pedido.factura_id))
+                factura = await wo_client.get_documento_venta(pedido.factura_id)
+                contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
                 if not pedido.contabilizado:
                     pedido_update = pedido.model_copy()
                     pedido_update.contabilizado = contabilizar
