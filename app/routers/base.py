@@ -18,11 +18,11 @@ class CRUD:
         self,
         router: APIRouter,
         name: str,
-        model_query: type[ModelQuery],
+        model_query: BaseQuery,
         model_db: type[ModelDB],
         model_create: type[ModelCreate],
     ) -> None:
-        self.query = model_query(model_db, model_create)
+        self.query = model_query
         self.model_db = model_db
         self.model_create = model_create
         """

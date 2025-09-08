@@ -4,8 +4,21 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request,
 
 
 from app.internal.integrations.shopify import ShopifyGraphQLClient, persistir_inventory_info
-from app.internal.query.base import BaseQuery
-from app.internal.query.inventario import BaseQueryWithShopifyId, MovimientoQuery, PrecioPorVarianteQuery
+from app.internal.query.inventario import (
+    BodegaQuery,
+    ComponentesPorVarianteQuery,
+    ElementoQuery,
+    EstadoVarianteQuery,
+    GrupoQuery,
+    MedidaQuery,
+    MedidasPorVarianteQuery,
+    MovimientoQuery,
+    PrecioPorVarianteQuery,
+    TipoMovimientoQuery,
+    TipoPrecioQuery,
+    TiposMedidaQuery,
+    VarianteElementoQuery,
+)
 from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -73,19 +86,19 @@ shopify_router = APIRouter(
 
 
 # Llamadas a la función genérica para cada modelo de inventario
-CRUD(router, 'elemento', BaseQueryWithShopifyId, Elemento, ElementoCreate)
-CRUD(router, 'variante', BaseQueryWithShopifyId, VarianteElemento, VarianteElementoCreate)
-CRUD(router, 'componente', BaseQuery, ComponentesPorVariante, ComponentesPorVarianteCreate)
-CRUD(router, 'bodega', BaseQueryWithShopifyId, Bodega, BodegaCreate)
-CRUD(router, 'grupo', BaseQuery, Grupo, GrupoCreate)
-CRUD(router, 'unidad_medida', BaseQuery, Medida, MedidaCreate)
-CRUD(router, 'precio', PrecioPorVarianteQuery, PreciosPorVariante, PreciosPorVarianteCreate)
-CRUD(router, 'tipo_precio', BaseQuery, TipoPrecio, TipoPrecioCreate)
-CRUD(router, 'tipo_medida', BaseQuery, TiposMedida, TiposMedidaCreate)
-CRUD(router, 'medida', BaseQuery, MedidasPorVariante, MedidasPorVarianteCreate)
-CRUD(router, 'movimiento', MovimientoQuery, Movimiento, MovimientoCreate)
-CRUD(router, 'tipo_movimiento', BaseQuery, TipoMovimiento, TipoMovimientoCreate)
-CRUD(router, 'estado', BaseQuery, EstadoVariante, EstadoVarianteCreate)
+CRUD(router, 'elemento', ElementoQuery(), Elemento, ElementoCreate)
+CRUD(router, 'variante', VarianteElementoQuery(), VarianteElemento, VarianteElementoCreate)
+CRUD(router, 'componente', ComponentesPorVarianteQuery(), ComponentesPorVariante, ComponentesPorVarianteCreate)
+CRUD(router, 'bodega', BodegaQuery(), Bodega, BodegaCreate)
+CRUD(router, 'grupo', GrupoQuery(), Grupo, GrupoCreate)
+CRUD(router, 'unidad_medida', MedidaQuery(), Medida, MedidaCreate)
+CRUD(router, 'precio', PrecioPorVarianteQuery(), PreciosPorVariante, PreciosPorVarianteCreate)
+CRUD(router, 'tipo_precio', TipoPrecioQuery(), TipoPrecio, TipoPrecioCreate)
+CRUD(router, 'tipo_medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
+CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPorVarianteCreate)
+CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
+CRUD(router, 'tipo_movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
+CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
 
 
 # Sincronización

@@ -22,7 +22,7 @@ router = APIRouter(
     dependencies=[Depends(validar_access_token)],
 )
 
-CRUD(router, 'pedido', PedidoQuery, Pedido, PedidoCreate)
+CRUD(router, 'pedido', PedidoQuery(), Pedido, PedidoCreate)
 
 log_transacciones = factory_logger('transacciones', file=True)
 

@@ -58,7 +58,7 @@ class BaseQueryWithShopifyId(BaseQuery, Generic[ModelDB, ModelCreate]):
 
 class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCreate]):
     def __init__(self) -> None:
-        super().__init__(PreciosPorVariante, PreciosPorVariante)
+        super().__init__(PreciosPorVariante, PreciosPorVarianteCreate)
 
     async def get_last(self, session: AsyncSession, variante_id: int, tipo_precio_id: int) -> PreciosPorVariante | None:
         statement = (
@@ -97,7 +97,7 @@ class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCre
 
 class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
     def __init__(self) -> None:
-        super().__init__(Movimiento, Movimiento)
+        super().__init__(Movimiento, MovimientoCreate)
 
     async def get_by_varante_ids(self, session: AsyncSession, variante_ids: list[int]) -> list[Movimiento]:
         statement = select(self.model_db).where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
@@ -130,7 +130,7 @@ class GrupoQuery(BaseQuery[Grupo, GrupoCreate]):
         super().__init__(Grupo, GrupoCreate)
 
 
-class UnidadMedidaQuery(BaseQuery[Medida, MedidaCreate]):
+class MedidaQuery(BaseQuery[Medida, MedidaCreate]):
     def __init__(self) -> None:
         super().__init__(Medida, MedidaCreate)
 
@@ -155,7 +155,7 @@ class TipoMovimientoQuery(BaseQuery[TipoMovimiento, TipoMovimientoCreate]):
         super().__init__(TipoMovimiento, TipoMovimientoCreate)
 
 
-class EstadoElementoQuery(BaseQuery[EstadoVariante, EstadoVarianteCreate]):
+class EstadoVarianteQuery(BaseQuery[EstadoVariante, EstadoVarianteCreate]):
     def __init__(self) -> None:
         super().__init__(EstadoVariante, EstadoVarianteCreate)
 
