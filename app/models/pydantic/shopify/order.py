@@ -137,13 +137,13 @@ class LineItem(Base):
     @property
     def porc_discount(self) -> int:
         """_summary_
-        Retorna el porcentaje de descuento expresado como un flotante entre 0 y 100.
+        Retorna 100 si el producto tiene es una muestra comercial sin valor.
+        Los descuentos parciales no se consideran, ya que se facturan por el valor luego de aplicar descuentos.
         """
-        if self.originalUnitPriceSet.shopMoney.amount == 0:
+        if self.originalUnitPriceSet.shopMoney.amount == 0 or self.discounted_unit_price == 0:
             return 100
         else:
-            discount_amount = self.unit_price - self.discounted_unit_price
-            return round(divide(discount_amount, self.unit_price) * 100)
+            return 0
 
     def discounted_unit_price_iva_discount(self, IVA: float) -> float:
         # Si el descuento es del 100%, se debe tomar el precio sin descuento.
