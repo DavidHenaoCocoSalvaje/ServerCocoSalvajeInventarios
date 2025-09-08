@@ -195,4 +195,7 @@ shopify_inventory_data.json
 *.tar
 *.zip
 
+# Ansible
+.ansible/
+
 # End of https://www.toptal.com/developers/gitignore/api/venv,python

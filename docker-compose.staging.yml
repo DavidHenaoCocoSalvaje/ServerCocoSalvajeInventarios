@@ -1,5 +1,5 @@
 services:
-  coco-salvaje-integraciones:
+  integraciones-api:
     image: integraciones-api:staging
     container_name: integraciones-api-staging
     user: "1001:1001"
