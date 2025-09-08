@@ -23,6 +23,3 @@ class PedidoQuery(BaseQuery[Pedido, PedidoCreate]):
         statement = select(self.model_db).where(self.model_db.factura_id == '').where(self.model_db.q_intentos > 0)
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
-
-
-pedido_query = PedidoQuery()

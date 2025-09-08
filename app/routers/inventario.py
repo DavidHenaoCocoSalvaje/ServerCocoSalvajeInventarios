@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request,
 
 
 from app.internal.integrations.shopify import ShopifyGraphQLClient, persistir_inventory_info
+from app.internal.query.base import BaseQuery
+from app.internal.query.inventario import BaseQueryWithShopifyId, MovimientoQuery, PrecioPorVarianteQuery
 from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -15,36 +17,34 @@ from app.routers.auth import hmac_validation_shopify
 
 from app.models.db.inventario import (
     Bodega,
-    Elemento,
-    VarianteElemento,
+    BodegaCreate,
     ComponentesPorVariante,
-    Grupo,
-    TipoMovimiento,
-    TipoPrecio,
-    TiposMedida,
-    MedidasPorVariante,
-    PreciosPorVariante,
-    Movimiento,
+    ComponentesPorVarianteCreate,
+    Elemento,
+    ElementoCreate,
     EstadoVariante,
+    EstadoVarianteCreate,
+    Grupo,
+    GrupoCreate,
     Medida,
+    MedidaCreate,
+    MedidasPorVariante,
+    MedidasPorVarianteCreate,
+    Movimiento,
+    MovimientoCreate,
+    PreciosPorVariante,
+    PreciosPorVarianteCreate,
+    TipoMovimiento,
+    TipoMovimientoCreate,
+    TipoPrecio,
+    TipoPrecioCreate,
+    TiposMedida,
+    TiposMedidaCreate,
+    VarianteElemento,
+    VarianteElementoCreate,
 )
 
 # Base de datos (Repositorio)
-from app.internal.query.inventario import (
-    bodega_query,
-    grupo_query,
-    elemento_query,
-    variante_elemento_query,
-    componentes_por_variante_query,
-    unidad_medida_query,
-    precio_variante_query,
-    tipo_precio_query,
-    tipo_medida_query,
-    medidas_por_variante_query,
-    movimiento_query,
-    tipo_movimiento_query,
-    estado_elemento_query,
-)
 from app.routers.auth import validar_access_token
 from app.routers.ul.facturacion import procesar_pedido_shopify
 
@@ -73,71 +73,19 @@ shopify_router = APIRouter(
 
 
 # Llamadas a la función genérica para cada modelo de inventario
-CRUD[Elemento](
-    router,
-    elemento_query,
-    'elemento',
-)
-CRUD[VarianteElemento](
-    router,
-    variante_elemento_query,
-    'variante',
-)
-CRUD[ComponentesPorVariante](
-    router,
-    componentes_por_variante_query,
-    'componente',
-)
-CRUD[Bodega](
-    router,
-    bodega_query,
-    'bodega',
-)
-CRUD[Grupo](
-    router,
-    grupo_query,
-    'grupo',
-)
-CRUD[Medida](
-    router,
-    unidad_medida_query,
-    'unidad_medida',
-)
-CRUD[PreciosPorVariante](
-    router,
-    precio_variante_query,
-    'precio',
-)
-CRUD[TipoPrecio](
-    router,
-    tipo_precio_query,
-    'tipo_precio',
-)
-CRUD[TiposMedida](
-    router,
-    tipo_medida_query,
-    'tipo_medida',
-)
-CRUD[MedidasPorVariante](
-    router,
-    medidas_por_variante_query,
-    'medida',
-)
-CRUD[Movimiento](
-    router,
-    movimiento_query,
-    'movimiento',
-)
-CRUD[TipoMovimiento](
-    router,
-    tipo_movimiento_query,
-    'tipo_movimiento',
-)
-CRUD[EstadoVariante](
-    router,
-    estado_elemento_query,
-    'estado',
-)
+CRUD(router, 'elemento', BaseQueryWithShopifyId, Elemento, ElementoCreate)
+CRUD(router, 'variante', BaseQueryWithShopifyId, VarianteElemento, VarianteElementoCreate)
+CRUD(router, 'componente', BaseQuery, ComponentesPorVariante, ComponentesPorVarianteCreate)
+CRUD(router, 'bodega', BaseQueryWithShopifyId, Bodega, BodegaCreate)
+CRUD(router, 'grupo', BaseQuery, Grupo, GrupoCreate)
+CRUD(router, 'unidad_medida', BaseQuery, Medida, MedidaCreate)
+CRUD(router, 'precio', PrecioPorVarianteQuery, PreciosPorVariante, PreciosPorVarianteCreate)
+CRUD(router, 'tipo_precio', BaseQuery, TipoPrecio, TipoPrecioCreate)
+CRUD(router, 'tipo_medida', BaseQuery, TiposMedida, TiposMedidaCreate)
+CRUD(router, 'medida', BaseQuery, MedidasPorVariante, MedidasPorVarianteCreate)
+CRUD(router, 'movimiento', MovimientoQuery, Movimiento, MovimientoCreate)
+CRUD(router, 'tipo_movimiento', BaseQuery, TipoMovimiento, TipoMovimientoCreate)
+CRUD(router, 'estado', BaseQuery, EstadoVariante, EstadoVarianteCreate)
 
 
 # Sincronización

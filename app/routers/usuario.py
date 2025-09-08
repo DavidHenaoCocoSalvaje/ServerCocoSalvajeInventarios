@@ -118,7 +118,7 @@ async def get(session: AsyncSessionDep, usuario_id: int):
 async def actualizar(
     session: AsyncSessionDep,
     usuario_id: int,
-    usuario: UsuarioBase,
+    usuario: UsuarioDB,
 ):
     db_user = await usuario_query.get(session, usuario_id)
     if db_user is None:

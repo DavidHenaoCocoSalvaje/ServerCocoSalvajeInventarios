@@ -11,6 +11,14 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
+from app.internal.query.inventario import (
+    BodegaQuery,
+    ElementoQuery,
+    MovimientoQuery,
+    PrecioPorVarianteQuery,
+    VarianteElementoQuery,
+)
+
 from app.internal.log import factory_logger, LogLevel
 from app.models.pydantic.shopify.order import OrderResponse, OrdersResponse
 from app.internal.integrations.base import BaseClient, ClientException
@@ -22,14 +30,6 @@ from app.models.pydantic.shopify.inventario import (
     ProductsResponse,
     VariantsResponse,
 )
-from app.internal.query.inventario import (
-    bodega_query,
-    elemento_query,
-    variante_elemento_query,
-    precio_variante_query,
-    movimiento_query,
-)
-
 
 from app.config import config
 
@@ -593,6 +593,7 @@ async def persistir_inventory_info(products: list[Product]):
         async with session:
             # Consultar y crear bodegas
             bodegas_shopify_ids = bodegas_df.shopify_id.to_list()
+            bodega_query = BodegaQuery()
             bodegas_db = await bodega_query.get_by_shopify_ids(session, bodegas_shopify_ids)
             if bodegas_df.shape[0] > 0:
                 if not bodegas_db:
@@ -611,6 +612,7 @@ async def persistir_inventory_info(products: list[Product]):
 
             # Consultar y crear/actualizar elementos
             elementos_shopify_ids = elementos_df.shopify_id.to_list()
+            elemento_query = ElementoQuery()
             elementos_db = await elemento_query.get_by_shopify_ids(session, elementos_shopify_ids)
             if elementos_df.shape[0] > 0:
                 if not elementos_db:
@@ -644,6 +646,7 @@ async def persistir_inventory_info(products: list[Product]):
             variantes_df['elemento_id'] = variantes_df['id_elemento']
             variantes_df = variantes_df.drop(columns=['id_elemento'])
             variantes_shopify_ids = variantes_df.shopify_id.to_list()
+            variante_elemento_query = VarianteElementoQuery()
             variantes_db = await variante_elemento_query.get_by_shopify_ids(session, variantes_shopify_ids)
             if variantes_df.shape[0] > 0:
                 if not variantes_db:
@@ -677,6 +680,7 @@ async def persistir_inventory_info(products: list[Product]):
             precios_variante_df['variante_id'] = precios_variante_df['id_variante']
             precios_variante_df = precios_variante_df.drop(columns=['id_variante'])
             variante_ids = precios_variante_df.variante_id.to_list()
+            precio_variante_query = PrecioPorVarianteQuery()
             precio_varaintes_db = await precio_variante_query.get_lasts(session, variante_ids, 1)
             if precios_variante_df.shape[0] > 0:
                 if not precio_varaintes_db:
@@ -730,6 +734,7 @@ async def persistir_inventory_info(products: list[Product]):
             movimientos_df = movimientos_df.drop(columns=['shopify_id'])
             movimientos_df['bodega_id'] = movimientos_df['id_bodega']
             movimientos_df = movimientos_df.drop(columns=['id_bodega'])
+            movimiento_query = MovimientoQuery()
             movimientos_db = await movimiento_query.get_by_varante_ids(session, variante_ids)
             if movimientos_df.shape[0] > 0:
                 if not movimientos_db:

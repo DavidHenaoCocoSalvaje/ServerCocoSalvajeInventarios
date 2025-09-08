@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, BackgroundTasks, status
 
 from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
-from app.models.db.transacciones import Pedido
+from app.models.db.transacciones import Pedido, PedidoCreate
 from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
-from app.internal.query.transacciones import pedido_query
+from app.internal.query.transacciones import PedidoQuery
 from app.routers.ul.facturacion import procesar_pedido_shopify
 
 
@@ -22,11 +22,7 @@ router = APIRouter(
     dependencies=[Depends(validar_access_token)],
 )
 
-CRUD[Pedido](
-    router,
-    pedido_query,
-    'pedido',
-)
+CRUD(router, 'pedido', PedidoQuery, Pedido, PedidoCreate)
 
 log_transacciones = factory_logger('transacciones', file=True)
 
@@ -41,6 +37,7 @@ async def facturar_pendientes(
     background_tasks: BackgroundTasks,
 ):
     """Se facturan los pedidos que no tienen factura y no tienen q_intentos > 0."""
+    pedido_query = PedidoQuery()
     pedidos = await pedido_query.get_no_facturados(session)
     for pedido in pedidos:
         pedido_update = pedido.model_copy()

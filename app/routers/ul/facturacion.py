@@ -3,6 +3,7 @@
 
 from app.internal.gen.utilities import DateTz
 from app.internal.integrations.shopify import ShopifyGraphQLClient
+from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
@@ -18,11 +19,6 @@ from asyncio import sleep
 # Facturacion
 from app.config import config
 
-
-# Base de datos (Repositorio)
-from app.internal.query.transacciones import (
-    pedido_query,
-)
 
 log_facturacion = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
@@ -52,6 +48,7 @@ async def procesar_pedido_shopify(
 
     async for session in get_async_session():
         async with session:
+            pedido_query = PedidoQuery()
             pedido = await pedido_query.get_by_number(session, order.number)
 
             # Si el pedido no está registrado en la base de datos se debe omitir ya que puede ser un pedido anterior a la implementación.

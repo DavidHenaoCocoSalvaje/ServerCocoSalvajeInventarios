@@ -6,33 +6,32 @@ from sqlmodel import select, desc
 
 
 from app.models.db.inventario import (
+    Bodega,
     BodegaCreate,
+    ComponentesPorVariante,
     ComponentesPorVarianteCreate,
     Elemento,
-    Bodega,
     ElementoCreate,
+    EstadoVariante,
     EstadoVarianteCreate,
     Grupo,
     GrupoCreate,
     Medida,
     MedidaCreate,
-    MedidasPorVarianteCreate,
-    MovimientoCreate,
-    PreciosPorVarianteCreate,
-    TipoMovimientoCreate,
-    TipoPrecioCreate,
-    TipoSoporteCreate,
-    TiposMedida,
     MedidasPorVariante,
-    PreciosPorVariante,
-    TipoPrecio,
+    MedidasPorVarianteCreate,
     Movimiento,
+    MovimientoCreate,
+    PreciosPorVariante,
+    PreciosPorVarianteCreate,
     TipoMovimiento,
-    EstadoVariante,
+    TipoMovimientoCreate,
+    TipoPrecio,
+    TipoPrecioCreate,
+    TiposMedida,
     TiposMedidaCreate,
-    VarianteElemento,
-    ComponentesPorVariante,
     TipoSoporte,
+    VarianteElemento,
     VarianteElementoCreate,
 )
 from app.internal.query.base import BaseQuery, ModelDB, ModelCreate
@@ -106,20 +105,59 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         return list(result.scalars().all()) or []  # type: ignore
 
 
-elemento_query = BaseQueryWithShopifyId(Elemento, ElementoCreate)
-bodega_query = BaseQueryWithShopifyId(Bodega, BodegaCreate)
-variante_elemento_query = BaseQueryWithShopifyId(VarianteElemento, VarianteElementoCreate)
-componentes_por_variante_query = BaseQuery(ComponentesPorVariante, ComponentesPorVarianteCreate)
-grupo_query = BaseQuery(Grupo, GrupoCreate)
-unidad_medida_query = BaseQuery(Medida, MedidaCreate)
-precio_variante_query = PrecioPorVarianteQuery()
-tipo_precio_query = BaseQuery(TipoPrecio, TipoPrecioCreate)
-tipo_medida_query = BaseQuery(TiposMedida, TiposMedidaCreate)
-tipo_soporte_query = BaseQuery(TipoSoporte, TipoSoporteCreate)
-medidas_por_variante_query = BaseQuery(MedidasPorVariante, MedidasPorVarianteCreate)
-movimiento_query = MovimientoQuery()
-tipo_movimiento_query = BaseQuery(TipoMovimiento, TipoMovimientoCreate)
-estado_elemento_query = BaseQuery(EstadoVariante, EstadoVarianteCreate)
+class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
+    def __init__(self) -> None:
+        super().__init__(Elemento, ElementoCreate)
+
+
+class BodegaQuery(BaseQueryWithShopifyId[Bodega, BodegaCreate]):
+    def __init__(self) -> None:
+        super().__init__(Bodega, BodegaCreate)
+
+
+class VarianteElementoQuery(BaseQueryWithShopifyId[VarianteElemento, VarianteElementoCreate]):
+    def __init__(self) -> None:
+        super().__init__(VarianteElemento, VarianteElementoCreate)
+
+
+class ComponentesPorVarianteQuery(BaseQuery[ComponentesPorVariante, ComponentesPorVarianteCreate]):
+    def __init__(self) -> None:
+        super().__init__(ComponentesPorVariante, ComponentesPorVarianteCreate)
+
+
+class GrupoQuery(BaseQuery[Grupo, GrupoCreate]):
+    def __init__(self) -> None:
+        super().__init__(Grupo, GrupoCreate)
+
+
+class UnidadMedidaQuery(BaseQuery[Medida, MedidaCreate]):
+    def __init__(self) -> None:
+        super().__init__(Medida, MedidaCreate)
+
+
+class TipoPrecioQuery(BaseQuery[TipoPrecio, TipoPrecioCreate]):
+    def __init__(self) -> None:
+        super().__init__(TipoPrecio, TipoPrecioCreate)
+
+
+class TiposMedidaQuery(BaseQuery[TiposMedida, TiposMedidaCreate]):
+    def __init__(self) -> None:
+        super().__init__(TiposMedida, TiposMedidaCreate)
+
+
+class MedidasPorVarianteQuery(BaseQuery[MedidasPorVariante, MedidasPorVarianteCreate]):
+    def __init__(self) -> None:
+        super().__init__(MedidasPorVariante, MedidasPorVarianteCreate)
+
+
+class TipoMovimientoQuery(BaseQuery[TipoMovimiento, TipoMovimientoCreate]):
+    def __init__(self) -> None:
+        super().__init__(TipoMovimiento, TipoMovimientoCreate)
+
+
+class EstadoElementoQuery(BaseQuery[EstadoVariante, EstadoVarianteCreate]):
+    def __init__(self) -> None:
+        super().__init__(EstadoVariante, EstadoVarianteCreate)
 
 
 async def seed_data_inventario():
