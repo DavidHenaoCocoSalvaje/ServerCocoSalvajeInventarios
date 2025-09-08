@@ -4,8 +4,9 @@ from fastapi import APIRouter, HTTPException, status
 from sqlmodel import SQLModel
 
 from app.internal.gen.utilities import pluralizar_por_sep
-from app.models.db.session import AsyncSessionDep
 from app.internal.query.base import BaseQuery
+from app.models.db.session import AsyncSessionDep
+
 
 # Define un TypeVar para los modelos de SQLModel
 ModelQuery = TypeVar('ModelQuery', bound=BaseQuery)
@@ -22,9 +23,6 @@ class CRUD:
         model_db: type[ModelDB],
         model_create: type[ModelCreate],
     ) -> None:
-        self.query = model_query
-        self.model_db = model_db
-        self.model_create = model_create
         """
         Crea rutas CRUD genéricas para un modelo dado.
 
@@ -38,25 +36,22 @@ class CRUD:
         # POST - Crear un nuevo recurso
         @router.post(
             f'/{name}',
-            response_model=self.model_db,
+            response_model=model_db,
             status_code=status.HTTP_201_CREATED,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
             summary=f'Crear un nuevo {name.replace("_", " ")}',
             description=f'Crea un nuevo {name.replace("_", " ")} con los datos proporcionados.',
         )
         async def create_resource(
-            resource: Annotated[ModelCreate, self.model_create],
+            resource: Annotated[SQLModel, model_create],
             session: AsyncSessionDep,
         ) -> ModelDB:
             """Crea un nuevo recurso."""
-            return await self.query.create(session, resource)
+            return await model_query.create(session, resource)
 
         # GET - Obtener lista de recursos
         @router.get(
             f'/{pluralizar_por_sep(name, "_", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
-            response_model=list[self.model_db],
-            response_model_exclude_none=True,
+            response_model=list[model_db],
             summary=f'Obtener lista de {name.replace("_", " ")}s',
             description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "_", 1).replace("_", " ")}.',
         )
@@ -66,22 +61,21 @@ class CRUD:
             limit: int = 100,
         ) -> list[ModelDB]:
             """Obtiene una lista de recursos."""
-            return await self.query.get_list(session=session, skip=skip, limit=limit)
+            return await model_query.get_list(session=session, skip=skip, limit=limit)
 
         # GET - Obtener un recurso por ID
         @router.get(
             f'/{name}/{{{name}_id}}',
-            response_model=self.model_db,
+            response_model=model_db,
             summary=f'Obtener un {name.replace("_", " ")} por ID',
             description=f'Obtiene los detalles de un {name.replace("_", " ")} específico mediante su ID.',
-            response_model_exclude_none=True,
         )
         async def get_resource(
             session: AsyncSessionDep,
             resource_id: int,
         ) -> ModelDB:
             """Obtiene un recurso por ID."""
-            db_resource = await self.query.get(session, resource_id)
+            db_resource = await model_query.get(session, resource_id)
             if db_resource is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -92,28 +86,28 @@ class CRUD:
         # PUT - Actualizar un recurso
         @router.put(
             f'/{name}/{{{name}_id}}',
-            response_model=self.model_db,
+            response_model=model_db,
             summary=f'Actualizar un {name.replace("_", " ")}',
         )
         async def update_resource(
             session: AsyncSessionDep,
             resource_id: int,
-            new_data: Annotated[ModelDB, self.model_create],
+            new_data: Annotated[SQLModel, model_create],
         ) -> ModelDB:
             """Actualiza un recurso."""
-            resourse_db = await self.query.get(session, resource_id)
+            resourse_db = await model_query.get(session, resource_id)
             if resourse_db is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f'{ModelDB.__name__} con ID {resource_id} no encontrado',
                 )
-            updated_resource = await self.query.update(session, new_data, resource_id)
+            updated_resource = await model_query.update(session, new_data, resource_id)
             return updated_resource
 
         # DELETE - Eliminar un recurso
         @router.delete(
             f'/{name}/{{{name}_id}}',
-            response_model=self.model_db,
+            response_model=model_db,
             summary=f'Eliminar un {name.replace("_", " ")}',
         )
         async def delete_resource(
@@ -121,7 +115,7 @@ class CRUD:
             resource_id: int,
         ) -> ModelDB:
             """Elimina un recurso."""
-            deleted_resource = await self.query.delete(session, resource_id)
+            deleted_resource = await model_query.delete(session, resource_id)
             if deleted_resource is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
