@@ -111,10 +111,11 @@ async def procesar_pedido_shopify(
 
                 # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
-                pedido_update.factura_id = factura.id
+                pedido_update.factura_id = factura.id if factura.id else None
                 pedido_update.factura_numero = factura.numero
 
                 pedido = await pedido_query.update(session, pedido_update, pedido.id)
+
                 if not pedido.id or not pedido.factura_id:
                     return
 
