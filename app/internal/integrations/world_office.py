@@ -80,7 +80,7 @@ class WoClient(BaseClient):
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
         if not identificacion:
-            msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD
+            msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
             exception = WOException(msg=msg)
             wo_log.error(str(exception))
             raise exception

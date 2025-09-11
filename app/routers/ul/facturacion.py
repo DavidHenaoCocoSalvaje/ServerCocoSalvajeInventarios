@@ -83,7 +83,7 @@ async def procesar_pedido_shopify(
                 for tag in order_tags_lower:
                     if 'no_facturar' in tag:
                         pedido_update = pedido.model_copy()
-                        pedido_update.log = PedidoLogs.NO_FACTURAR
+                        pedido_update.log = PedidoLogs.NO_FACTURAR.value
                         pedido_update.q_intentos = 0
                         await pedido_query.update(session, pedido_update, pedido.id)
                         return

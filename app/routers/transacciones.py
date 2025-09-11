@@ -62,7 +62,7 @@ async def task_facturar_pendientes(pedidos: list[Pedido]):
     for pedido in pedidos:
         if not pedido.numero:
             continue
-        if pedido.log == PedidoLogs.NO_FACTURAR:
+        if pedido.log == PedidoLogs.NO_FACTURAR.value:
             continue
         await procesar_pedido_shopify(order_number=pedido.numero)
     log_transacciones.info(f'Se intentaron facturar los pedidos: {", ".join([str(x.numero) for x in pedidos])}')

@@ -46,5 +46,5 @@ class Pedido(PedidoCreate, table=True):
 
 if __name__ == '__main__':
     pedido = PedidoCreate()
-    pedido.log = PedidoLogs.NO_FACTURAR
+    pedido.log = PedidoLogs.NO_FACTURAR.value
     print(pedido.model_dump_json(indent=2))
