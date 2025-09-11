@@ -37,9 +37,8 @@ async def facturar_pendientes(
     session: AsyncSessionDep,
     background_tasks: BackgroundTasks,
 ):
-    """Se facturan los pedidos que no tienen factura y no tienen q_intentos > 0."""
     pedido_query = PedidoQuery()
-    pedidos = await pedido_query.get_no_facturados(session)
+    pedidos = await pedido_query.get_pendientes_facturar(session)
     for pedido in pedidos:
         pedido_update = pedido.model_copy()
         pedido_update.q_intentos = pedido.q_intentos - 1
@@ -62,5 +61,5 @@ async def task_facturar_pendientes(pedidos: list[Pedido]):
             continue
         if pedido.log == PedidoLogs.NO_FACTURAR:
             continue
-        await procesar_pedido_shopify(pedido_number=pedido.numero)
+        await procesar_pedido_shopify(order_number=pedido.numero)
     log_transacciones.info(f'Se intentaron facturar los pedidos: {", ".join([str(x.numero) for x in pedidos])}')

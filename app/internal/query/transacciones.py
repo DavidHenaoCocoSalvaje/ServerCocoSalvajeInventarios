@@ -18,7 +18,7 @@ class PedidoQuery(BaseQuery[Pedido, PedidoCreate]):
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
-    async def get_no_facturados(self, session: AsyncSession) -> list[Pedido]:
+    async def get_pendientes_facturar(self, session: AsyncSession) -> list[Pedido]:
         # factura_id = '' o q_intentos > 0
         statement = select(self.model_db).where(self.model_db.factura_id.is_(None)).where(self.model_db.q_intentos > 0)  # type: ignore
         result = await session.execute(statement)

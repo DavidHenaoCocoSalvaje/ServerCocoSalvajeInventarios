@@ -25,22 +25,17 @@ log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 async def procesar_pedido_shopify(
-    update: bool = False, pedido_number: int | None = None, order_gid: str | None = None
+    order_number: int | None = None, order_gid: str | None = None
 ):  # BackgroundTasks No lanzar excepciones.
-    if update:
-        # Se crea un delay para evitar que se lance la facturación en paralelo.
-        await sleep(60)
-    else:
-        # Cuando un pedido está recien creado se pueden agregar muestras automáticamente, esperar un momento para consultar.
-        await sleep(30)
+    await sleep(30)
 
     shopify_graphql_client = ShopifyGraphQLClient()
-    if pedido_number and not order_gid:
-        orders_response = await shopify_graphql_client.get_order_by_number(int(pedido_number))
-        order = orders_response.data.orders.nodes[0]
-    elif order_gid and not pedido_number:
+    if order_gid:
         order_response = await shopify_graphql_client.get_order(order_gid)
         order = order_response.data.order
+    elif order_number:
+        orders_response = await shopify_graphql_client.get_order_by_number(int(order_number))
+        order = orders_response.data.orders.nodes[0]
     else:
         msg = 'No se proporciono order_gid ni pedido_number'
         log_facturacion.error(msg)
@@ -50,13 +45,6 @@ async def procesar_pedido_shopify(
         async with session:
             pedido_query = PedidoQuery()
             pedido = await pedido_query.get_by_number(session, order.number)
-
-            # Si el pedido no está registrado en la base de datos se debe omitir ya que puede ser un pedido anterior a la implementación.
-            if update and not pedido:
-                return
-            # Si es un pedido que se está editando, se verifica si ya existe y si no está facturado para evitar duplicar registros
-            if update and pedido and pedido.factura_id and pedido.id:
-                return
 
             # Se registra pedido antes de crear factura por si algo sale mal tener un registro.
             if pedido is None:
@@ -100,13 +88,20 @@ async def procesar_pedido_shopify(
                         await pedido_query.update(session, pedido_update, pedido.id)
                         return
 
+                concepto = f'{config.wo_concepto} - Pedido {order.number}'
                 try:
-                    factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower)
+                    factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower, concepto)
                 except Exception as e:
-                    pedido_update = pedido.model_copy()
-                    pedido_update.log = str(e)
-                    await pedido_query.update(session, pedido_update, pedido.id)
-                    return
+                    """En ocasiones world office crea la factura correctamente pero no retorna la respuesta esperada,
+                    se intenta consultar por el concepto para verificar que realmente no se creó la factura.
+                    """
+                    try:
+                        factura = await wo_client.documento_venta_por_concepto(concepto)
+                    except Exception:
+                        pedido_update = pedido.model_copy()
+                        pedido_update.log = str(e)
+                        await pedido_query.update(session, pedido_update, pedido.id)
+                        return
 
                 # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
@@ -132,21 +127,13 @@ async def procesar_pedido_shopify(
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
-            # for line_item in order.lineItems.nodes:
-            #     bodega = await bodega
-
-            #     movimiento = MovimientoCreate(
-            #         tipo_movimiento_id=4,  # Salida
-            #         tipo_soporte_id=2,  # Pedido
-            #         cantidad=line_item.quantity,
-
-            #     )
-
             msg = f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}, q_intentos: {pedido.q_intentos}'
             log_debug.debug(msg)
 
 
-async def facturar_orden(wo_client: WoClient, order: Order, identificacion_tercero: str, tags: list[str]):
+async def facturar_orden(
+    wo_client: WoClient, order: Order, identificacion_tercero: str, tags: list[str], concepto: str
+):
     # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
     ciudad = order.billingAddress.city or order.shippingAddress.city
     departamento = order.billingAddress.province or order.shippingAddress.province
@@ -279,7 +266,7 @@ async def facturar_orden(wo_client: WoClient, order: Order, identificacion_terce
         fecha=DateTz.today(),
         prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FEFE
         documentoTipo='FV',
-        concepto=config.wo_concepto,
+        concepto=concepto,
         idEmpresa=1,  # CocoSalvaje
         idTerceroExterno=wo_tercero.id,
         idTerceroInterno=1,  # 1 CocoSalvaje, 1834 Lucy

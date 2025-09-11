@@ -291,7 +291,7 @@ class WoClient(BaseClient):
 
         return ciudades_response.data.content[0]
 
-    async def buscar_documento_venta(self, id_factura: int, codigo_documento: str = 'FV') -> WODocumentoVenta:
+    async def documento_venta_por_concepto(self, concepto: str, codigo_documento: str = 'FV') -> WODocumentoVenta:
         # Filtro1 Obligatorio de acuerdo a la documentación de World Office
         filtro1 = WOFiltro(
             atributo='documentoTipo.codigoDocumento',
@@ -301,8 +301,8 @@ class WoClient(BaseClient):
             operador='AND',
         )
         filtro2 = WOFiltro(
-            atributo='id',
-            valor=id_factura,
+            atributo='concepto',
+            valor=concepto,
             tipoFiltro=TipoFiltroWoFiltro.IGUAL,
             tipoDato=TipoDatoWoFiltro.NUMERIC,
             operador='AND',
@@ -315,14 +315,14 @@ class WoClient(BaseClient):
         try:
             facturas_response = WOListaDocumentosVentaResponse(**facturas_json)
         except ValidationError as e:
-            msg = f'{type(e)} {WOListaDocumentosVentaResponse.__name__}, id: {id_factura}'
+            msg = f'{type(e)} {WOListaDocumentosVentaResponse.__name__}, concepto: {concepto}'
             msg += f'\n{repr(e.errors())}'
             exception = WOException(url=url, payload=payload, response=facturas_json, msg=msg)
             wo_log.error(str(exception))
             raise exception
 
         if not facturas_response.data.content:
-            msg = f'No se encontró documento de venta, id: {id_factura}'
+            msg = f'No se encontró documento de venta, concepto: {concepto}'
             exception = WOException(url=url, payload=payload, response=facturas_json, msg=msg)
             wo_log.error(str(exception))
             raise exception
@@ -405,7 +405,7 @@ if __name__ == '__main__':
         assert tercero is not None and tercero.identificacion == '1094240554'
         ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
         assert isinstance(ciudad, WOCiudad)
-        factura = await wo_client.buscar_documento_venta(id_factura=31735)
+        factura = await wo_client.documento_venta_por_concepto('Factura de venta')
         assert factura.id == 31735
         factura_detail = await wo_client.get_documento_venta(id_documento=31735)
         assert factura_detail.id == 31735
