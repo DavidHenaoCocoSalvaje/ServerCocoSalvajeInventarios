@@ -114,9 +114,9 @@ async def procesar_pedido_shopify(
                     return
 
             try:
-                factura = await wo_client.get_documento_venta(pedido.factura_id)
-                contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
                 if not pedido.contabilizado:
+                    factura = await wo_client.get_documento_venta(pedido.factura_id)
+                    contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
                     pedido_update = pedido.model_copy()
                     pedido_update.contabilizado = contabilizar
                     pedido = await pedido_query.update(session, pedido_update, pedido.id)
