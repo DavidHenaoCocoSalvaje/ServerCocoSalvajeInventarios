@@ -10,6 +10,7 @@ if __name__ == '__main__':
 
 from pydantic import ValidationError
 from app.internal.log import factory_logger
+from app.models.db.transacciones import PedidoLogs
 from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarDocumentoVentaResponse,
@@ -79,7 +80,7 @@ class WoClient(BaseClient):
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
         if not identificacion:
-            msg = 'Falta documento de identidad'
+            msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD
             exception = WOException(msg=msg)
             wo_log.error(str(exception))
             raise exception

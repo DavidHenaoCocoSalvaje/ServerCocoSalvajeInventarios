@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, BackgroundTasks, status
 
 from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
-from app.models.db.transacciones import Pedido, PedidoCreate
+from app.models.db.transacciones import Pedido, PedidoCreate, PedidoLogs
 from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
 from app.internal.query.transacciones import PedidoQuery
@@ -58,5 +58,9 @@ async def facturar_pendientes(
 
 async def task_facturar_pendientes(pedidos: list[Pedido]):
     for pedido in pedidos:
+        if not pedido.numero:
+            continue
+        if pedido.log == PedidoLogs.NO_FACTURAR:
+            continue
         await procesar_pedido_shopify(pedido_number=pedido.numero)
     log_transacciones.info(f'Se intentaron facturar los pedidos: {", ".join([str(x.numero) for x in pedidos])}')

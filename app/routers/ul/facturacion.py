@@ -7,7 +7,7 @@ from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 from app.internal.integrations.world_office import WoClient
-from app.models.db.transacciones import PedidoCreate
+from app.models.db.transacciones import PedidoCreate, PedidoLogs
 from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
@@ -83,7 +83,7 @@ async def procesar_pedido_shopify(
             if not pedido.factura_id:
                 # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
                 if not identificacion_tercero:
-                    msg = 'Falta documento de identidad'
+                    msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
                     pedido_update = pedido.model_copy()
                     pedido_update.log = msg
                     await pedido_query.update(session, pedido_update, pedido.id)
@@ -94,9 +94,8 @@ async def procesar_pedido_shopify(
                 order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
                 for tag in order_tags_lower:
                     if 'no_facturar' in tag:
-                        msg = 'No facturar'
                         pedido_update = pedido.model_copy()
-                        pedido_update.log = msg
+                        pedido_update.log = PedidoLogs.NO_FACTURAR
                         pedido_update.q_intentos = 0
                         await pedido_query.update(session, pedido_update, pedido.id)
                         return
@@ -111,10 +110,11 @@ async def procesar_pedido_shopify(
 
                 # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
-                pedido_update.factura_id = factura.id
+                pedido_update.factura_id = factura.id if factura.id else None
                 pedido_update.factura_numero = factura.numero
 
                 pedido = await pedido_query.update(session, pedido_update, pedido.id)
+
                 if not pedido.id or not pedido.factura_id:
                     return
 
