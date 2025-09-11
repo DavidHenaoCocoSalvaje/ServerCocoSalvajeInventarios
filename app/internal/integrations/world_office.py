@@ -262,7 +262,7 @@ class WoClient(BaseClient):
             if valor == ciudad:
                 atributo = 'ubicacionDepartamento.nombre'
                 filtro.atributo = atributo
-                if 'Archipiélago de San Andrés' in departamento:
+                if 'San Andrés, Providencia y Santa Catalina' in departamento:
                     # En Shopify sale como Archipiélago de San Andrés, Providencia y Santa Catalina, pero en World Office es Archipiélago de San Andrés.
                     departamento = 'Archipiélago de San Andrés'
                 filtro.valor = departamento
