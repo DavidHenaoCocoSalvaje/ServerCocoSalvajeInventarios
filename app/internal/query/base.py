@@ -70,7 +70,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
             raise exception
 
         # Actualiza el objeto que ya está en la sesión
-        update_data = new_obj.model_dump(exclude_none=True, exclude_defaults=True)
+        update_data = new_obj.model_dump()
         for key, value in update_data.items():
             if hasattr(db_obj, key) and getattr(db_obj, key) != value:
                 setattr(db_obj, key, value)
