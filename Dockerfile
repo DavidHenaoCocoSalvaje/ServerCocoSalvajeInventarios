@@ -3,9 +3,6 @@
 # Usa una imagen base oficial de Python 3.13 slim
 FROM python:3.13-slim-trixie
 
-# Copia uv desde la imagen oficial
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
 
@@ -19,16 +16,14 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Configura uv para no usar entornos virtuales (ya estamos en contenedor)
-ENV UV_SYSTEM_PYTHON=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+# Actualiza pip a la última versión
+RUN pip install --upgrade pip
 
 # Copia solo los archivos de dependencias primero (para aprovechar cache de Docker)
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml ./
 
-# Instala dependencias directamente en el sistema Python
-RUN uv sync --frozen --no-dev
+# Instala dependencias usando pip con pyproject.toml
+RUN pip install --no-cache-dir .
 
 # Copia el código de la aplicación
 COPY app/ ./app/
