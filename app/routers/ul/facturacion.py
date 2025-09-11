@@ -99,7 +99,7 @@ async def procesar_pedido_shopify(
                         factura = await wo_client.documento_venta_por_concepto(concepto)
                     except Exception:
                         pedido_update = pedido.model_copy()
-                        pedido_update.log = str(e)
+                        pedido_update.log = str(e) if str(e) else 'Error desconocido'
                         await pedido_query.update(session, pedido_update, pedido.id)
                         return
 
@@ -123,7 +123,7 @@ async def procesar_pedido_shopify(
 
             except Exception as e:
                 pedido_update = pedido.model_copy()
-                pedido_update.log = str(e)
+                pedido_update.log = str(e) if str(e) else 'Error desconocido'
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
