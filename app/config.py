@@ -1,6 +1,13 @@
 # app/config.py
+from enum import Enum
 from os import getenv
 from dotenv import load_dotenv
+
+
+class Environments(Enum):
+    STAGING = 'staging'
+    DEVELOPMENT = 'development'
+    PRODUCTION = 'production'
 
 
 class Config:
@@ -20,7 +27,7 @@ class Config:
         load_dotenv()  # Carga el archivo .env
 
         # Configuración del ambiente
-        self.environment: str = getenv('ENVIRONMENT', 'development').lower()
+        self.environment: str = getenv('ENVIRONMENT', Environments.DEVELOPMENT.value).lower()
 
         # Variables específicas para Azure Container Apps (built-in)
         # Estas variables son proporcionadas automáticamente por Azure Container Apps

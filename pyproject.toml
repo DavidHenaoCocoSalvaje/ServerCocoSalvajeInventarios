@@ -1,0 +1,18 @@
+[project]
+name = "ApiCocoSalvaje"
+version = "1.0.0"
+requires-python = ">=3.13"
+description = "API para integraciones en Coco Salvaje"
+dependencies = [
+    "fastapi[standard]",
+    "sqlalchemy[asyncio]",
+    "pandas",
+    "aiohttp",
+    "python-multipart",
+    "sqlmodel",
+    "psycopg",
+    "dotenv",
+    "argon2-cffi",
+    "pyjwt",
+    "apscheduler",
+]

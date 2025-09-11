@@ -9,6 +9,7 @@ from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
 from app.internal.query.transacciones import PedidoQuery
 from app.routers.ul.facturacion import procesar_pedido_shopify
+from app.config import Environments, config
 
 
 class Tags(Enum):
@@ -47,6 +48,9 @@ async def facturar_pendientes(
             break
 
         await pedido_query.update(session, pedido_update, pedido.id)
+
+    if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
+        return True
 
     background_tasks.add_task(task_facturar_pendientes, pedidos)
     return True
