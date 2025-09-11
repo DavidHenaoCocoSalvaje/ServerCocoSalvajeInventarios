@@ -39,6 +39,9 @@ async def facturar_pendientes(
 ):
     pedido_query = PedidoQuery()
     pedidos = await pedido_query.get_pendientes_facturar(session)
+    log_transacciones.info(
+        f'Se encontraron {len(pedidos)} pedidos pendientes de facturar, {[x.numero for x in pedidos]}'
+    )
     for pedido in pedidos:
         pedido_update = pedido.model_copy()
         pedido_update.q_intentos = pedido.q_intentos - 1
