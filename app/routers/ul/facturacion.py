@@ -119,6 +119,7 @@ async def procesar_pedido_shopify(
                     contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
                     pedido_update = pedido.model_copy()
                     pedido_update.contabilizado = contabilizar
+                    pedido_update.log = None
                     pedido = await pedido_query.update(session, pedido_update, pedido.id)
 
             except Exception as e:
