@@ -1,7 +1,7 @@
 # app/internal/query/base.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
-from typing import Generic, TypeVar
+from typing import Generic, Literal, TypeVar
 
 from app.internal.log import factory_logger
 
@@ -22,9 +22,12 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         result = await session.get(self.model_db, id)
         return result
 
-    async def get_list(self, session: AsyncSession, skip: int = 0, limit: int = 100) -> list[ModelDB]:
+    async def get_list(
+        self, session: AsyncSession, skip: int = 0, limit: int = 100, order: Literal['asc', 'desc'] = 'desc'
+    ) -> list[ModelDB]:
         """Obtiene una lista de objetos de forma asíncrona."""
-        stmt = select(self.model_db).offset(skip).limit(limit)
+        order_id = self.model_db.id.asc() if order == 'asc' else self.model_db.id.desc()  # type: ignore
+        stmt = select(self.model_db).offset(skip).limit(limit).order_by(order_id)
         result = await session.execute(stmt)
         return list(result.scalars().all()) or []
 
