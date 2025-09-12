@@ -22,7 +22,7 @@ class WOResponse(Base):
     moreInfo: Any = None
 
 
-class TipoFiltroWoFiltro(str, Enum):
+class TipoFiltroWoFiltro(int, Enum):
     IGUAL = 0
     CONTIENE = 1
     MENOR_QUE = 2
@@ -40,18 +40,23 @@ class TipoFiltroWoFiltro(str, Enum):
     NO_EMPIEZA_CON = 14
 
 
-class TipoDatoWoFiltro(str, Enum):
-    STRING = 'STRING'
-    BOOLEAN = 'BOOLEAN'
-    NUMERIC = 'NUMERIC'
-    FECHA = 'FECHA'
-    LONG = 'LONG'
-    LISTA = 'LISTA'
-    IN = 'IN'
-    NOT_IN = 'NOT_IN'
-    ENUM = 'ENUM'
-    ENTIDAD = 'ENTIDAD'
-    ARRAY_INT = 'ARRAY_INT'
+class TipoDatoWoFiltro(int, Enum):
+    STRING = 0
+    BOOLEAN = 1
+    NUMERIC = 2
+    FECHA = 3
+    LONG = 4
+    LISTA = 5
+    IN = 6
+    NOT_IN = 7
+    ENUM = 8
+    ENTIDAD = 9
+    ARRAY_INT = 10
+
+
+class Operador(int, Enum):
+    AND = 0
+    OR = 1
 
 
 class WOFiltro(Base):
@@ -59,7 +64,7 @@ class WOFiltro(Base):
     valor: str | int = ''
     tipoFiltro: TipoFiltroWoFiltro = TipoFiltroWoFiltro.IGUAL
     tipoDato: TipoDatoWoFiltro = TipoDatoWoFiltro.STRING
-    operador: str = ''
+    operador: Operador = Operador.AND
 
 
 class WOListar(Base):
