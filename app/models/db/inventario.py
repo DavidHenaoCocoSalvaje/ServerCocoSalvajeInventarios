@@ -153,7 +153,7 @@ class MovimientoCreate(InventarioBase):
     bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=0)
     soporte_id: str | None = Field(sa_type=TEXT, default=None)
     nota: str | None = Field(sa_type=TEXT, default=None)
-    fecha: datetime = Field(sa_type=TIMESTAMP, default_factory=DateTz.local)
+    fecha: datetime = Field(sa_type=TIMESTAMP(timezone=True), default_factory=DateTz.local)  # type: ignore
 
 
 class Movimiento(MovimientoCreate, table=True):

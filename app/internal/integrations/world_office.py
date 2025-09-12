@@ -78,6 +78,10 @@ class WoClient(BaseClient):
             'Authorization': f'WO {config.wo_api_key}',
         }
 
+    # Se han obtenido varios timeouts usando 30 segundos. se cambia a 60 segundos.
+    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 60):
+        return await super().request(method, headers, url, payload, timeout=timeout)
+
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
         if not identificacion:
             msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value

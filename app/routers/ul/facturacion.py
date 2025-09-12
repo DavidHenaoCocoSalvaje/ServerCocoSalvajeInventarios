@@ -1,6 +1,8 @@
 # app/routers/inventario.py
 
 
+import traceback
+
 from app.internal.gen.utilities import DateTz
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
@@ -12,7 +14,7 @@ from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order
 from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
 from app.internal.log import LogLevel, factory_logger
-from asyncio import sleep
+from asyncio import sleep, TimeoutError
 
 # Seguridad
 
@@ -99,6 +101,9 @@ async def procesar_pedido_shopify(
                         factura = await wo_client.documento_venta_por_concepto(concepto)
                     except Exception:
                         pedido_update = pedido.model_copy()
+                        if not str(e):
+                            log_debug.debug(repr(e))
+                            log_debug.debug(traceback.format_exc())
                         pedido_update.log = str(e) if str(e) else 'Error desconocido'
                         await pedido_query.update(session, pedido_update, pedido.id)
                         return
@@ -118,18 +123,20 @@ async def procesar_pedido_shopify(
                     factura = await wo_client.get_documento_venta(pedido.factura_id)
                     contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
                     pedido_update = pedido.model_copy()
-                    pedido_update.contabilizado = contabilizar
-                    pedido_update.log = None
-                    pedido = await pedido_query.update(session, pedido_update, pedido.id)
+                else:
+                    return
 
+            except TimeoutError:
+                contabilizar = True
             except Exception as e:
                 pedido_update = pedido.model_copy()
-                pedido_update.log = str(e) if str(e) else 'Error desconocido'
+                pedido_update.log = str(e) if str(e) else traceback.format_exc()
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
-            msg = f'Pedido procesado: {order.number}, factura: {pedido.factura_numero}, q_intentos: {pedido.q_intentos}'
-            log_debug.debug(msg)
+            pedido_update.contabilizado = contabilizar
+            pedido_update.log = None
+            pedido = await pedido_query.update(session, pedido_update, pedido.id)
 
 
 async def facturar_orden(
