@@ -5,6 +5,12 @@
 from enum import Enum
 from typing import Any
 
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
+
 from app.models.pydantic.base import Base
 
 
@@ -17,21 +23,21 @@ class WOResponse(Base):
 
 
 class TipoFiltroWoFiltro(str, Enum):
-    IGUAL = 'IGUAL'
-    CONTIENE = 'CONTIENE'
-    MENOR_QUE = 'MENOR_QUE'
-    MAYOR_QUE = 'MAYOR_QUE'
-    EMPIEZA_CON = 'EMPIEZA_CON'
-    MAYOR_O_IGUAL = 'MAYOR_O_IGUAL'
-    MENOR_O_IGUAL = 'MENOR_O_IGUAL'
-    TERMINA_CON = 'TERMINA_CON'
-    ENTRE = 'ENTRE'
-    IS_NULL = 'IS_NULL'
-    LENGTH = 'LENGTH'
-    DIFERENTE = 'DIFERENTE'
-    IS_NOT_NULL = 'IS_NOT_NULL'
-    LENGTH_IGUAL = 'LENGTH_IGUAL'
-    NO_EMPIEZA_CON = 'NO_EMPIEZA_CON'
+    IGUAL = 0
+    CONTIENE = 1
+    MENOR_QUE = 2
+    MAYOR_QUE = 3
+    EMPIEZA_CON = 4
+    MAYOR_O_IGUAL = 5
+    MENOR_O_IGUAL = 6
+    TERMINA_CON = 7
+    ENTRE = 8
+    IS_NULL = 9
+    LENGTH = 10
+    DIFERENTE = 11
+    IS_NOT_NULL = 12
+    LENGTH_IGUAL = 13
+    NO_EMPIEZA_CON = 14
 
 
 class TipoDatoWoFiltro(str, Enum):
@@ -92,3 +98,9 @@ class WODataList(Base):
     sort: Sort = Sort()
     numberOfElements: int = 0
     empty: bool = True
+
+
+if __name__ == '__main__':
+    filtro = WOFiltro()
+    filtro.tipoFiltro = TipoFiltroWoFiltro.IGUAL
+    print(filtro.model_dump())
