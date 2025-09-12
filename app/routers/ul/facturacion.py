@@ -93,20 +93,21 @@ async def procesar_pedido_shopify(
                 concepto = f'{config.wo_concepto} - Pedido {order.number}'
                 try:
                     factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower, concepto)
+                except TimeoutError:
+                    # Si no se recibe respuesta esperar 10 segundos más y validar si se creo la factura.
+                    await sleep(10)
+                    factura = await wo_client.documento_venta_por_concepto(concepto)
                 except Exception as e:
                     """En ocasiones world office crea la factura correctamente pero no retorna la respuesta esperada,
                     se intenta consultar por el concepto para verificar que realmente no se creó la factura.
                     """
-                    try:
-                        factura = await wo_client.documento_venta_por_concepto(concepto)
-                    except Exception:
-                        pedido_update = pedido.model_copy()
-                        if not str(e):
-                            log_debug.debug(repr(e))
-                            log_debug.debug(traceback.format_exc())
-                        pedido_update.log = str(e) if str(e) else 'Error desconocido'
-                        await pedido_query.update(session, pedido_update, pedido.id)
-                        return
+                    pedido_update = pedido.model_copy()
+                    if not str(e):
+                        log_debug.debug(repr(e))
+                        log_debug.debug(traceback.format_exc())
+                    pedido_update.log = str(e) if str(e) else 'Error desconocido'
+                    await pedido_query.update(session, pedido_update, pedido.id)
+                    return
 
                 # Se registra número de factura por si pasa algo antes de contabilizar.
                 pedido_update = pedido.model_copy()
