@@ -308,7 +308,7 @@ class WoClient(BaseClient):
             atributo='concepto',
             valor=concepto,
             tipoFiltro=TipoFiltroWoFiltro.IGUAL,
-            tipoDato=TipoDatoWoFiltro.NUMERIC,
+            tipoDato=TipoDatoWoFiltro.STRING,
             operador=Operador.AND,
         )
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2])
