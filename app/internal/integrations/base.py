@@ -1,3 +1,4 @@
+import json
 from aiohttp import ClientSession, ClientTimeout
 from time import time
 from asyncio import sleep
@@ -21,7 +22,7 @@ class ClientException(Exception):
     def __str__(self):
         _str = f'\nmsg: {self.msg}' if self.msg else ''
         _str += f'\nurl: {self.url}' if self.url else ''
-        _str += f'\npayload: {self.payload}' if self.payload else ''
+        _str += f'\npayload: {json.dumps(self.payload)}' if self.payload else ''
         _str += f'\nresponse: {self.response}' if self.response else ''
         return _str
 
