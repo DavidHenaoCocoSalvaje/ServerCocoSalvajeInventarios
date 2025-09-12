@@ -11,7 +11,7 @@ if __name__ == '__main__':
 from pydantic import ValidationError
 from app.internal.log import factory_logger
 from app.models.db.transacciones import PedidoLogs
-from app.models.pydantic.world_office.base import TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
+from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarDocumentoVentaResponse,
     WODocumentoVenta,
@@ -232,7 +232,7 @@ class WoClient(BaseClient):
             valor=valor,
             tipoFiltro=TipoFiltroWoFiltro.CONTIENE,
             tipoDato=TipoDatoWoFiltro.STRING,
-            operador='AND',
+            operador=Operador.AND,
         )
 
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
@@ -298,14 +298,14 @@ class WoClient(BaseClient):
             valor=codigo_documento,
             tipoFiltro=TipoFiltroWoFiltro.IGUAL,
             tipoDato=TipoDatoWoFiltro.STRING,
-            operador='AND',
+            operador=Operador.AND,
         )
         filtro2 = WOFiltro(
             atributo='concepto',
             valor=concepto,
             tipoFiltro=TipoFiltroWoFiltro.IGUAL,
             tipoDato=TipoDatoWoFiltro.NUMERIC,
-            operador='AND',
+            operador=Operador.AND,
         )
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2])
         url = self.build_url(self.host, self.Paths.Ventas.listar_documentos_venta)
