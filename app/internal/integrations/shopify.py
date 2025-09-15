@@ -306,8 +306,30 @@ class ShopifyGraphQLClient(BaseClient):
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         return await self._get_all(query, ['data', 'order', 'lineItems'], variables)
 
-    async def get_orders_by_range(self, start: date, end: date):
-        pass
+    async def get_orders_by_range(self, start: date, end: date) -> OrdersResponse:
+        query = """
+            query GetOrderByRange($num_items: Int!, $search_query: String!, $cursor: String) {
+                orders(first: $num_items, query: $search_query, after: $cursor) {
+                    nodes {
+                        id
+                        fullyPaid
+                        number
+                        createdAt
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        """
+        # "search_query": "tofinancial_status:paid created_at:>=2025-08-01 and created_at:>=2025-08-31",
+        variables = self.Variables(
+            num_items=50, search_query=f'financial_status:paid created_at:>={start} and created_at:>={end}'
+        ).model_dump(exclude_none=True)
+        orders_json = await self._get_all(query, ['data', 'orders'], variables)
+        orders_response = OrdersResponse(**orders_json)
+        return orders_response
 
     async def get_order(self, order_gid: str) -> OrderResponse:
         query = """
@@ -773,20 +795,25 @@ async def persistir_inventory_info(products: list[Product]):
 
 if __name__ == '__main__':
     from asyncio import run
-    from time import time
+    # from time import time
 
     async def main():
         client = ShopifyGraphQLClient()
-        ini_time = time()
-        print(ini_time)
-        products = await client.get_inventory_info()
-        fin_time = time()
-        print(fin_time, fin_time - ini_time)
-        print(time())
-        order_26492 = await client.get_order_by_number(26492)
-        assert order_26492.data.orders.nodes[0].number == 26492
-        assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
+        orders = await client.get_orders_by_range(date(2025, 8, 1), date(2025, 8, 31))
+        # Guardar resultado
+        print(orders.model_dump_json(indent=2, exclude_unset=True))
+        # with open('shopify_orders.json', 'w', encoding='utf-8') as f:
+        #     f.write(orders.model_dump_json(indent=2))
+        # ini_time = time()
+        # print(ini_time)
+        # products = await client.get_inventory_info()
+        # fin_time = time()
+        # print(fin_time, fin_time - ini_time)
+        # print(time())
+        # order_26492 = await client.get_order_by_number(26492)
+        # assert order_26492.data.orders.nodes[0].number == 26492
+        # assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
 
-        await persistir_inventory_info(products)
+        # await persistir_inventory_info(products)
 
     run(main())

@@ -6,8 +6,7 @@ from datetime import datetime
 from enum import Enum
 import re
 from typing import Annotated
-from pydantic import Field, computed_field, SerializerFunctionWrapHandler
-from pydantic.functional_serializers import WrapSerializer
+from pydantic import BeforeValidator, Field, computed_field
 from app.internal.gen.utilities import DateTz, divide
 from app.models.pydantic.base import Base
 
@@ -176,8 +175,8 @@ class App(Base):
     name: str = ''
 
 
-def created_at_serializer(value, nxt: SerializerFunctionWrapHandler):
-    return nxt(DateTz.from_isostring(value))
+def parse_datetime(value: str) -> datetime:
+    return DateTz.from_isostring(value)
 
 
 class Order(Base):
@@ -187,7 +186,7 @@ class Order(Base):
     tags: list[str] = []
     email: str = ''
     number: int = 0
-    createdAt: Annotated[datetime, WrapSerializer(created_at_serializer)] = Field(default_factory=DateTz.local)
+    createdAt: Annotated[datetime, BeforeValidator(parse_datetime)] = Field(default_factory=DateTz.local)
     app: App = App()
     customer: Customer = Customer()
     transactions: list[Transaction] = []
