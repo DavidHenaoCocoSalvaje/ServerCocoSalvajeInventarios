@@ -43,13 +43,14 @@ async def facturar_pendientes(
         f'Se encontraron {len(pedidos)} pedidos pendientes de facturar, {[x.numero for x in pedidos]}'
     )
     for pedido in pedidos:
-        pedido_update = pedido.model_copy()
-        pedido_update.q_intentos = pedido.q_intentos - 1
-
         if not pedido.id:
             break
-
-        await pedido_query.update(session, pedido_update, pedido.id)
+        if pedido.log not in [
+            PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
+        ]:  # No disminuir intentos cuando es por documento de identidad
+            pedido_update = pedido.model_copy()
+            pedido_update.q_intentos = pedido.q_intentos - 1
+            await pedido_query.update(session, pedido_update, pedido.id)
 
     if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
         return True

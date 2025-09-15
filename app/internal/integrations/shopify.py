@@ -1,3 +1,4 @@
+from datetime import date
 import traceback
 from pydantic import BaseModel, ValidationError
 from pandas import DataFrame, merge, isna
@@ -304,6 +305,9 @@ class ShopifyGraphQLClient(BaseClient):
         """
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         return await self._get_all(query, ['data', 'order', 'lineItems'], variables)
+
+    async def get_orders_by_range(self, start: date, end: date):
+        pass
 
     async def get_order(self, order_gid: str) -> OrderResponse:
         query = """
