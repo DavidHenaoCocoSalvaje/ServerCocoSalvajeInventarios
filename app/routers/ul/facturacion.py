@@ -94,8 +94,8 @@ async def procesar_pedido_shopify(
                 try:
                     factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower, concepto)
                 except TimeoutError:
-                    # Si no se recibe respuesta esperar 10 segundos más y validar si se creo la factura.
-                    await sleep(10)
+                    # Si no se recibe respuesta esperar 30 segundos más y validar si se creo la factura.
+                    await sleep(30)
                     factura = await wo_client.documento_venta_por_concepto(concepto)
                 except Exception as e:
                     """En ocasiones world office crea la factura correctamente pero no retorna la respuesta esperada,
