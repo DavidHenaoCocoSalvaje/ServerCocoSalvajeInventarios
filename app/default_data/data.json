@@ -158,6 +158,10 @@
         {
             "id": 3,
             "nombre": "Orden de producción"
+        },
+        {
+            "id": 4,
+            "nombre": "Traslado"
         }
     ]
 }
