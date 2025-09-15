@@ -29,7 +29,7 @@ log_transacciones = factory_logger('transacciones', file=True)
 
 
 @router.post(
-    '/facturar_pendientes',
+    '/facturar-pendientes',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )

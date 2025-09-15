@@ -103,7 +103,7 @@ CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCrea
 
 # Sincronización
 @shopify_router.post(
-    '/sync_shopify',
+    '/sync-shopify',
     response_model=bool,
     summary='Sincroniza inventarios de Shopify con base de datos',
     description='Se registran movimiento de cargue.',
