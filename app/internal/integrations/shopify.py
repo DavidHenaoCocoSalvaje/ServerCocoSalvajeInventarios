@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import traceback
 from pydantic import BaseModel, ValidationError
 from pandas import DataFrame, merge, isna
@@ -12,6 +12,7 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
+from app.internal.gen.utilities import DateTz
 from app.internal.query.inventario import (
     BodegaQuery,
     ElementoQuery,
@@ -274,6 +275,7 @@ class ShopifyGraphQLClient(BaseClient):
         query = """
         query GetLineItemsOrder($gid: ID!, $num_items: Int!, $cursor: String) {
             order(id: $gid) {
+                legacyResourceId
                 lineItems(first:$num_items, after: $cursor) {
                     nodes {
                         name
@@ -306,7 +308,9 @@ class ShopifyGraphQLClient(BaseClient):
         variables = self.Variables(gid=order_gid).model_dump(exclude_none=True)
         return await self._get_all(query, ['data', 'order', 'lineItems'], variables)
 
-    async def get_orders_by_range(self, start: date, end: date) -> OrdersResponse:
+    async def get_orders_by_range(self, start: date, end: date, batch_size: int = 10) -> OrdersResponse:
+        start_str = DateTz.local(datetime(start.year, start.month, start.day)).utc.to_isostring
+        end_str = DateTz.local(datetime(end.year, end.month, end.day)).utc.to_isostring
         query = """
             query GetOrderByRange($num_items: Int!, $search_query: String!, $cursor: String) {
                 orders(first: $num_items, query: $search_query, after: $cursor) {
@@ -325,10 +329,22 @@ class ShopifyGraphQLClient(BaseClient):
         """
         # "search_query": "tofinancial_status:paid created_at:>=2025-08-01 and created_at:>=2025-08-31",
         variables = self.Variables(
-            num_items=50, search_query=f'financial_status:paid created_at:>={start} and created_at:>={end}'
+            num_items=50, search_query=f'financial_status:paid created_at:>={start_str} created_at:<={end_str}'
         ).model_dump(exclude_none=True)
         orders_json = await self._get_all(query, ['data', 'orders'], variables)
         orders_response = OrdersResponse(**orders_json)
+        # Procesar por lotes de con asyncio.gather
+        orders_line_items = []
+        for i in range(0, len(orders_response.data.orders.nodes), batch_size):
+            batch = orders_response.data.orders.nodes[i : i + batch_size]
+            tasks = [self._get_order_line_items(order.id) for order in batch]
+            orders_line_items.extend(await gather(*tasks))
+
+        for order in orders_response.data.orders.nodes:
+            order_line_items_json = next((x for x in orders_line_items if x.get('id') == order.id), None)
+            if order_line_items_json:
+                order.lineItems = order_line_items_json['data']['order']['lineItems']
+
         return orders_response
 
     async def get_order(self, order_gid: str) -> OrderResponse:
@@ -499,7 +515,7 @@ class ShopifyGraphQLClient(BaseClient):
 
         return orders_response
 
-    async def get_inventory_info(self) -> list[Product]:
+    async def get_inventory_info(self, batch_size: int = 10) -> list[Product]:
         """Función principal optimizada con procesamiento en lotes de 5 productos"""
         # Obtener todos los productos
         product_response = await self.get_products()
@@ -528,11 +544,9 @@ class ShopifyGraphQLClient(BaseClient):
                     variant.inventoryLevels = []
                     variant.sku = ''
 
-        # Procesar productos en lotes de 5
-        batch_size = 5
+        # Procesar productos en lotes
         for i in range(0, len(products), batch_size):
             batch = products[i : i + batch_size]
-
             # Procesar cada lote de productos concurrentemente
             await gather(*[get_inventory_levels_product(product) for product in batch])
 
@@ -545,7 +559,7 @@ class ShopifyGraphQLClient(BaseClient):
         return products
 
 
-async def persistir_inventory_info(products: list[Product]):
+async def sincronizar_inventario(products: list[Product]):
     # df Bodegas
     bodega_model_keys = list(Bodega.model_json_schema()['properties'].keys())
     bodega_model_keys.extend(['variante_shopify_id', 'variante_id'])  # Columnas que no pertenecen a la tabla Bodega
@@ -794,26 +808,23 @@ async def persistir_inventory_info(products: list[Product]):
 
 
 if __name__ == '__main__':
+    pass
     from asyncio import run
     # from time import time
 
     async def main():
         client = ShopifyGraphQLClient()
         orders = await client.get_orders_by_range(date(2025, 8, 1), date(2025, 8, 31))
+
         # Guardar resultado
         print(orders.model_dump_json(indent=2, exclude_unset=True))
-        # with open('shopify_orders.json', 'w', encoding='utf-8') as f:
-        #     f.write(orders.model_dump_json(indent=2))
-        # ini_time = time()
-        # print(ini_time)
-        # products = await client.get_inventory_info()
-        # fin_time = time()
-        # print(fin_time, fin_time - ini_time)
-        # print(time())
-        # order_26492 = await client.get_order_by_number(26492)
-        # assert order_26492.data.orders.nodes[0].number == 26492
-        # assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
+        with open('shopify_orders.json', 'w', encoding='utf-8') as f:
+            f.write(orders.model_dump_json(indent=2))
+        products = await client.get_inventory_info()
+        order_26492 = await client.get_order_by_number(26492)
+        assert order_26492.data.orders.nodes[0].number == 26492
+        assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
 
-        # await persistir_inventory_info(products)
+        await sincronizar_inventario(products)
 
     run(main())

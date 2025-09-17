@@ -11,20 +11,49 @@ from app.config import config
 
 
 class DateTz(datetime):
-    @classmethod
-    def local(cls, tz: str = config.local_timezone) -> datetime:
-        return cls.now(ZoneInfo(tz))
+    @property
+    def utc(self) -> 'DateTz':
+        return self.replace(tzinfo=ZoneInfo('UTC'))
+
+    @property
+    def to_isostring(self) -> str:
+        isostring = self.isoformat()
+        return isostring.replace('+00:00', 'Z')
 
     @classmethod
-    def local_date(cls, tz: str = config.local_timezone) -> datetime:
-        return cls.now(ZoneInfo(tz))
+    def local(cls, datetime: datetime | None = None, tz: str = config.local_timezone) -> 'DateTz':
+        if datetime:
+            return cls(
+                datetime.year,
+                datetime.month,
+                datetime.day,
+                datetime.hour,
+                datetime.minute,
+                datetime.second,
+                datetime.microsecond,
+                tzinfo=ZoneInfo(tz),
+            )
+        else:
+            return cls.now(ZoneInfo(tz))
 
     @classmethod
-    def today(cls, tz: str = config.local_timezone) -> date:
-        return cls.local(tz).date()
+    def today(cls, datetime: datetime | None = None, tz: str = config.local_timezone) -> date:
+        if datetime:
+            return cls(
+                datetime.year,
+                datetime.month,
+                datetime.day,
+                datetime.hour,
+                datetime.minute,
+                datetime.second,
+                datetime.microsecond,
+                tzinfo=ZoneInfo(tz),
+            ).date()
+        else:
+            return cls.now(ZoneInfo(tz)).date()
 
     @classmethod
-    def from_isostring(cls, isostring: str, tz: str = config.local_timezone) -> datetime:
+    def from_isostring(cls, isostring: str, tz: str = config.local_timezone) -> 'DateTz':
         isostring = isostring.replace('Z', '+00:00')
         return cls.fromisoformat(isostring).astimezone(ZoneInfo(tz))
 

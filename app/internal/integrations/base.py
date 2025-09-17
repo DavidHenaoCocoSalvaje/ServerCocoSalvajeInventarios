@@ -52,7 +52,8 @@ class BaseClient:
         self._last_request_time = time()
 
     async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 30):
-        await self._rate_limit()
+        if self._min_interval > 0:
+            await self._rate_limit()
         client_timeout = ClientTimeout(total=timeout)
         async with ClientSession() as session:
             async with session.request(method, url, headers=headers, json=payload, timeout=client_timeout) as response:

@@ -104,6 +104,17 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         result = await session.execute(statement)
         return list(result.scalars().all()) or []  # type: ignore
 
+    async def get_by_soporte_ids(
+        self, session: AsyncSession, tipo_soporte_id: int, soporte_ids: list[str]
+    ) -> list[Movimiento]:
+        statement = (
+            select(self.model_db)
+            .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+            .where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
+        )
+        result = await session.execute(statement)
+        return list(result.scalars().all()) or []
+
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
     def __init__(self) -> None:

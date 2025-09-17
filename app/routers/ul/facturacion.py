@@ -71,6 +71,15 @@ async def procesar_pedido_shopify(
             wo_client = WoClient()
             identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
             if not pedido.factura_id:
+                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
+                for tag in order_tags_lower:
+                    if 'no_facturar' in tag:
+                        pedido_update = pedido.model_copy()
+                        pedido_update.log = PedidoLogs.NO_FACTURAR.value
+                        pedido_update.q_intentos = 0
+                        await pedido_query.update(session, pedido_update, pedido.id)
+                        return
+
                 # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
                 if not identificacion_tercero:
                     msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
@@ -80,15 +89,6 @@ async def procesar_pedido_shopify(
 
                     log_facturacion.debug(msg)
                     return
-
-                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
-                for tag in order_tags_lower:
-                    if 'no_facturar' in tag:
-                        pedido_update = pedido.model_copy()
-                        pedido_update.log = PedidoLogs.NO_FACTURAR.value
-                        pedido_update.q_intentos = 0
-                        await pedido_query.update(session, pedido_update, pedido.id)
-                        return
 
                 concepto = f'{config.wo_concepto} - Pedido {order.number}'
                 try:
