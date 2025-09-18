@@ -65,7 +65,6 @@ class Variant(Base):
     price: float = 0.0
     inventoryItem: InventoryItem = InventoryItem()
     sku: str = ''
-    inventoryLevels: list[InventoryLevel] = []
 
 
 class VariantNodes(Base):

@@ -1,7 +1,6 @@
 # app/internal/query/inventario.py
 import json
 from os import path
-from typing import Generic
 from sqlmodel import select, desc
 
 
@@ -34,24 +33,24 @@ from app.models.db.inventario import (
     VarianteElemento,
     VarianteElementoCreate,
 )
-from app.internal.query.base import BaseQuery, ModelDB, ModelCreate
+from app.internal.query.base import BaseQuery, ModelCreate, ModelDB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func
 from app.models.db.session import get_async_session
 from sqlalchemy.dialects.postgresql import insert
 
 
-class BaseQueryWithShopifyId(BaseQuery, Generic[ModelDB, ModelCreate]):
+class BaseQueryWithShopifyId(BaseQuery[ModelDB, ModelCreate]):
     def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]) -> None:
         super().__init__(model_db, model_create)
 
     async def get_by_shopify_id(self, session: AsyncSession, shopify_id: int) -> ModelDB | None:
-        statement = select(self.model_db).where(self.model_db.shopify_id == shopify_id)
+        statement = select(self.model_db).where(self.model_db.shopify_id == shopify_id)  # type: ignore
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
     async def get_by_shopify_ids(self, session: AsyncSession, shopify_ids: list[int]) -> list[ModelDB]:
-        statement = select(self.model_db).where(self.model_db.shopify_id.in_(shopify_ids))
+        statement = select(self.model_db).where(self.model_db.shopify_id.in_(shopify_ids))  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
 

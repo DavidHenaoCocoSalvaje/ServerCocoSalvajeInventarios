@@ -51,9 +51,6 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         await session.commit()
 
     async def safe_bulk_insert(self, session: AsyncSession, objs: list[ModelDB]):
-        """
-        Solo usar si los objetos tienen id
-        """
         objs = [obj for obj in objs if getattr(obj, 'id', None)]
         update_objs = []
         for obj in objs:

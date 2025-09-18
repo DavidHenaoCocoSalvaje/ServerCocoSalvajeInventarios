@@ -108,6 +108,7 @@ class DiscountedUnitPriceAfterAllDiscountsSet(Base):
 
 class LineItem(Base):
     class Variant(Base):
+        legacyResourceId: int = 0
         compareAtPrice: float = 0
 
     name: str = ''
