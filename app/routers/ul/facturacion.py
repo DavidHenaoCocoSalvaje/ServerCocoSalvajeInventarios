@@ -27,7 +27,7 @@ log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
 async def procesar_pedido_shopify(
-    order_number: int | None = None, order_gid: str | None = None
+    order_number: int | None = None, order_gid: str | None = None, f=False
 ):  # BackgroundTasks No lanzar excepciones.
     await sleep(30)
 
@@ -73,7 +73,7 @@ async def procesar_pedido_shopify(
             if not pedido.factura_id:
                 order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
                 for tag in order_tags_lower:
-                    if 'no_facturar' in tag:
+                    if 'no_facturar' in tag and not f:
                         pedido_update = pedido.model_copy()
                         pedido_update.log = PedidoLogs.NO_FACTURAR.value
                         pedido_update.q_intentos = 0

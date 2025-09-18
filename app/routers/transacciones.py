@@ -1,6 +1,7 @@
+from email.policy import HTTP
 from enum import Enum
 
-from fastapi import APIRouter, Depends, BackgroundTasks, status
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
 
 from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
@@ -67,3 +68,25 @@ async def task_facturar_pendientes(pedidos: list[Pedido]):
             continue
         await procesar_pedido_shopify(order_number=pedido.numero)
     log_transacciones.info(f'Se intentaron facturar los pedidos: {", ".join([str(x.numero) for x in pedidos])}')
+
+
+@router.post(
+    '/facturar/{pedido_number}',
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(validar_access_token)],
+)
+async def facturar_pedido(session: AsyncSessionDep, background_tasks: BackgroundTasks, pedido_number: int):
+    pedido_query = PedidoQuery()
+    pedido = await pedido_query.get_by_number(session, pedido_number)
+    if not pedido:
+        raise HTTPException(status_code=404, detail='Pedido no encontrado')
+
+    if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
+        return True
+
+    background_tasks.add_task(task_facturar_pedido, pedido, )
+    return True
+
+
+async def task_facturar_pedido(pedido: Pedido):
+    await procesar_pedido_shopify(order_number=pedido.numero, f=True)
