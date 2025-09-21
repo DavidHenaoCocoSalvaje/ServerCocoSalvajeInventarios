@@ -25,6 +25,9 @@ class Bodega(BodegaCreate, table=True):
 
     id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
 
+    def __hash__(self):
+        return hash(self.id)
+
     # Relationships
     movimientos: list['Movimiento'] = Relationship(back_populates='bodega')
 
@@ -249,5 +252,10 @@ class ComponentesPorVariante(ComponentesPorVarianteCreate, table=True):
 
 
 if __name__ == '__main__':
-    for item, key in Elemento.model_fields.items():
-        print(item, key)
+    # for item, key in Elemento.model_fields.items():
+    #     print(item, key)
+
+    bodega = Bodega(ubicacion='test', shopify_id=1)
+    same_bodega = Bodega(ubicacion='test', shopify_id=1)
+    set_bo
+    print(bodega == same_bodega)

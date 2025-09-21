@@ -73,6 +73,7 @@ class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCre
     async def get_lasts(
         self, session: AsyncSession, variante_ids: list[int], tipo_precio_id: int
     ) -> list[PreciosPorVariante]:
+        """Obtiene el último precio para cada variante y tipo de precio"""
         subq = (
             select(
                 self.model_db.id,
