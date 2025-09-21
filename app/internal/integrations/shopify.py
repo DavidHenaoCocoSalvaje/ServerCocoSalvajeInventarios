@@ -1,9 +1,9 @@
 from datetime import date, datetime
 import traceback
 from pydantic import BaseModel, ValidationError
-from pandas import DataFrame, merge, isna
 from re import findall
 from asyncio import gather, sleep
+
 
 
 if __name__ == '__main__':
@@ -288,6 +288,46 @@ class ShopifyGraphQLClient(BaseClient):
             }
         """
         variables = self.Variables(search_query=f'id:{inventory_item_id}').model_dump(exclude_none=True)
+        inventory_levels_json = await self._execute_query(query, **variables)
+        return InventoryLevelsResponse(**inventory_levels_json)
+
+    async def get_inventory_levels_by_sku(self, sku: int):
+        query = """
+            query GetInventoryLevels($num_items: Int!, $search_query: String!, $cursor: String) {
+                inventoryItems(first: 1, query: $search_query) {
+                    nodes {
+                        sku
+                        inventoryLevels(first:$num_items, after: $cursor) {
+                            nodes {
+                                item {
+                                    variant {
+                                        legacyResourceId
+                                    }
+                                }
+                                quantities(names: ["on_hand"]) {
+                                    quantity
+                                }
+                                location {
+                                    legacyResourceId
+                                    address {
+                                        city
+                                        province
+                                        country
+                                        address1
+                                        formatted
+                                    }
+                                }
+                            }
+                            pageInfo {
+                                hasNextPage
+                                endCursor
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        variables = self.Variables(search_query=f'sku:{sku}').model_dump(exclude_none=True)
         inventory_levels_json = await self._execute_query(query, **variables)
         return InventoryLevelsResponse(**inventory_levels_json)
 
@@ -628,45 +668,41 @@ class ShopifyInventario:
             return variante
         raise
 
-    async def crear_precio_variante(self, variant: Variant, variante_elemento_id: int) -> PreciosPorVariante:
+    async def crear_precio_variante(self, price_variant: float, variante_elemento_id: int) -> PreciosPorVariante:
         async for session in get_async_session():
             async with session:
                 precio_variante_query = PrecioPorVarianteQuery()
-                if variante_elemento_id is None:
-                    raise ValueError('La variante debe tener un ID válido para crear el precio.')
 
                 precio = await precio_variante_query.get_last(session, variante_elemento_id, 1)
-                if precio is None or (precio and precio.precio != variant.price):
+                if precio is None or (precio and precio.precio != price_variant):
                     precio_create = PreciosPorVarianteCreate(
                         variante_id=variante_elemento_id,
                         tipo_precio_id=1,
-                        precio=variant.price,
+                        precio=price_variant,
                     )
                     precio = await precio_variante_query.create(session, precio_create)
 
             return precio
         raise
 
-    async def crear_movimiento(self, bodega: Bodega, variante: VarianteElemento, cantidad: int) -> Movimiento:
+    async def crear_movimiento(self, bodega_id: int, variante_id: int, cantidad: int) -> Movimiento:
         async for session in get_async_session():
             async with session:
                 movimiento_query = MovimientoQuery()
-                if not bodega.id or not variante.id:
-                    raise ValueError('La bodega y la variante deben tener un ID válido para crear el movimiento.')
 
                 movimiento_create = MovimientoCreate(
                     tipo_movimiento_id=1,
-                    variante_id=variante.id,
+                    variante_id=variante_id,
                     estado_variante_id=1,
                     cantidad=cantidad,
-                    bodega_id=bodega.id,
+                    bodega_id=bodega_id,
                 )
                 movimiento = await movimiento_query.create(session, movimiento_create)
 
             return movimiento
         raise
 
-    def get_unique_locations(self, products: list[Product]) -> dict[int, Location]:
+    def get_products_unique_locations(self, products: list[Product]) -> dict[int, Location]:
         return {
             level.location.legacyResourceId: level.location
             for product in products
@@ -678,20 +714,29 @@ class ShopifyInventario:
         elemento = await self.crear_elemento(product)
         for variant in product.variants:
             variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
-            await self.crear_precio_variante(variant, variante_elemento.id)
+            await self.crear_precio_variante(variant.price, variante_elemento.id)
             for level in variant.inventoryItem.inventoryLevels.nodes:
                 bodega = next((bodega for bodega in bodegas if bodega.shopify_id == level.location.legacyResourceId))
                 cantidad = level.quantities[0].quantity
-                await self.crear_movimiento(bodega, variante_elemento, cantidad)
+                await self.crear_movimiento(bodega.id, variante_elemento.id, cantidad)
     
     async def sicnronizar_inventario(self, products: list[Product]):
-        unique_locations = self.get_unique_locations(products)
+        unique_locations = self.get_products_unique_locations(products)
         bodegas: list[Bodega] = []
         for location in unique_locations.values():
             bodega = await self.crear_bodega(location)
             bodegas.append(bodega)
 
         await gather(*[self.create_all(product, bodegas) for product in products])
+
+    # async def sincronizar_movimientos(self, ordenes: list[Order]):
+    #     shopify_client = ShopifyGraphQLClient()
+    #     for orden in ordenes:
+    #         for lineItem in orden.lineItems.nodes:
+                
+    #     bodega = self.crear_bodega()
+    #     self.crear_movimiento()
+    #     pass
 
 
 if __name__ == '__main__':

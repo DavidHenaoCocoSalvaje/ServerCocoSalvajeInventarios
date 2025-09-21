@@ -208,12 +208,12 @@ class OrderResponse(Base):
         return self.data.order.number != 0
 
 
-class OrdersNodes(Base):
+class OrderNodes(Base):
     nodes: list[Order] = []
 
 
 class OrdersData(Base):
-    orders: OrdersNodes = OrdersNodes()
+    orders: OrderNodes = OrderNodes()
 
 
 class OrdersResponse(Base):
