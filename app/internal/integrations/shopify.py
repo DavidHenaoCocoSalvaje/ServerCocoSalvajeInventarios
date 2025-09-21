@@ -291,46 +291,6 @@ class ShopifyGraphQLClient(BaseClient):
         inventory_levels_json = await self._execute_query(query, **variables)
         return InventoryLevelsResponse(**inventory_levels_json)
 
-    async def get_inventory_levels_by_sku(self, sku: int):
-        query = """
-            query GetInventoryLevels($num_items: Int!, $search_query: String!, $cursor: String) {
-                inventoryItems(first: 1, query: $search_query) {
-                    nodes {
-                        sku
-                        inventoryLevels(first:$num_items, after: $cursor) {
-                            nodes {
-                                item {
-                                    variant {
-                                        legacyResourceId
-                                    }
-                                }
-                                quantities(names: ["on_hand"]) {
-                                    quantity
-                                }
-                                location {
-                                    legacyResourceId
-                                    address {
-                                        city
-                                        province
-                                        country
-                                        address1
-                                        formatted
-                                    }
-                                }
-                            }
-                            pageInfo {
-                                hasNextPage
-                                endCursor
-                            }
-                        }
-                    }
-                }
-            }
-        """
-        variables = self.Variables(search_query=f'sku:{sku}').model_dump(exclude_none=True)
-        inventory_levels_json = await self._execute_query(query, **variables)
-        return InventoryLevelsResponse(**inventory_levels_json)
-
     async def get_variant_inventory_levels(self, variant: Variant):
         intentory_levels_response = await self.get_inventory_levels(variant.inventoryItem.legacyResourceId)
         if intentory_levels_response.data.inventoryItems.nodes:
