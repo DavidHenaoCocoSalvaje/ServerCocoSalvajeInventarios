@@ -23,7 +23,7 @@ class BodegaCreate(InventarioBase):
 class Bodega(BodegaCreate, table=True):
     __tablename__ = 'bodegas'  # type: ignore
 
-    id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
+    id: int = Field(primary_key=True, sa_type=SMALLINT)
 
     def __hash__(self):
         return hash(self.id)
@@ -82,7 +82,7 @@ class MedidasPorVarianteCreate(InventarioBase):
 class MedidasPorVariante(MedidasPorVarianteCreate, table=True):
     __tablename__ = 'medidas_por_variante'  # type: ignore
 
-    id: int | None = Field(primary_key=True, default=None)
+    id: int = Field(primary_key=True)
 
     # Relationships
     medida: 'Medida' = Relationship(back_populates='variantes')
@@ -113,7 +113,7 @@ class PreciosPorVarianteCreate(InventarioBase):
 class PreciosPorVariante(PreciosPorVarianteCreate, table=True):
     __tablename__ = 'precios_variante'  # type: ignore
 
-    id: int | None = Field(primary_key=True, default=None)
+    id: int = Field(primary_key=True)
 
     # Relationships
     tipo_precio: 'TipoPrecio' = Relationship(back_populates='precios')
@@ -160,7 +160,7 @@ class MovimientoCreate(InventarioBase):
 
 
 class Movimiento(MovimientoCreate, table=True):
-    id: int | None = Field(primary_key=True, default=None)
+    id: int = Field(primary_key=True)
 
     # Relationships
     variante: 'VarianteElemento' = Relationship(back_populates='movimientos')
@@ -196,7 +196,7 @@ class ElementoCreate(InventarioBase):
 class Elemento(ElementoCreate, table=True):
     __tablename__ = 'elementos'  # type: ignore
 
-    id: int | None = Field(primary_key=True, default=None)
+    id: int = Field(primary_key=True)
 
     # Relationships
     grupo: 'Grupo' = Relationship(back_populates='elementos')
@@ -211,9 +211,9 @@ class VarianteElementoCreate(InventarioBase):
 
 
 class VarianteElemento(VarianteElementoCreate, table=True):
-    __tablename__ = 'variantes_elemento'  # type: ignore
+    __tablename__ = 'variantes_elemento' # type: ignore
 
-    id: int | None = Field(primary_key=True, default=None)
+    id: int = Field(primary_key=True)
 
     # Relationships
     precios: list['PreciosPorVariante'] = Relationship(back_populates='variante')
@@ -238,7 +238,7 @@ class ComponentesPorVarianteCreate(InventarioBase):
 
 class ComponentesPorVariante(ComponentesPorVarianteCreate, table=True):
     __tablename__ = 'componentes_por_variante'  # type: ignore
-    id: int | None = Field(primary_key=True)
+    id: int = Field(primary_key=True)
 
     # Relationships
     elemento: 'VarianteElemento' = Relationship(
@@ -255,7 +255,6 @@ if __name__ == '__main__':
     # for item, key in Elemento.model_fields.items():
     #     print(item, key)
 
-    bodega = Bodega(ubicacion='test', shopify_id=1)
-    same_bodega = Bodega(ubicacion='test', shopify_id=1)
-    set_bo
+    bodega = BodegaCreate(ubicacion='test', shopify_id=1)
+    same_bodega = BodegaCreate(ubicacion='test', shopify_id=1)
     print(bodega == same_bodega)
