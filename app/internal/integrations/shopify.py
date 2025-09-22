@@ -378,7 +378,7 @@ class ShopifyGraphQLClient(BaseClient):
         # "search_query": "tofinancial_status:paid created_at:>=2025-08-01 and created_at:>=2025-08-31",
         variables = self.Variables(
             num_items=num_items, search_query=f'financial_status:paid created_at:>={start_str} created_at:<={end_str}'
-        ).model_dump(exclude_none=True)
+        ).model_dump(exclude_none=True, exclude_unset=True)
         orders_json = await self._get_all(query, ['data', 'orders'], variables)
         orders_response = OrdersResponse(**orders_json)
 
@@ -707,12 +707,12 @@ if __name__ == '__main__':
     async def main():
         client = ShopifyGraphQLClient()
 
-        # orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 8, 31), 50)
-        # await client.get_orders_line_items(orders.data.orders.nodes, 20)
+        orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 8, 31), 50)
+        await client.get_orders_line_items(orders.data.orders.nodes, 20)
         # print(orders.model_dump_json(indent=2, exclude_unset=True))
 
-        # with open('shopify_orders.json', 'w', encoding='utf-8') as f:
-        #     f.write(orders.model_dump_json(indent=2))
+        with open('shopify_orders.json', 'w', encoding='utf-8') as f:
+            f.write(orders.model_dump_json(indent=2))
 
         # order_26492 = await client.get_order_by_number(26492)
         # assert order_26492.data.orders.nodes[0].number == 26492
@@ -722,8 +722,8 @@ if __name__ == '__main__':
         # assert order_9839649063204.data.order.id == 'gid://shopify/Order/9839649063204'
         # print(order_9839649063204.model_dump_json(indent=2, exclude_unset=True))
 
-        products = await client.get_products()
-        await ShopifyInventario().sicnronizar_inventario(products)
+        # products = await client.get_products()
+        # await ShopifyInventario().sicnronizar_inventario(products)
         # await sincronizar_inventario(products)
 
     run(main())

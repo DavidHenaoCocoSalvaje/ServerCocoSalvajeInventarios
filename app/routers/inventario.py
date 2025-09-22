@@ -3,7 +3,7 @@ from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
 
-from app.internal.integrations.shopify import ShopifyGraphQLClient, sincronizar_inventario
+from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
 from app.internal.query.inventario import (
     BodegaQuery,
     ComponentesPorVarianteQuery,
@@ -115,8 +115,8 @@ async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
         shopify_client = ShopifyGraphQLClient()
-        inventory_info = await shopify_client.get_products()
-        await sincronizar_inventario(inventory_info)
+        products = await shopify_client.get_products()
+        await ShopifyInventario().sicnronizar_inventario(products)
         log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
     except Exception as e:

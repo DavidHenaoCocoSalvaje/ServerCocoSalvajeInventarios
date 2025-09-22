@@ -188,6 +188,8 @@ pip-selfcheck.json
 
 # Data
 shopify_inventory_data.json
+shopify_orders.json
+./shopify*.json
 
 # Binary files
 *.tar.gz
