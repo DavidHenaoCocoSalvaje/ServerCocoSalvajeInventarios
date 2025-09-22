@@ -33,9 +33,8 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
 
     async def create(self, session: AsyncSession, obj: ModelCreate) -> ModelDB:
         """Crea un nuevo objeto de forma asíncrona."""
-        obj_in_data = obj.model_dump()
-        create_model = self.model_create(**obj_in_data)  # Se garantiza que el objeto sea del tipo correcto
-        db_model = self.model_db(**create_model.model_dump())  # Modelo de retorno
+        create_model = self.model_create(**obj.model_dump(mode='json'))  # Se garantiza que el objeto sea del tipo correcto
+        db_model = self.model_db(**create_model.model_dump(mode='json'))  # Modelo de retorno
         session.add(db_model)
         await session.commit()
         await session.refresh(db_model)  # Refresca para obtener el ID generado por la BD
@@ -70,10 +69,8 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
             raise exception
 
         # Actualiza el objeto que ya está en la sesión
-        update_data = new_obj.model_dump()
-        for key, value in update_data.items():
-            if hasattr(db_obj, key) and getattr(db_obj, key) != value:
-                setattr(db_obj, key, value)
+        update_data = new_obj.model_dump(exclude_unset=True)
+        db_obj.sqlmodel_update(update_data)
 
         session.add(db_obj)  # Añade el objeto modificado a la sesión
         await session.commit()
@@ -83,7 +80,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
     async def upsert(self, session: AsyncSession, obj: ModelDB):
         id = getattr(obj, 'id', None)
         if id is None:
-            log_base_query.debug(f'No hay id para actualizar, {obj.model_dump_json()}')
+            log_base_query.debug(f'No se proporcionó un id para crear/actualizar, {obj.model_dump_json()}')
             return None
 
         if getattr(obj, 'id', None):
@@ -91,7 +88,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
             if db_obj:
                 return await self.update(session, obj, id)
             else:
-                model_create = self.model_create(**obj.model_dump())
+                model_create = self.model_create(**obj.model_dump(mode='json'))
                 return await self.create(session, model_create)
 
         return None
@@ -106,4 +103,4 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         await session.commit()  # Confirma la eliminación
         # El objeto db_usuario todavía contiene los datos antes de ser eliminado,
         # lo cual es útil si quieres devolverlo como confirmación.
-        return self.model_db(**db_obj.model_dump())
+        return self.model_db(**db_obj.model_dump(mode='json'))

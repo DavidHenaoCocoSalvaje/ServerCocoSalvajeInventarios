@@ -1,5 +1,7 @@
 # app/models/inventario.py
 from datetime import datetime, date
+from enum import Enum
+from pydantic import ConfigDict
 from sqlmodel import SQLModel, Field, Relationship, SMALLINT, DATE, TEXT, BIGINT, TIMESTAMP
 
 if __name__ == '__main__':
@@ -120,9 +122,17 @@ class PreciosPorVariante(PreciosPorVarianteCreate, table=True):
     variante: 'VarianteElemento' = Relationship(back_populates='precios')
 
 
+class Comportamiento(int, Enum):
+    entrada = 1
+    salida = -1
+
+
 class TipoMovimientoCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     descripcion: str | None = Field(sa_type=TEXT, default=None)
+    comportamiento: Comportamiento = Field(sa_type=SMALLINT)
+
+    model_config = ConfigDict(use_enum_values=True) # type: ignore
 
 
 class TipoMovimiento(TipoMovimientoCreate, table=True):
@@ -211,7 +221,7 @@ class VarianteElementoCreate(InventarioBase):
 
 
 class VarianteElemento(VarianteElementoCreate, table=True):
-    __tablename__ = 'variantes_elemento' # type: ignore
+    __tablename__ = 'variantes_elemento'  # type: ignore
 
     id: int = Field(primary_key=True)
 
@@ -257,4 +267,5 @@ if __name__ == '__main__':
 
     bodega = BodegaCreate(ubicacion='test', shopify_id=1)
     same_bodega = BodegaCreate(ubicacion='test', shopify_id=1)
+    tipo_movimiento = TipoMovimientoCreate(**{'nombre': 'Entrada', 'comportamiento': 1})
     print(bodega == same_bodega)

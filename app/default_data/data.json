@@ -20,22 +20,33 @@
         {
             "id": 1,
             "nombre": "Cargue inicial",
-            "descripcion": "Carga inicial de inventario con cantidades existentes"
+            "descripcion": "Carga inicial de inventario con cantidades existentes",
+            "comportamiento": 1
         },
         {
             "id": 2,
-            "nombre": "Ajuste",
-            "descripcion": "Ajuste manual de inventario"
+            "nombre": "Ajuste por aumento",
+            "descripcion": "Ajuste manual de inventario",
+            "comportamiento": 1
         },
         {
             "id": 3,
-            "nombre": "Entrada",
-            "descripcion": "Mayor cantidad de un elemento en el inventario"
+            "nombre": "Ajuste por disminución",
+            "descripcion": "Ajuste manual de inventario",
+            "comportamiento": -1
+
         },
         {
             "id": 4,
+            "nombre": "Entrada",
+            "descripcion": "Mayor cantidad de un elemento en el inventario",
+            "comportamiento": 1
+        },
+        {
+            "id": 5,
             "nombre": "Salida",
-            "descripcion": "Menor cantidad de un elemento en el inventario"
+            "descripcion": "Menor cantidad de un elemento en el inventario",
+            "comportamiento": -1
         }
     ],
     "tipos_precios": [

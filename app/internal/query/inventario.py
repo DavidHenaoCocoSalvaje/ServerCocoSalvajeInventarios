@@ -1,7 +1,12 @@
 # app/internal/query/inventario.py
 import json
 from os import path
-from sqlmodel import select, desc
+from sqlmodel import SQLModel, select, desc
+
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+    sys_path.append(abspath('.'))
 
 
 from app.models.db.inventario import (
@@ -27,6 +32,7 @@ from app.models.db.inventario import (
     TipoMovimientoCreate,
     TipoPrecio,
     TipoPrecioCreate,
+    TipoSoporteCreate,
     TiposMedida,
     TiposMedidaCreate,
     TipoSoporte,
@@ -37,7 +43,6 @@ from app.internal.query.base import BaseQuery, ModelCreate, ModelDB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import func
 from app.models.db.session import get_async_session
-from sqlalchemy.dialects.postgresql import insert
 
 
 class BaseQueryWithShopifyId(BaseQuery[ModelDB, ModelCreate]):
@@ -103,6 +108,17 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         statement = select(self.model_db).where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []  # type: ignore
+    
+    async def get_total_by(self, session: AsyncSession, variante_id: int, tipo_movimiento_id: int):
+        statement = (
+            select(func.sum(self.model_db.cantidad))
+            .where(self.model_db.variante_id == variante_id)
+            .where(self.model_db.tipo_movimiento_id == tipo_movimiento_id)
+        )
+        result = await session.execute(statement)
+        suma = result.scalar_one()
+        return suma
+
 
     async def get_by_soporte_ids(
         self, session: AsyncSession, tipo_soporte_id: int, soporte_ids: list[str]
@@ -155,6 +171,9 @@ class TiposMedidaQuery(BaseQuery[TiposMedida, TiposMedidaCreate]):
     def __init__(self) -> None:
         super().__init__(TiposMedida, TiposMedidaCreate)
 
+class TipoSoporteQuery(BaseQuery[TipoSoporte, TipoSoporteCreate]):
+    def __init__(self) -> None:
+        super().__init__(TipoSoporte, TipoSoporteCreate)
 
 class MedidasPorVarianteQuery(BaseQuery[MedidasPorVariante, MedidasPorVarianteCreate]):
     def __init__(self) -> None:
@@ -181,28 +200,35 @@ async def seed_data_inventario():
         async with session:
             # Upserts (ON CONFLICT DO UPDATE) por tabla, en orden de dependencias
             # Nota: se usa conflicto por PK 'id' y se actualizan todas las columnas excepto la PK
-            pares = [
-                (EstadoVariante, 'estados_variante'),
-                (TipoMovimiento, 'tipos_movimiento'),
-                (TipoPrecio, 'tipos_precios'),
-                (Grupo, 'grupos'),
-                (TiposMedida, 'tipos_medida'),
-                (TipoSoporte, 'tipos_soporte'),
-                (Medida, 'medidas'),
+            models: list[tuple[type[SQLModel], str, BaseQuery]] = [
+                (EstadoVariante, 'estados_variante', EstadoVarianteQuery()),
+                (TipoMovimiento, 'tipos_movimiento', TipoMovimientoQuery()),
+                (TipoPrecio, 'tipos_precios', TipoPrecioQuery()),
+                (Grupo, 'grupos', GrupoQuery()),
+                (TiposMedida, 'tipos_medida', TiposMedidaQuery()),
+                (TipoSoporte, 'tipos_soporte', TipoSoporteQuery()),
+                (Medida, 'medidas', MedidaQuery()),
             ]
 
-            for Model, key in pares:
-                items = data.get(key, [])
+            for Model, data_key, model_query in models:
+                items: list[dict] = data.get(data_key, [])
                 if not items:
                     continue
 
                 models = [Model(**item) for item in items]
-                table = Model.__table__  # type: ignore[attr-defined]
-                models_dump = [model.model_dump() for model in models]
-                insert_stmt = insert(table).values(models_dump)
+                for model in models:
+                    await model_query.upsert(session, model)
 
-                stmt = insert_stmt.on_conflict_do_nothing(
-                    index_elements=['id'],
-                )
-                await session.execute(stmt)
-            await session.commit()
+
+if __name__ == '__main__':
+    import asyncio
+
+    async def main():
+        async for session in get_async_session():
+            async with session:
+                await seed_data_inventario()
+                movimiento_query = MovimientoQuery()
+                await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
+
+
+    asyncio.run(main())

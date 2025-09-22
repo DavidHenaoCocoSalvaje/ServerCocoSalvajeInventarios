@@ -214,7 +214,7 @@ class ShopifyGraphQLClient(BaseClient):
                 }
             }
         """
-        variables = self.Variables().model_dump(exclude_none=True)
+        variables = self.Variables().model_dump(exclude_unset=True)
         products_json = await self._get_all(query, ['data', 'products'], variables)
         products_response = ProductsResponse(**products_json)
         return products_response
@@ -305,7 +305,7 @@ class ShopifyGraphQLClient(BaseClient):
             tasks = [self.get_variant_inventory_levels(variant) for variant in batch]
             await gather(*tasks)
 
-    async def get_order_line_items(self, order: Order):
+    async def get_order_line_items(self, order: Order, num_items: int = 50):
         query = """
         query GetLineItemsOrder($gid: ID!, $num_items: Int!, $cursor: String) {
             order(id: $gid) {
@@ -340,7 +340,7 @@ class ShopifyGraphQLClient(BaseClient):
             }
         }
         """
-        variables = self.Variables(num_items=50, gid=order.id).model_dump(exclude_none=True)
+        variables = self.Variables(num_items=num_items, gid=order.id).model_dump(exclude_none=True)
         order_line_items_json = await self._execute_query(query, **variables)
         order.lineItems = order_line_items_json['data']['order']['lineItems']
 
@@ -378,9 +378,10 @@ class ShopifyGraphQLClient(BaseClient):
         # "search_query": "tofinancial_status:paid created_at:>=2025-08-01 and created_at:>=2025-08-31",
         variables = self.Variables(
             num_items=num_items, search_query=f'financial_status:paid created_at:>={start_str} created_at:<={end_str}'
-        ).model_dump(exclude_none=True, exclude_unset=True)
+        ).model_dump(exclude_none=True)
         orders_json = await self._get_all(query, ['data', 'orders'], variables)
         orders_response = OrdersResponse(**orders_json)
+        await self.get_orders_line_items(orders_response.data.orders.nodes)
 
         return orders_response
 
@@ -645,15 +646,15 @@ class ShopifyInventario:
             return precio
         raise
 
-    async def crear_movimiento(self, bodega_id: int, variante_id: int, cantidad: int) -> Movimiento:
+    async def crear_movimiento(self, bodega_id: int, variante_id: int, cantidad: int, tipo_movimiento_id: int = 1, estado_variante_id: int = 1) -> Movimiento:
         async for session in get_async_session():
             async with session:
                 movimiento_query = MovimientoQuery()
 
                 movimiento_create = MovimientoCreate(
-                    tipo_movimiento_id=1,
+                    tipo_movimiento_id=tipo_movimiento_id,
                     variante_id=variante_id,
-                    estado_variante_id=1,
+                    estado_variante_id=estado_variante_id,
                     cantidad=cantidad,
                     bodega_id=bodega_id,
                 )
@@ -707,12 +708,12 @@ if __name__ == '__main__':
     async def main():
         client = ShopifyGraphQLClient()
 
-        orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 8, 31), 50)
+        orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 7, 31), 40)
         await client.get_orders_line_items(orders.data.orders.nodes, 20)
         # print(orders.model_dump_json(indent=2, exclude_unset=True))
 
         with open('shopify_orders.json', 'w', encoding='utf-8') as f:
-            f.write(orders.model_dump_json(indent=2))
+            f.write(orders.model_dump_json(exclude_unset=True, indent=2))
 
         # order_26492 = await client.get_order_by_number(26492)
         # assert order_26492.data.orders.nodes[0].number == 26492
