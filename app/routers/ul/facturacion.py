@@ -163,7 +163,7 @@ async def facturar_orden(
     primer_nombre = names_split_capitalized[0]
     segundo_nombre = ' '.join(names_split_capitalized[1:]) if len(names_split) > 1 else ''
 
-    last_name = order.billingAddress.lastName or order.shippingAddress.lastName
+    last_name = order.billingAddress.lastName.strip() or order.shippingAddress.lastName.strip()
     last_name_split = last_name.split(' ')
     last_name_split_capitalized = [x.capitalize() for x in last_name_split]
     primer_apellido = last_name_split_capitalized[0]
