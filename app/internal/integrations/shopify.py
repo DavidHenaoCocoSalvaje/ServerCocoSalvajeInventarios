@@ -1,9 +1,8 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import traceback
 from pydantic import BaseModel, ValidationError
 from re import findall
 from asyncio import gather, sleep
-
 
 
 if __name__ == '__main__':
@@ -16,8 +15,11 @@ from app.internal.gen.utilities import DateTz, divide
 from app.internal.query.inventario import (
     BodegaQuery,
     ElementoQuery,
+    EstadoVarianteQuery,
     MovimientoQuery,
     PrecioPorVarianteQuery,
+    TipoMovimientoQuery,
+    TipoSoporteQuery,
     VarianteElementoQuery,
 )
 
@@ -214,12 +216,28 @@ class ShopifyGraphQLClient(BaseClient):
                 }
             }
         """
-        variables = self.Variables().model_dump(exclude_unset=True)
+        variables = self.Variables().model_dump(exclude_none=True)
         products_json = await self._get_all(query, ['data', 'products'], variables)
         products_response = ProductsResponse(**products_json)
         return products_response
 
-    async def get_variants(self, product_id: int):
+    async def get_product_by_variant_id(self, variant_id: int) -> Product:
+        query = """
+            query GetProductByVariantId($search_query: String!) {
+                products(first: 1, query: $search_query) {
+                    nodes {
+                        legacyResourceId
+                        title
+                    }
+                }
+            }
+        """
+        variables = self.Variables(search_query=f'variant_id:{variant_id}').model_dump(exclude_none=True)
+        product_json = await self._execute_query(query, **variables)
+        product_response = ProductsResponse(**product_json)
+        return product_response.data.products.nodes[0]
+
+    async def get_variants_by_product_id(self, product_id: int):
         query = """
             query GetVariants($num_items: Int!, $search_query: String!, $cursor: String) {
                 productVariants(first: $num_items, after: $cursor, query: $search_query) {
@@ -248,7 +266,7 @@ class ShopifyGraphQLClient(BaseClient):
         return variants_response
 
     async def get_product_variants(self, product: Product):
-        product_variants = await self.get_variants(product.legacyResourceId)
+        product_variants = await self.get_variants_by_product_id(product.legacyResourceId)
         product.variants = product_variants.data.productVariants.nodes
 
     async def get_inventory_levels(self, inventory_item_id: int):
@@ -346,14 +364,13 @@ class ShopifyGraphQLClient(BaseClient):
 
     async def get_orders_line_items(self, orders: list[Order], batch_size=10) -> None:
         # Procesar por lotes de con asyncio.gather
-        orders_line_items = []
         if len(orders) > 0:
             for i in range(0, len(orders), batch_size):
                 batch = orders[i : i + batch_size]
                 tasks = [self.get_order_line_items(order) for order in batch if batch]
-                orders_line_items.extend(await gather(*tasks))
+                await gather(*tasks)
 
-    async def get_orders_by_range(self, start: date, end: date, num_items: int = 20) -> OrdersResponse:
+    async def get_orders_by_range(self, start: date, end: date, num_items: int = 20) -> list[Order]:
         start_str = DateTz.local(datetime(start.year, start.month, start.day)).utc.to_isostring
         end_str = DateTz.local(datetime(end.year, end.month, end.day)).utc.to_isostring
         query = """
@@ -361,6 +378,11 @@ class ShopifyGraphQLClient(BaseClient):
                 orders(first: $num_items, query: $search_query, after: $cursor) {
                     nodes {
                         id
+                        fulfillments(first: 1) {
+                            location {
+                                legacyResourceId
+                            }
+                        }
                         number
                         createdAt
                         tags
@@ -383,13 +405,18 @@ class ShopifyGraphQLClient(BaseClient):
         orders_response = OrdersResponse(**orders_json)
         await self.get_orders_line_items(orders_response.data.orders.nodes)
 
-        return orders_response
+        return orders_response.data.orders.nodes
 
     async def get_order(self, order_gid: str) -> OrderResponse:
         query = """
         query GetOrder($gid: ID!) {
             order(id: $gid) {
                 id
+                fulfillments(first: 1) {
+                    location {
+                        legacyResourceId
+                    }
+                }
                 fullyPaid
                 displayFinancialStatus
                 tags
@@ -467,12 +494,17 @@ class ShopifyGraphQLClient(BaseClient):
 
         return order_response
 
-    async def get_order_by_number(self, order_number: int):
+    async def get_order_by_number(self, order_number: int) -> Order:
         query = """
         query GetOrderByNumber($search_query: String!) {
             orders(first: 1, query: $search_query) {
                 nodes {
                     id
+                    fulfillments(first: 1) {
+                        location {
+                            legacyResourceId
+                        }
+                    }
                     fullyPaid
                     displayFinancialStatus
                     tags
@@ -548,7 +580,7 @@ class ShopifyGraphQLClient(BaseClient):
             exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
             raise exception
 
-        return orders_response
+        return orders_response.data.orders.nodes[0]
 
     async def get_products(self, batch_size: int = 10) -> list[Product]:
         """Función principal optimizada con procesamiento en lotes de 5 productos"""
@@ -578,7 +610,7 @@ class ShopifyInventario:
 
                 bodega = await bodega_query.get_by_shopify_id(session, location.legacyResourceId)
                 if bodega is None:
-                    ubicacion = ', '.join(location.address.formatted[1:])
+                    ubicacion = ', '.join(location.address.formatted)
                     bodega_create = BodegaCreate(ubicacion=ubicacion, shopify_id=location.legacyResourceId)
                     bodega = await bodega_query.create(session, bodega_create)
 
@@ -596,7 +628,6 @@ class ShopifyInventario:
         async for session in get_async_session():
             async with session:
                 elemento_query = ElementoQuery()
-
                 elemento = await elemento_query.get_by_shopify_id(session, product.legacyResourceId)
                 if elemento is None:
                     elemento_create = ElementoCreate(
@@ -646,7 +677,9 @@ class ShopifyInventario:
             return precio
         raise
 
-    async def crear_movimiento(self, bodega_id: int, variante_id: int, cantidad: int, tipo_movimiento_id: int = 1, estado_variante_id: int = 1) -> Movimiento:
+    async def crear_movimiento(
+        self, bodega_id: int, variante_id: int, cantidad: int, tipo_movimiento_id: int = 1, estado_variante_id: int = 1
+    ) -> Movimiento:
         async for session in get_async_session():
             async with session:
                 movimiento_query = MovimientoQuery()
@@ -670,8 +703,14 @@ class ShopifyInventario:
             for variant in product.variants
             for level in variant.inventoryItem.inventoryLevels.nodes
         }
-        
-    async def create_all(self, product: Product, bodegas: list[Bodega]):
+
+    async def create_all(self, product: Product):
+        elemento = await self.crear_elemento(product)
+        for variant in product.variants:
+            variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
+            await self.crear_precio_variante(variant.price, variante_elemento.id)
+
+    async def create_all_and_movimiento(self, product: Product, bodegas: list[Bodega]):
         elemento = await self.crear_elemento(product)
         for variant in product.variants:
             variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
@@ -680,24 +719,82 @@ class ShopifyInventario:
                 bodega = next((bodega for bodega in bodegas if bodega.shopify_id == level.location.legacyResourceId))
                 cantidad = level.quantities[0].quantity
                 await self.crear_movimiento(bodega.id, variante_elemento.id, cantidad)
-    
-    async def sicnronizar_inventario(self, products: list[Product]):
+
+    async def sicnronizar_inventario(self):
+        client = ShopifyGraphQLClient()
+        products = await client.get_products()
+
         unique_locations = self.get_products_unique_locations(products)
         bodegas: list[Bodega] = []
         for location in unique_locations.values():
             bodega = await self.crear_bodega(location)
             bodegas.append(bodega)
 
-        await gather(*[self.create_all(product, bodegas) for product in products])
+        await gather(*[self.create_all_and_movimiento(product, bodegas) for product in products])
 
-    # async def sincronizar_movimientos(self, ordenes: list[Order]):
-    #     shopify_client = ShopifyGraphQLClient()
-    #     for orden in ordenes:
-    #         for lineItem in orden.lineItems.nodes:
-                
-    #     bodega = self.crear_bodega()
-    #     self.crear_movimiento()
-    #     pass
+    async def crear_movimientos(self, ordenes: list[Order]):
+        movimiento_query = MovimientoQuery()
+        tipo_movimiento_query = TipoMovimientoQuery()
+        tipo_soporte_query = TipoSoporteQuery()
+        variante_elemento_query = VarianteElementoQuery()
+        estado_variante_query = EstadoVarianteQuery()
+        bodega_query = BodegaQuery()
+        async for session in get_async_session():
+            async with session:
+                for orden in ordenes:
+                    for item in orden.lineItems.nodes:
+                        # Se garantiza que todos los elementos necesarios estén creados.
+                        shopify_client = ShopifyGraphQLClient()
+                        product = await shopify_client.get_product_by_variant_id(item.variant.legacyResourceId)
+                        await shopify_client.get_porduct_variant_inventory_levels(product)
+                        await self.create_all(product)
+
+                        movimiento = await movimiento_query.get_by_soporte_id(
+                            session, tipo_soporte_id=1, soporte_id=str(orden.number)
+                        )
+
+                        if movimiento is None:
+                            variante_elemento = await variante_elemento_query.get_by_sku(session, item.sku)
+                            if variante_elemento is None:
+                                raise ValueError(f'No se pudo crear VarianteElemento con SKU {item.sku}')
+
+                            tipo_movimiento = await tipo_movimiento_query.get_by_nombre(session, 'Salida')
+                            tipo_soporte = await tipo_soporte_query.get_by_nombre(session, 'Pedido')
+                            estado_variante = await estado_variante_query.get_by_nombre(session, 'Descontado')
+                            bodega = None
+                            if len(orden.fulfillments) > 0:
+                                location_id = orden.fulfillments[0].location.legacyResourceId
+                                bodega = await bodega_query.get_by_shopify_id(session, location_id)
+                            else:
+                                bodega = await bodega_query.get_by_shopify_id(
+                                    session, 109793607972
+                                )  # Por defecto si no se encuentra bodega, se asigna el ID del fulfillment en Bogotá
+                            if bodega is None:
+                                raise ValueError()
+
+                            movimiento_create = MovimientoCreate(
+                                tipo_movimiento_id=tipo_movimiento.id,
+                                tipo_soporte_id=tipo_soporte.id,
+                                soporte_id=str(orden.number),
+                                variante_id=variante_elemento.id,
+                                estado_variante_id=estado_variante.id,
+                                cantidad=item.quantity,
+                                bodega_id=bodega.id,
+                                fecha=orden.createdAt,
+                            )
+
+                            await movimiento_query.create(session, movimiento_create)
+
+    async def sincronizar_movimientos_by_range(self, start: date, end: date, step_days: int = 5):
+        shopify_client = ShopifyGraphQLClient()
+        # Realizar sincronización por rangos de fechas de acuerdo a step_days
+        current_start = start
+        while current_start < end:
+            range_end = current_start + timedelta(days=step_days - 1)
+            orders = await shopify_client.get_orders_by_range(current_start, min(range_end, end))
+            current_start = range_end + timedelta(days=1)
+            await self.crear_movimientos(orders)
+            log_debug.debug(msg=f'movimientos sincronizados desde {current_start} hasta {range_end}')
 
 
 if __name__ == '__main__':
@@ -708,23 +805,29 @@ if __name__ == '__main__':
     async def main():
         client = ShopifyGraphQLClient()
 
-        orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 7, 31), 40)
-        await client.get_orders_line_items(orders.data.orders.nodes, 20)
-        # print(orders.model_dump_json(indent=2, exclude_unset=True))
+        # orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 7, 31), 40)
+        # await client.get_orders_line_items(orders.data.orders.nodes, 20)
+        # with open('shopify_orders.json', 'w', encoding='utf-8') as f:
+        #     f.write(orders.model_dump_json(exclude_unset=True, indent=2))
 
-        with open('shopify_orders.json', 'w', encoding='utf-8') as f:
-            f.write(orders.model_dump_json(exclude_unset=True, indent=2))
+        # product_by_variant_id = await client.get_product_by_variant_id(45245052092708)
+        # await client.get_porduct_variant_inventory_levels(product_by_variant_id)
+        # print(product_by_variant_id.model_dump_json(exclude_unset=True, indent=2))
 
         # order_26492 = await client.get_order_by_number(26492)
-        # assert order_26492.data.orders.nodes[0].number == 26492
+        # assert order_26492.number == 26492
         # assert len(order_26492.data.orders.nodes[0].lineItems.nodes) > 0
+
+        order_27588 = await client.get_order_by_number(27588)
+        assert order_27588.number == 27588
+        assert order_27588.fulfillments[0].location.legacyResourceId == 109793607972
 
         # order_9839649063204 = await client.get_order('gid://shopify/Order/9839649063204')
         # assert order_9839649063204.data.order.id == 'gid://shopify/Order/9839649063204'
         # print(order_9839649063204.model_dump_json(indent=2, exclude_unset=True))
 
-        # products = await client.get_products()
-        # await ShopifyInventario().sicnronizar_inventario(products)
-        # await sincronizar_inventario(products)
+        # await ShopifyInventario().sicnronizar_inventario()
+
+        await ShopifyInventario().sincronizar_movimientos_by_range(date(2025, 9, 1), date(2025, 9, 15))
 
     run(main())

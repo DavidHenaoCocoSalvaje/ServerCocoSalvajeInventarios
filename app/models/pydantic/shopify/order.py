@@ -9,6 +9,7 @@ from typing import Annotated
 from pydantic import BeforeValidator, Field, computed_field
 from app.internal.gen.utilities import DateTz, divide
 from app.models.pydantic.base import Base
+from app.models.pydantic.shopify.inventario import Location
 
 
 class FinancialStatus(Enum):
@@ -179,9 +180,12 @@ class App(Base):
 def parse_datetime(value: str) -> datetime:
     return DateTz.from_isostring(value)
 
+class FullfillmentLocation(Base):
+    location: Location = Location()
 
 class Order(Base):
     id: str = ''
+    fulfillments: list[FullfillmentLocation] = []
     fullyPaid: bool = False
     displayFinancialStatus: FinancialStatus = FinancialStatus.PENDING
     tags: list[str] = []

@@ -1,11 +1,12 @@
 # app/internal/query/inventario.py
 import json
 from os import path
-from sqlmodel import SQLModel, select, desc
+from sqlmodel import SQLModel, select, desc, func
 
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
+
     sys_path.append(abspath('.'))
 
 
@@ -41,7 +42,6 @@ from app.models.db.inventario import (
 )
 from app.internal.query.base import BaseQuery, ModelCreate, ModelDB
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import func
 from app.models.db.session import get_async_session
 
 
@@ -58,6 +58,18 @@ class BaseQueryWithShopifyId(BaseQuery[ModelDB, ModelCreate]):
         statement = select(self.model_db).where(self.model_db.shopify_id.in_(shopify_ids))  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
+
+class BaseQeuryTipo(BaseQuery[ModelDB, ModelCreate]):
+    def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]):
+        super().__init__(model_db, model_create)
+
+    async def get_by_nombre(self, session: AsyncSession, nombre: str) -> ModelDB:
+        statement = select(self.model_db).where(func.lower(self.model_db.nombre) == nombre.lower()) # type: ignore
+        result = await session.execute(statement)
+        obj = result.scalar_one_or_none()
+        if obj is None:
+            raise ValueError(f"{self.model_db.__name__} con '{nombre}' no encontrado")
+        return obj
 
 
 class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCreate]):
@@ -108,7 +120,7 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         statement = select(self.model_db).where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
         result = await session.execute(statement)
         return list(result.scalars().all()) or []  # type: ignore
-    
+
     async def get_total_by(self, session: AsyncSession, variante_id: int, tipo_movimiento_id: int):
         statement = (
             select(func.sum(self.model_db.cantidad))
@@ -119,17 +131,14 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         suma = result.scalar_one()
         return suma
 
-
-    async def get_by_soporte_ids(
-        self, session: AsyncSession, tipo_soporte_id: int, soporte_ids: list[str]
-    ) -> list[Movimiento]:
+    async def get_by_soporte_id(self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str) -> Movimiento | None:
         statement = (
             select(self.model_db)
             .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
-            .where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
+            .where(self.model_db.soporte_id == soporte_id)
         )
         result = await session.execute(statement)
-        return list(result.scalars().all()) or []
+        return result.scalar_one_or_none()
 
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
@@ -145,6 +154,11 @@ class BodegaQuery(BaseQueryWithShopifyId[Bodega, BodegaCreate]):
 class VarianteElementoQuery(BaseQueryWithShopifyId[VarianteElemento, VarianteElementoCreate]):
     def __init__(self) -> None:
         super().__init__(VarianteElemento, VarianteElementoCreate)
+    
+    async def get_by_sku(self, session: AsyncSession, sku: str) -> VarianteElemento | None:
+        statement = select(self.model_db).where(self.model_db.sku == sku)
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
 
 
 class ComponentesPorVarianteQuery(BaseQuery[ComponentesPorVariante, ComponentesPorVarianteCreate]):
@@ -171,21 +185,23 @@ class TiposMedidaQuery(BaseQuery[TiposMedida, TiposMedidaCreate]):
     def __init__(self) -> None:
         super().__init__(TiposMedida, TiposMedidaCreate)
 
-class TipoSoporteQuery(BaseQuery[TipoSoporte, TipoSoporteCreate]):
+
+class TipoSoporteQuery(BaseQeuryTipo[TipoSoporte, TipoSoporteCreate]):
     def __init__(self) -> None:
         super().__init__(TipoSoporte, TipoSoporteCreate)
+
 
 class MedidasPorVarianteQuery(BaseQuery[MedidasPorVariante, MedidasPorVarianteCreate]):
     def __init__(self) -> None:
         super().__init__(MedidasPorVariante, MedidasPorVarianteCreate)
 
 
-class TipoMovimientoQuery(BaseQuery[TipoMovimiento, TipoMovimientoCreate]):
+class TipoMovimientoQuery(BaseQeuryTipo[TipoMovimiento, TipoMovimientoCreate]):
     def __init__(self) -> None:
         super().__init__(TipoMovimiento, TipoMovimientoCreate)
 
 
-class EstadoVarianteQuery(BaseQuery[EstadoVariante, EstadoVarianteCreate]):
+class EstadoVarianteQuery(BaseQeuryTipo[EstadoVariante, EstadoVarianteCreate]):
     def __init__(self) -> None:
         super().__init__(EstadoVariante, EstadoVarianteCreate)
 
@@ -229,6 +245,5 @@ if __name__ == '__main__':
                 await seed_data_inventario()
                 movimiento_query = MovimientoQuery()
                 await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
-
 
     asyncio.run(main())

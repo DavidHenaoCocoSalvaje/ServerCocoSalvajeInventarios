@@ -14,6 +14,16 @@
             "id": 3,
             "nombre": "Transito",
             "descripcion": "Inventario que se traslada de una ubicación a otra"
+        },
+        {
+            "id": 4,
+            "nombre": "Reservado",
+            "descripcion": "Inventario reservado para un pedido o uso específico"
+        },
+        {
+            "id": 5,
+            "nombre": "Descontado",
+            "descripcion": "Inventario que ya se ha vendido o utilizado"
         }
     ],
     "tipos_movimiento": [

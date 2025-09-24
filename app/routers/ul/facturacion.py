@@ -36,8 +36,7 @@ async def procesar_pedido_shopify(
         order_response = await shopify_graphql_client.get_order(order_gid)
         order = order_response.data.order
     elif order_number:
-        orders_response = await shopify_graphql_client.get_order_by_number(int(order_number))
-        order = orders_response.data.orders.nodes[0]
+        order = await shopify_graphql_client.get_order_by_number(int(order_number))
     else:
         msg = 'No se proporciono order_gid ni pedido_number'
         log_facturacion.error(msg)
