@@ -26,6 +26,9 @@ class ClientException(Exception):
         _str += f'\nresponse: {self.response}' if self.response else ''
         return _str
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class BaseClient:
     def __init__(self, min_interval: float = 0.1):

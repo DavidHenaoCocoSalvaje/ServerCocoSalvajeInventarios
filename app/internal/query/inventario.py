@@ -59,12 +59,13 @@ class BaseQueryWithShopifyId(BaseQuery[ModelDB, ModelCreate]):
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
 
+
 class BaseQeuryTipo(BaseQuery[ModelDB, ModelCreate]):
     def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]):
         super().__init__(model_db, model_create)
 
     async def get_by_nombre(self, session: AsyncSession, nombre: str) -> ModelDB:
-        statement = select(self.model_db).where(func.lower(self.model_db.nombre) == nombre.lower()) # type: ignore
+        statement = select(self.model_db).where(func.lower(self.model_db.nombre) == nombre.lower())  # type: ignore
         result = await session.execute(statement)
         obj = result.scalar_one_or_none()
         if obj is None:
@@ -116,11 +117,6 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
     def __init__(self) -> None:
         super().__init__(Movimiento, MovimientoCreate)
 
-    async def get_by_varante_ids(self, session: AsyncSession, variante_ids: list[int]) -> list[Movimiento]:
-        statement = select(self.model_db).where(self.model_db.variante_id.in_(variante_ids))  # type: ignore
-        result = await session.execute(statement)
-        return list(result.scalars().all()) or []  # type: ignore
-
     async def get_total_by(self, session: AsyncSession, variante_id: int, tipo_movimiento_id: int):
         statement = (
             select(func.sum(self.model_db.cantidad))
@@ -131,9 +127,12 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         suma = result.scalar_one()
         return suma
 
-    async def get_by_soporte_id(self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str) -> Movimiento | None:
+    async def get_by_soporte_variante_id(
+        self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str, variante_elemento_id: int
+    ) -> Movimiento | None:
         statement = (
             select(self.model_db)
+            .where(self.model_db.variante_id == variante_elemento_id)
             .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
             .where(self.model_db.soporte_id == soporte_id)
         )
@@ -154,7 +153,7 @@ class BodegaQuery(BaseQueryWithShopifyId[Bodega, BodegaCreate]):
 class VarianteElementoQuery(BaseQueryWithShopifyId[VarianteElemento, VarianteElementoCreate]):
     def __init__(self) -> None:
         super().__init__(VarianteElemento, VarianteElementoCreate)
-    
+
     async def get_by_sku(self, session: AsyncSession, sku: str) -> VarianteElemento | None:
         statement = select(self.model_db).where(self.model_db.sku == sku)
         result = await session.execute(statement)
