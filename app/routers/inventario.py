@@ -115,7 +115,7 @@ CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCrea
 async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
-        await ShopifyInventario().sicnronizar_inventario()
+        await ShopifyInventario().sicnronizar_inventario(True)
         log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
     except Exception as e:
@@ -156,5 +156,5 @@ class RequestBodyDateRange(Base):
     dependencies=[Depends(validar_access_token)],
 )
 async def sync_movimientos_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
-    background_tasks.add_task(ShopifyInventario().sincronizar_movimiento_ordenes_by_range, date_range.start, date_range.end)
+    background_tasks.add_task(ShopifyInventario().sincronizar_movimientos_ordenes_by_range, date_range.start, date_range.end)
     return True

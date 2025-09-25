@@ -716,7 +716,7 @@ class ShopifyInventario:
             for level in variant.inventoryItem.inventoryLevels.nodes:
                 await self.crear_bodega(level.location)
 
-    async def create_product_relacions_ajuste(self, product: Product, bodegas: list[Bodega]):
+    async def create_product_relations_ajuste(self, product: Product, bodegas: list[Bodega]):
         elemento = await self.crear_elemento(product)
         for variant in product.variants:
             variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
@@ -727,7 +727,7 @@ class ShopifyInventario:
                 # TODO: Verificar si es necesario el ajuste, obtener antes el saldo actual.
                 await self.crear_movimiento_ajuste(bodega.id, variante_elemento.id, cantidad)
 
-    async def sicnronizar_inventario(self):
+    async def sicnronizar_inventario(self, ajustar_existencias: bool = False):
         client = ShopifyGraphQLClient()
         products = await client.get_products()
 
@@ -737,7 +737,10 @@ class ShopifyInventario:
             bodega = await self.crear_bodega(location)
             bodegas.append(bodega)
 
-        await gather(*[self.create_product_relacions_ajuste(product, bodegas) for product in products])
+        if ajustar_existencias:
+            await gather(*[self.create_product_relations_ajuste(product, bodegas) for product in products])
+        else:
+            await gather(*[self.create_product_and_relations(product) for product in products])
 
     async def crear_movimientos_orden(self, orden: Order):
         movimiento_query = MovimientoQuery()
@@ -797,7 +800,9 @@ class ShopifyInventario:
 
                         await movimiento_query.create(session, movimiento_create)
 
-    async def sincronizar_movimiento_ordenes_by_range(self, start: date, end: date, step_days: int = 5, batch_size: int = 10):
+    async def sincronizar_movimientos_ordenes_by_range(self, start: date, end: date, step_days: int = 5, batch_size: int = 10):
+        # Se sincroniza el inventario antes de los movimientos para evitar crear elementos duplicados por operaciones concurrentes.
+        await self.sicnronizar_inventario()
         shopify_client = ShopifyGraphQLClient()
         # Realizar sincronización por rangos de fechas de acuerdo a step_days
         current_start = start
@@ -842,6 +847,6 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sicnronizar_inventario()
 
-        await ShopifyInventario().sincronizar_movimiento_ordenes_by_range(date(2025, 8, 1), date(2025, 8, 5), 2)
+        await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 8, 1), date(2025, 8, 5), 2)
 
     run(main())
