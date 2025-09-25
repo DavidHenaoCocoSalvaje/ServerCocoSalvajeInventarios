@@ -1,4 +1,5 @@
 # app/routers/inventario.py
+from datetime import date
 from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
@@ -18,6 +19,7 @@ from app.internal.query.inventario import (
     TiposMedidaQuery,
     VarianteElementoQuery,
 )
+from ..models.pydantic.base import Base
 from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -139,4 +141,20 @@ async def recibir_pedido_shopify(
     Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
     background_tasks.add_task(procesar_pedido_shopify, order_webhook.order_number, order_webhook.admin_graphql_api_id)
 
+    return True
+
+
+class RequestBodyDateRange(Base):
+    start: date
+    end: date
+
+
+@shopify_router.post(
+    '/sync-movimientos-ordenes-by-range',
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    dependencies=[Depends(validar_access_token)],
+)
+async def sync_movimientos_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
+    background_tasks.add_task(ShopifyInventario().sincronizar_movimiento_ordenes_by_range, date_range.start, date_range.end)
     return True

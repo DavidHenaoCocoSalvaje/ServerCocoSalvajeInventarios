@@ -52,7 +52,8 @@ from app.models.pydantic.shopify.inventario import (
 from app.config import config
 
 log_shopify = factory_logger('shopify', file=True)
-log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
+log_level = LogLevel.DEBUG if config.environment == 'development' else LogLevel.INFO
+log_debug = factory_logger('debug', level=log_level, file=False)
 
 
 class ShopifyException(ClientException):
@@ -807,7 +808,7 @@ class ShopifyInventario:
                 batch = orders[i : i + batch_size]
                 await gather(*[self.crear_movimientos_orden(orden) for orden in batch])
 
-            log_debug.debug(msg=f'movimientos sincronizados desde {current_start} hasta {range_end}')
+            log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {range_end}')
             current_start = range_end + timedelta(days=1)
 
 
