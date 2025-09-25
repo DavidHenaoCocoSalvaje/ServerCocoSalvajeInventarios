@@ -163,6 +163,7 @@ class MovimientoCreate(InventarioBase):
     variante_id: int | None = Field(foreign_key='inventario.variantes_elemento.id', default=None)
     estado_variante_id: int | None = Field(foreign_key='inventario.estados_variante.id', default=None)
     cantidad: int = Field(default=0)
+    valor: float = Field(default=0.0)
     bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=None, nullable=True)
     soporte_id: str | None = Field(sa_type=TEXT, default=None)
     nota: str | None = Field(sa_type=TEXT, default=None)

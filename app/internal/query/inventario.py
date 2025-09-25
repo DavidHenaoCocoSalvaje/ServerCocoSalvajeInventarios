@@ -155,6 +155,8 @@ class VarianteElementoQuery(BaseQueryWithShopifyId[VarianteElemento, VarianteEle
         super().__init__(VarianteElemento, VarianteElementoCreate)
 
     async def get_by_sku(self, session: AsyncSession, sku: str) -> VarianteElemento | None:
+        if not sku:
+            raise ValueError('SKU vacío')
         statement = select(self.model_db).where(self.model_db.sku == sku)
         result = await session.execute(statement)
         return result.scalar_one_or_none()

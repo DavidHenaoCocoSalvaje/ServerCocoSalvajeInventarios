@@ -116,7 +116,6 @@ async def sync_shopify():
     """Sincroniza los datos de inventario desde Shopify."""
     try:
         await ShopifyInventario().sicnronizar_inventario(True)
-        log_inventario_shopify.debug('Inventarios de Shopify sincronizado con éxito')
         return True
     except Exception as e:
         log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')

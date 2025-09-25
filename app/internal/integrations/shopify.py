@@ -741,6 +741,7 @@ class ShopifyInventario:
             await gather(*[self.create_product_relations_ajuste(product, bodegas) for product in products])
         else:
             await gather(*[self.create_product_and_relations(product) for product in products])
+        log_shopify.info('Inventario sincronizado')
 
     async def crear_movimientos_orden(self, orden: Order):
         movimiento_query = MovimientoQuery()
@@ -761,9 +762,11 @@ class ShopifyInventario:
                         await shopify_client.get_porduct_variant_inventory_levels(product)
                         await self.create_product_and_relations(product)
 
-                    variante_elemento = await variante_elemento_query.get_by_sku(session, item.sku)
+                    variante_elemento = await variante_elemento_query.get_by_shopify_id(
+                        session, item.variant.legacyResourceId
+                    )
                     if variante_elemento is None:
-                        raise ValueError(f'No se encontró VarianteElemento con SKU {item.sku}')
+                        raise ValueError(f'No se encontró VarianteElemento con id {item.variant.legacyResourceId}')
 
                     movimiento = await movimiento_query.get_by_soporte_variante_id(
                         session,
@@ -794,13 +797,16 @@ class ShopifyInventario:
                             variante_id=variante_elemento.id,
                             estado_variante_id=estado_variante.id,
                             cantidad=item.quantity,
+                            valor=item.discounted_unit_price
                             bodega_id=bodega.id,
                             fecha=orden.createdAt,
                         )
 
                         await movimiento_query.create(session, movimiento_create)
 
-    async def sincronizar_movimientos_ordenes_by_range(self, start: date, end: date, step_days: int = 5, batch_size: int = 10):
+    async def sincronizar_movimientos_ordenes_by_range(
+        self, start: date, end: date, step_days: int = 5, batch_size: int = 5
+    ):
         # Se sincroniza el inventario antes de los movimientos para evitar crear elementos duplicados por operaciones concurrentes.
         await self.sicnronizar_inventario()
         shopify_client = ShopifyGraphQLClient()
@@ -847,6 +853,6 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sicnronizar_inventario()
 
-        await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 8, 1), date(2025, 8, 5), 2)
+        await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 15), 5)
 
     run(main())
