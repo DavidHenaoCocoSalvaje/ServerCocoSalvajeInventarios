@@ -63,7 +63,7 @@ class TiposMedida(TiposMedidaCreate, table=True):
 class MedidaCreate(InventarioBase):
     nombre: str = Field(max_length=50)
     nombre_largo: str = Field(max_length=50)
-    tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id')
+    tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id', default=None, nullable=True)
 
 
 class Medida(MedidaCreate, table=True):
@@ -77,8 +77,8 @@ class Medida(MedidaCreate, table=True):
 
 
 class MedidasPorVarianteCreate(InventarioBase):
-    medida_id: int = Field(foreign_key='inventario.medidas.id')
-    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
+    medida_id: int = Field(foreign_key='inventario.medidas.id', default=None, nullable=True)
+    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id', default=None, nullable=True)
 
 
 class MedidasPorVariante(MedidasPorVarianteCreate, table=True):
@@ -106,8 +106,8 @@ class TipoPrecio(TipoPrecioCreate, table=True):
 
 
 class PreciosPorVarianteCreate(InventarioBase):
-    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
-    tipo_precio_id: int = Field(foreign_key='inventario.tipos_precio.id')
+    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id', default=None, nullable=True)
+    tipo_precio_id: int = Field(foreign_key='inventario.tipos_precio.id', default=None, nullable=True)
     precio: float = Field(default=0.0)
     fecha: date = Field(sa_type=DATE, default_factory=DateTz.today)
 
@@ -132,7 +132,7 @@ class TipoMovimientoCreate(InventarioBase):
     descripcion: str | None = Field(sa_type=TEXT, default=None)
     comportamiento: Comportamiento = Field(sa_type=SMALLINT)
 
-    model_config = ConfigDict(use_enum_values=True) # type: ignore
+    model_config = ConfigDict(use_enum_values=True)  # type: ignore
 
 
 class TipoMovimiento(TipoMovimientoCreate, table=True):
@@ -163,13 +163,15 @@ class MovimientoCreate(InventarioBase):
     variante_id: int | None = Field(foreign_key='inventario.variantes_elemento.id', default=None)
     estado_variante_id: int | None = Field(foreign_key='inventario.estados_variante.id', default=None)
     cantidad: int = Field(default=0)
-    bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=0)
+    bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=None, nullable=True)
     soporte_id: str | None = Field(sa_type=TEXT, default=None)
     nota: str | None = Field(sa_type=TEXT, default=None)
     fecha: datetime = Field(sa_type=TIMESTAMP(timezone=True), default_factory=DateTz.local)  # type: ignore
 
 
 class Movimiento(MovimientoCreate, table=True):
+    __tablename__ = 'movimientos'  # type: ignore
+
     id: int = Field(primary_key=True)
 
     # Relationships
@@ -197,8 +199,8 @@ class EstadoVariante(EstadoVarianteCreate, table=True):
 class ElementoCreate(InventarioBase):
     shopify_id: int = Field(sa_type=BIGINT)
     nombre: str = Field(max_length=120)
-    tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id')
-    grupo_id: int | None = Field(foreign_key='inventario.grupos.id')
+    tipo_medida_id: int = Field(foreign_key='inventario.tipos_medida.id', default=None, nullable=True)
+    grupo_id: int = Field(foreign_key='inventario.grupos.id', default=None, nullable=True)
     descripcion: str | None = Field(sa_type=TEXT, default=None)
     fabricado: bool = Field(default=False)
 
@@ -217,7 +219,7 @@ class VarianteElementoCreate(InventarioBase):
     nombre: str = Field(max_length=120)
     sku: str | None = Field(max_length=120, default=None)
     shopify_id: int = Field(sa_type=BIGINT)
-    elemento_id: int = Field(foreign_key='inventario.elementos.id')
+    elemento_id: int = Field(foreign_key='inventario.elementos.id', default=None, nullable=True)
 
 
 class VarianteElemento(VarianteElementoCreate, table=True):
@@ -241,8 +243,8 @@ class VarianteElemento(VarianteElementoCreate, table=True):
 
 
 class ComponentesPorVarianteCreate(InventarioBase):
-    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id')
-    variante_padre_id: int = Field(foreign_key='inventario.variantes_elemento.id')
+    variante_id: int = Field(foreign_key='inventario.variantes_elemento.id', default=None, nullable=True)
+    variante_padre_id: int = Field(foreign_key='inventario.variantes_elemento.id', default=None, nullable=True)
     cantidad_elemento: int
 
 
