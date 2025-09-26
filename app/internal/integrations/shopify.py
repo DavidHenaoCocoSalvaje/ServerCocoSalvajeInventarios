@@ -4,6 +4,7 @@ import traceback
 from pydantic import BaseModel, ValidationError
 from re import findall
 from asyncio import gather, sleep
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 if __name__ == '__main__':
@@ -17,6 +18,9 @@ from app.internal.query.inventario import (
     BodegaQuery,
     ElementoQuery,
     EstadoVarianteQuery,
+    MetaAtributoQuery,
+    MetaValorQuery,
+    MetadatosPorSoporteQuery,
     MovimientoQuery,
     PrecioPorVarianteQuery,
     TipoMovimientoQuery,
@@ -32,6 +36,9 @@ from app.models.db.inventario import (
     BodegaCreate,
     Elemento,
     ElementoCreate,
+    MetaAtributoCreate,
+    MetaValorCreate,
+    MetadatosPorSoporteCreate,
     Movimiento,
     MovimientoCreate,
     PreciosPorVariante,
@@ -637,62 +644,53 @@ class ShopifyGraphQLClient(BaseClient):
 
 
 class ShopifyInventario:
-    async def crear_bodega(self, location: Location) -> Bodega:
-        async for session in get_async_session():
-            async with session:
-                bodega_query = BodegaQuery()
+    async def crear_bodega(self, session: AsyncSession, location: Location) -> Bodega:
+        bodega_query = BodegaQuery()
 
-                bodega = await bodega_query.get_by_shopify_id(session, location.legacyResourceId)
-                if bodega is None:
-                    ubicacion = ', '.join(location.address.formatted)
-                    bodega_create = BodegaCreate(ubicacion=ubicacion, shopify_id=location.legacyResourceId)
-                    bodega = await bodega_query.create(session, bodega_create)
+        bodega = await bodega_query.get_by_shopify_id(session, location.legacyResourceId)
+        if bodega is None:
+            ubicacion = ', '.join(location.address.formatted)
+            bodega_create = BodegaCreate(ubicacion=ubicacion, shopify_id=location.legacyResourceId)
+            bodega = await bodega_query.create(session, bodega_create)
 
-            return bodega
-        raise
+        return bodega
 
-    async def crear_bodegas(self, locations: list[Location]):
-        async for session in get_async_session():
-            async with session:
-                bodegas = [await self.crear_bodega(location) for location in locations]
-                bodegas = [bodega for bodega in bodegas if bodega]
-                return bodegas
+    async def crear_bodegas(self, session: AsyncSession, locations: list[Location]):
+        bodegas = [await self.crear_bodega(session, location) for location in locations]
+        bodegas = [bodega for bodega in bodegas if bodega]
+        return bodegas
 
-    async def crear_elemento(self, product: Product) -> Elemento:
-        async for session in get_async_session():
-            async with session:
-                elemento_query = ElementoQuery()
-                elemento = await elemento_query.get_by_shopify_id(session, product.legacyResourceId)
-                if elemento is None:
-                    elemento_create = ElementoCreate(
-                        shopify_id=product.legacyResourceId,
-                        nombre=product.title,
-                        tipo_medida_id=1,
-                        grupo_id=3,
-                        fabricado=True,
-                    )
-                    elemento = await elemento_query.create(session, elemento_create)
+    async def crear_elemento(self, session, product: Product) -> Elemento:
+        elemento_query = ElementoQuery()
+        elemento = await elemento_query.get_by_shopify_id(session, product.legacyResourceId)
+        if elemento is None:
+            elemento_create = ElementoCreate(
+                shopify_id=product.legacyResourceId,
+                nombre=product.title,
+                tipo_medida_id=1,
+                grupo_id=3,
+                fabricado=True,
+            )
+            elemento = await elemento_query.create(session, elemento_create)
 
-            return elemento
-        raise
+        return elemento
 
-    async def crear_variante_elemento(self, variant: Variant, elemento_id: int) -> VarianteElemento:
-        async for session in get_async_session():
-            async with session:
-                variante_elemento_query = VarianteElementoQuery()
+    async def crear_variante_elemento(
+        self, session: AsyncSession, variant: Variant, elemento_id: int
+    ) -> VarianteElemento:
+        variante_elemento_query = VarianteElementoQuery()
 
-                variante = await variante_elemento_query.get_by_shopify_id(session, variant.legacyResourceId)
-                if variante is None:
-                    variante_create = VarianteElementoCreate(
-                        shopify_id=variant.legacyResourceId,
-                        nombre=variant.title,
-                        sku=variant.sku,
-                        elemento_id=elemento_id,
-                    )
-                    variante = await variante_elemento_query.create(session, variante_create)
+        variante = await variante_elemento_query.get_by_shopify_id(session, variant.legacyResourceId)
+        if variante is None:
+            variante_create = VarianteElementoCreate(
+                shopify_id=variant.legacyResourceId,
+                nombre=variant.title,
+                sku=variant.sku,
+                elemento_id=elemento_id,
+            )
+            variante = await variante_elemento_query.create(session, variante_create)
 
-            return variante
-        raise
+        return variante
 
     async def crear_precio_variante(self, price_variant: float, variante_elemento_id: int) -> PreciosPorVariante:
         async for session in get_async_session():
@@ -712,23 +710,26 @@ class ShopifyInventario:
         raise
 
     async def crear_movimiento_ajuste(
-        self, bodega_id: int, variante_id: int, cantidad: int, tipo_movimiento_id: int = 1, estado_variante_id: int = 1
+        self,
+        session: AsyncSession,
+        bodega_id: int,
+        variante_id: int,
+        cantidad: int,
+        tipo_movimiento_id: int = 1,
+        estado_variante_id: int = 1,
     ) -> Movimiento:
-        async for session in get_async_session():
-            async with session:
-                movimiento_query = MovimientoQuery()
+        movimiento_query = MovimientoQuery()
 
-                movimiento_create = MovimientoCreate(
-                    tipo_movimiento_id=tipo_movimiento_id,
-                    variante_id=variante_id,
-                    estado_variante_id=estado_variante_id,
-                    cantidad=cantidad,
-                    bodega_id=bodega_id,
-                )
-                movimiento = await movimiento_query.create(session, movimiento_create)
+        movimiento_create = MovimientoCreate(
+            tipo_movimiento_id=tipo_movimiento_id,
+            variante_id=variante_id,
+            estado_variante_id=estado_variante_id,
+            cantidad=cantidad,
+            bodega_id=bodega_id,
+        )
+        movimiento = await movimiento_query.create(session, movimiento_create)
 
-            return movimiento
-        raise
+        return movimiento
 
     def get_products_unique_locations(self, products: list[Product]) -> dict[int, Location]:
         return {
@@ -738,24 +739,93 @@ class ShopifyInventario:
             for level in variant.inventoryItem.inventoryLevels.nodes
         }
 
-    async def create_product_and_relations(self, product: Product):
-        elemento = await self.crear_elemento(product)
-        for variant in product.variants:
-            variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
-            await self.crear_precio_variante(variant.price, variante_elemento.id)
-            for level in variant.inventoryItem.inventoryLevels.nodes:
-                await self.crear_bodega(level.location)
+    async def crear_product_and_relations(self, product: Product):
+        async for session in get_async_session():
+            async with session:
+                elemento = await self.crear_elemento(session, product)
+                for variant in product.variants:
+                    variante_elemento = await self.crear_variante_elemento(
+                        session, variant=variant, elemento_id=elemento.id
+                    )
+                    await self.crear_precio_variante(variant.price, variante_elemento.id)
+                    for level in variant.inventoryItem.inventoryLevels.nodes:
+                        await self.crear_bodega(session, level.location)
 
-    async def create_product_relations_ajuste(self, product: Product, bodegas: list[Bodega]):
-        elemento = await self.crear_elemento(product)
-        for variant in product.variants:
-            variante_elemento = await self.crear_variante_elemento(variant=variant, elemento_id=elemento.id)
-            await self.crear_precio_variante(variant.price, variante_elemento.id)
-            for level in variant.inventoryItem.inventoryLevels.nodes:
-                bodega = next((bodega for bodega in bodegas if bodega.shopify_id == level.location.legacyResourceId))
-                cantidad = level.quantities[0].quantity
-                # TODO: Verificar si es necesario el ajuste, obtener antes el saldo actual.
-                await self.crear_movimiento_ajuste(bodega.id, variante_elemento.id, cantidad)
+    async def crear_product_relations_ajuste(self, product: Product, bodegas: list[Bodega]):
+        async for session in get_async_session():
+            async with session:
+                elemento = await self.crear_elemento(session, product)
+                for variant in product.variants:
+                    variante_elemento = await self.crear_variante_elemento(
+                        session, variant=variant, elemento_id=elemento.id
+                    )
+                    await self.crear_precio_variante(variant.price, variante_elemento.id)
+                    for level in variant.inventoryItem.inventoryLevels.nodes:
+                        bodega = next(
+                            (bodega for bodega in bodegas if bodega.shopify_id == level.location.legacyResourceId)
+                        )
+                        cantidad = level.quantities[0].quantity
+                        # TODO: Verificar si es necesario el ajuste, obtener antes el saldo actual.
+                        await self.crear_movimiento_ajuste(session, bodega.id, variante_elemento.id, cantidad)
+
+    async def crear_meta_atributo(self, session: AsyncSession, nombre: str):
+        meta_atributo_query = MetaAtributoQuery()
+        meta_atributo = await meta_atributo_query.get_by_nombre(session, nombre)
+        if meta_atributo is None:
+            meta_atributo_create = MetaAtributoCreate(nombre=nombre)
+            meta_atributo = await meta_atributo_query.create(session, meta_atributo_create)
+
+        return meta_atributo
+
+    async def crear_meta_valor(self, session: AsyncSession, valor: str):
+        meta_valor_query = MetaValorQuery()
+        meta_valor = await meta_valor_query.get_by_valor(session, valor)
+        if meta_valor is None:
+            meta_valor_create = MetaValorCreate(valor=valor)
+            meta_valor = await meta_valor_query.create(session, meta_valor_create)
+        return meta_valor
+
+    async def crear_metadato_orden(self, session: AsyncSession, atributo: str, valor: str, order_number: int):
+        tipo_soporte_query = TipoSoporteQuery()
+        metadatos_por_soporte_query = MetadatosPorSoporteQuery()
+
+        meta_atributo = await self.crear_meta_atributo(session, atributo)
+        meta_valor = await self.crear_meta_valor(session, valor)
+        tipo_soporte = await tipo_soporte_query.get_by_nombre(session, 'Pedido')
+
+        if tipo_soporte is None:
+            raise ValueError('No se encontró TipoSoporte con nombre Pedido')
+
+        metadato_create = MetadatosPorSoporteCreate(
+            tipo_soporte_id=tipo_soporte.id,
+            soporte_id=str(order_number),
+            meta_atributo_id=meta_atributo.id,
+            meta_valor_id=meta_valor.id,
+        )
+
+        metadato = await metadatos_por_soporte_query.get_by_ids(
+            session,
+            tipo_soporte_id=tipo_soporte.id,
+            soporte_id=str(order_number),
+            meta_atributo_id=meta_atributo.id,
+            meta_valor_id=meta_valor.id,
+        )
+
+        if metadato is None:
+            metadato = await metadatos_por_soporte_query.create(session, metadato_create)
+
+        return metadato
+
+    async def crear_metadatos_orden(self, orden: Order):
+        async for session in get_async_session():
+            async with session:
+                for tag in orden.tags:
+                    tag = tag.strip()
+                    if not tag:
+                        continue
+                    await self.crear_metadato_orden(session, 'tag', tag, orden.number)
+                if orden.app and orden.app.name:
+                    await self.crear_metadato_orden(session, 'app', orden.app.name, orden.number)
 
     async def sicnronizar_inventario(self, ajustar_existencias: bool = False):
         client = ShopifyGraphQLClient()
@@ -763,14 +833,16 @@ class ShopifyInventario:
 
         unique_locations = self.get_products_unique_locations(products)
         bodegas: list[Bodega] = []
-        for location in unique_locations.values():
-            bodega = await self.crear_bodega(location)
-            bodegas.append(bodega)
+        async for session in get_async_session():
+            async with session:
+                for location in unique_locations.values():
+                    bodega = await self.crear_bodega(session, location)
+                    bodegas.append(bodega)
 
         if ajustar_existencias:
-            await gather(*[self.create_product_relations_ajuste(product, bodegas) for product in products])
+            await gather(*[self.crear_product_relations_ajuste(product, bodegas) for product in products])
         else:
-            await gather(*[self.create_product_and_relations(product) for product in products])
+            await gather(*[self.crear_product_and_relations(product) for product in products])
         log_shopify.info('Inventario sincronizado')
 
     async def crear_movimientos_orden(self, orden: Order):
@@ -790,7 +862,7 @@ class ShopifyInventario:
                         shopify_client = ShopifyGraphQLClient()
                         product = await shopify_client.get_product_by_variant_id(item.variant.legacyResourceId)
                         await shopify_client.get_porduct_variant_inventory_levels(product)
-                        await self.create_product_and_relations(product)
+                        await self.crear_product_and_relations(product)
 
                     variante_elemento = await variante_elemento_query.get_by_shopify_id(
                         session, item.variant.legacyResourceId
@@ -812,7 +884,11 @@ class ShopifyInventario:
 
                     if movimiento is None:
                         tipo_movimiento = await tipo_movimiento_query.get_by_nombre(session, 'Salida')
+                        if tipo_movimiento is None:
+                            raise ValueError('No se encontró TipoMovimiento con nombre Salida')
                         estado_variante = await estado_variante_query.get_by_nombre(session, 'Descontado')
+                        if estado_variante is None:
+                            raise ValueError('No se encontró EstadoVariante con nombre Descontado')
                         bodega = None
                         if len(orden.fulfillments) > 0:
                             location_id = orden.fulfillments[0].location.legacyResourceId
@@ -856,34 +932,8 @@ class ShopifyInventario:
             log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {min(range_end, end)}')
             current_start = range_end + timedelta(days=1)
 
-    # async def temp_crear_metadatos_orden(self, orden: Order):
-    #     movimiento_query = MovimientoQuery()
-    #     movimiento_meta_atributo_query = MovimientoMetaAtributoQuery()
-    #     movimiento_meta_valor_query = MovimientoMetaValorQuery()
-    #     async for session in get_async_session():
-    #         async with session:
-    #             movimientos_orden = await movimiento_query.get_by_soporte_id(
-    #                 session,
-    #                 tipo_soporte_id=2,
-    #                 soporte_id=str(orden.number),
-    #             )
-    #             order_number = movimientos_orden
-    #             if movimiento is None:
-    #                 return
-                
-    #             movimiento_meta_atributo_create = MovimientoMetaAtributoCreate(
-    #                 movimiento_id=movimiento.id,
-    #                 atributo='tags'
-    #             )
-
-    #             meta_atributo = await movimiento_meta_atributo_query.create(
-    #                 session,
-    #             )
-
-
-
-    async def temp_get_metadata_orders_by_range(
-        self, start: date, end: date, step_days: int = 5, batch_size: int = 20
+    async def temp_crear_metadata_orders_by_range(
+        self, session: AsyncSession, start: date, end: date, step_days: int = 5, batch_size: int = 20
     ):
         shopify_client = ShopifyGraphQLClient()
         # Realizar sincronización por rangos de fechas de acuerdo a step_days
@@ -891,13 +941,28 @@ class ShopifyInventario:
         while current_start <= end:
             range_end = current_start + timedelta(days=step_days - 1)
             orders = await shopify_client.get_orders_by_range(current_start, min(range_end, end))
+
+            # crear valores y atributos antes de usar gather para evitar duplicados por concurrencia
+            unique_tags = {tag.strip() for orden in orders for tag in orden.tags if tag.strip()}
+            unique_apps = {
+                orden.app.name.strip() for orden in orders if orden.app and orden.app.name and orden.app.name.strip()
+            }
+
+            for tag in unique_tags:
+                await self.crear_meta_atributo(session, 'tag')
+                await self.crear_meta_valor(session, tag)
+
+            for app in unique_apps:
+                await self.crear_meta_atributo(session, 'app')
+                await self.crear_meta_valor(session, app)
+
             for i in range(0, len(orders), batch_size):
                 batch = orders[i : i + batch_size]
-                await gather(*[self.crear_movimientos_orden(orden) for orden in batch])
+                await gather(*[self.crear_metadatos_orden(orden) for orden in batch])
 
-            log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {min(range_end, end)}')
+            log_shopify.info(msg=f'Metadatos creados desde {current_start} hasta {min(range_end, end)}')
             current_start = range_end + timedelta(days=1)
-        
+
 
 if __name__ == '__main__':
     pass
@@ -929,6 +994,12 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sicnronizar_inventario()
 
-        await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 15), 5)
+        # await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 15), 5)
+
+        async for session in get_async_session():
+            async with session:
+                await ShopifyInventario().temp_crear_metadata_orders_by_range(
+                    session, date(2025, 1, 1), date(2025, 1, 15)
+                )
 
     run(main())

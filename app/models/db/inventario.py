@@ -1,7 +1,7 @@
 # app/models/inventario.py
 from datetime import datetime, date
 from enum import Enum
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 from sqlmodel import SQLModel, Field, Relationship, SMALLINT, DATE, TEXT, BIGINT, TIMESTAMP
 
 if __name__ == '__main__':
@@ -15,6 +15,13 @@ from app.internal.gen.utilities import DateTz
 
 class InventarioBase(SQLModel):
     __table_args__ = {'schema': 'inventario'}
+
+
+class InventarioLower(InventarioBase):
+    @model_validator(mode='before')
+    @classmethod
+    def lower_case_all_strings(cls, data):
+        return {k: (v.lower() if isinstance(v, str) else v) for k, v in data.items()}
 
 
 class BodegaCreate(InventarioBase):
@@ -155,6 +162,7 @@ class TipoSoporte(TipoSoporteCreate, table=True):
 
     # Relationships
     movimientos: list['Movimiento'] = Relationship(back_populates='tipo_soporte')
+    metadatos: list['MetadatosPorSoporte'] = Relationship(back_populates='tipo_soporte')
 
 
 class MovimientoCreate(InventarioBase):
@@ -165,7 +173,7 @@ class MovimientoCreate(InventarioBase):
     cantidad: int = Field(default=0)
     valor: float = Field(default=0.0)
     bodega_id: int = Field(foreign_key='inventario.bodegas.id', default=None, nullable=True)
-    soporte_id: str | None = Field(sa_type=TEXT, default=None)
+    soporte_id: str | None = Field(max_length=50, default=None)
     nota: str | None = Field(sa_type=TEXT, default=None)
     fecha: datetime = Field(sa_type=TIMESTAMP(timezone=True), default_factory=DateTz.local)  # type: ignore
 
@@ -181,29 +189,35 @@ class Movimiento(MovimientoCreate, table=True):
     bodega: 'Bodega' = Relationship(back_populates='movimientos')
     tipo_movimiento: 'TipoMovimiento' = Relationship(back_populates='movimientos')
     tipo_soporte: 'TipoSoporte' = Relationship(back_populates='movimientos')
-    meta_atributos: list['MovimientoPorMetaAtributo'] = Relationship(back_populates='movimiento')
+    metadatos: list['MetadatosPorSoporte'] = Relationship(
+        sa_relationship_kwargs={
+            'primaryjoin': 'and_(Movimiento.tipo_soporte_id==foreign(MetadatosPorSoporte.tipo_soporte_id), Movimiento.soporte_id==foreign(MetadatosPorSoporte.soporte_id))',
+            'viewonly': True,
+        }
+    )
 
 
 # region metadatos
-# Modelo EAV (Entity-Attribute-Value) para metadatos de movimientos
-class MovimientoPorMetaAtributoCreate(InventarioBase):
-    movimiento_id: int = Field(foreign_key='inventario.movimientos.id', default=None, nullable=True)
+# Modelo EAV (Entity-Attribute-Value) para soportes de movimientos
+class MetadatosPorSoporteCreate(InventarioBase):
+    tipo_soporte_id: int = Field(foreign_key='inventario.tipos_soporte.id', default=None, nullable=True)
+    soporte_id: str = Field(max_length=50)
     meta_atributo_id: int = Field(foreign_key='inventario.meta_atributos.id', default=None, nullable=True)
     meta_valor_id: int = Field(foreign_key='inventario.meta_valores.id', default=None, nullable=True)
 
 
-class MovimientoPorMetaAtributo(MovimientoPorMetaAtributoCreate, table=True):
-    __tablename__ = 'movimiento_meta_atributo'  # type: ignore
+class MetadatosPorSoporte(MetadatosPorSoporteCreate, table=True):
+    __tablename__ = 'metadatos_por_soporte'  # type: ignore
 
     id: int = Field(primary_key=True)
 
     # Relationships
-    movimiento: 'Movimiento' = Relationship(back_populates='meta_atributos')
-    meta_atributo: 'MetaAtributo' = Relationship(back_populates='movimientos')
-    meta_valor: 'MetaValor' = Relationship(back_populates='movimientos')
+    tipo_soporte: 'TipoSoporte' = Relationship(back_populates='metadatos')
+    meta_atributo: 'MetaAtributo' = Relationship(back_populates='soportes')
+    meta_valor: 'MetaValor' = Relationship(back_populates='soportes')
 
 
-class MetaAtributoCreate(InventarioBase):
+class MetaAtributoCreate(InventarioLower):
     nombre: str = Field(max_length=120)
 
 
@@ -213,10 +227,10 @@ class MetaAtributo(MetaAtributoCreate, table=True):
     id: int = Field(primary_key=True)
 
     # Relationships
-    movimientos: 'MovimientoPorMetaAtributo' = Relationship(back_populates='meta_atributo')
+    soportes: 'MetadatosPorSoporte' = Relationship(back_populates='meta_atributo')
 
 
-class MetaValorCreate(InventarioBase):
+class MetaValorCreate(InventarioLower):
     valor: str = Field(max_length=120)
 
 
@@ -226,7 +240,7 @@ class MetaValor(MetaValorCreate, table=True):
     id: int = Field(primary_key=True)
 
     # Relationships
-    movimientos: 'MovimientoPorMetaAtributo' = Relationship(back_populates='meta_valor')
+    soportes: 'MetadatosPorSoporte' = Relationship(back_populates='meta_valor')
 
 
 # endregion metadatos

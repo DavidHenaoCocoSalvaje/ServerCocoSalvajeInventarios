@@ -27,10 +27,12 @@ from app.models.db.inventario import (
     MedidasPorVarianteCreate,
     MetaAtributo,
     MetaAtributoCreate,
+    MetaValor,
+    MetaValorCreate,
     Movimiento,
     MovimientoCreate,
-    MovimientoPorMetaAtributo,
-    MovimientoPorMetaAtributoCreate,
+    MetadatosPorSoporte,
+    MetadatosPorSoporteCreate,
     PreciosPorVariante,
     PreciosPorVarianteCreate,
     TipoMovimiento,
@@ -68,13 +70,10 @@ class BaseQeuryNombre(BaseQuery[ModelDB, ModelCreate]):
     def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]):
         super().__init__(model_db, model_create)
 
-    async def get_by_nombre(self, session: AsyncSession, nombre: str) -> ModelDB:
+    async def get_by_nombre(self, session: AsyncSession, nombre: str) -> ModelDB | None:
         statement = select(self.model_db).where(func.lower(self.model_db.nombre) == nombre.lower())  # type: ignore
         result = await session.execute(statement)
-        obj = result.scalar_one_or_none()
-        if obj is None:
-            raise ValueError(f"{self.model_db.__name__} con '{nombre}' no encontrado")
-        return obj
+        return result.scalar_one_or_none()
 
 
 class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCreate]):
@@ -153,14 +152,37 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         return list(result.scalars().all()) or []
 
 
-class MovimientoPorMetaAtributoQuery(BaseQuery[MovimientoPorMetaAtributo, MovimientoPorMetaAtributoCreate]):
+class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoporteCreate]):
     def __init__(self) -> None:
-        super().__init__(MovimientoPorMetaAtributo, MovimientoPorMetaAtributoCreate)
+        super().__init__(MetadatosPorSoporte, MetadatosPorSoporteCreate)
+    
+    async def get_by_ids(
+        self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str, meta_atributo_id: int, meta_valor_id: int
+    ) -> MetadatosPorSoporte | None:
+        statement = (
+            select(self.model_db)
+            .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+            .where(self.model_db.soporte_id == soporte_id)
+            .where(self.model_db.meta_atributo_id == meta_atributo_id)
+            .where(self.model_db.meta_valor_id == meta_valor_id)
+        )
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
 
 
 class MetaAtributoQuery(BaseQeuryNombre[MetaAtributo, MetaAtributoCreate]):
     def __init__(self) -> None:
         super().__init__(MetaAtributo, MetaAtributoCreate)
+
+
+class MetaValorQuery(BaseQuery[MetaValor, MetaValorCreate]):
+    def __init__(self) -> None:
+        super().__init__(MetaValor, MetaValorCreate)
+
+    async def get_by_valor(self, session: AsyncSession, valor: str) -> MetaValor | None:
+        statement = select(self.model_db).where(self.model_db.valor == valor)
+        result = await session.execute(statement)
+        return result.scalar_one_or_none()
 
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
