@@ -138,7 +138,7 @@ class TipoMovimientoCreate(InventarioBase):
 class TipoMovimiento(TipoMovimientoCreate, table=True):
     __tablename__ = 'tipos_movimiento'  # type: ignore
 
-    id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
+    id: int = Field(primary_key=True, sa_type=SMALLINT, default=None)
 
     # Relationships
     movimientos: list['Movimiento'] = Relationship(back_populates='tipo_movimiento')
@@ -151,7 +151,7 @@ class TipoSoporteCreate(InventarioBase):
 class TipoSoporte(TipoSoporteCreate, table=True):
     __tablename__ = 'tipos_soporte'  # type: ignore
 
-    id: int | None = Field(primary_key=True, sa_type=SMALLINT, default=None)
+    id: int = Field(primary_key=True, sa_type=SMALLINT, default=None)
 
     # Relationships
     movimientos: list['Movimiento'] = Relationship(back_populates='tipo_soporte')
@@ -181,6 +181,55 @@ class Movimiento(MovimientoCreate, table=True):
     bodega: 'Bodega' = Relationship(back_populates='movimientos')
     tipo_movimiento: 'TipoMovimiento' = Relationship(back_populates='movimientos')
     tipo_soporte: 'TipoSoporte' = Relationship(back_populates='movimientos')
+    meta_atributos: list['MovimientoPorMetaAtributo'] = Relationship(back_populates='movimiento')
+
+
+# region metadatos
+# Modelo EAV (Entity-Attribute-Value) para metadatos de movimientos
+class MovimientoPorMetaAtributoCreate(InventarioBase):
+    movimiento_id: int = Field(foreign_key='inventario.movimientos.id', default=None, nullable=True)
+    meta_atributo_id: int = Field(foreign_key='inventario.meta_atributos.id', default=None, nullable=True)
+    meta_valor_id: int = Field(foreign_key='inventario.meta_valores.id', default=None, nullable=True)
+
+
+class MovimientoPorMetaAtributo(MovimientoPorMetaAtributoCreate, table=True):
+    __tablename__ = 'movimiento_meta_atributo'  # type: ignore
+
+    id: int = Field(primary_key=True)
+
+    # Relationships
+    movimiento: 'Movimiento' = Relationship(back_populates='meta_atributos')
+    meta_atributo: 'MetaAtributo' = Relationship(back_populates='movimientos')
+    meta_valor: 'MetaValor' = Relationship(back_populates='movimientos')
+
+
+class MetaAtributoCreate(InventarioBase):
+    nombre: str = Field(max_length=120)
+
+
+class MetaAtributo(MetaAtributoCreate, table=True):
+    __tablename__ = 'meta_atributos'  # type: ignore
+
+    id: int = Field(primary_key=True)
+
+    # Relationships
+    movimientos: 'MovimientoPorMetaAtributo' = Relationship(back_populates='meta_atributo')
+
+
+class MetaValorCreate(InventarioBase):
+    valor: str = Field(max_length=120)
+
+
+class MetaValor(MetaValorCreate, table=True):
+    __tablename__ = 'meta_valores'  # type: ignore
+
+    id: int = Field(primary_key=True)
+
+    # Relationships
+    movimientos: 'MovimientoPorMetaAtributo' = Relationship(back_populates='meta_valor')
+
+
+# endregion metadatos
 
 
 class EstadoVarianteCreate(InventarioBase):

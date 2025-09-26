@@ -25,8 +25,12 @@ from app.models.db.inventario import (
     MedidaCreate,
     MedidasPorVariante,
     MedidasPorVarianteCreate,
+    MetaAtributo,
+    MetaAtributoCreate,
     Movimiento,
     MovimientoCreate,
+    MovimientoPorMetaAtributo,
+    MovimientoPorMetaAtributoCreate,
     PreciosPorVariante,
     PreciosPorVarianteCreate,
     TipoMovimiento,
@@ -60,7 +64,7 @@ class BaseQueryWithShopifyId(BaseQuery[ModelDB, ModelCreate]):
         return list(result.scalars().all()) or []
 
 
-class BaseQeuryTipo(BaseQuery[ModelDB, ModelCreate]):
+class BaseQeuryNombre(BaseQuery[ModelDB, ModelCreate]):
     def __init__(self, model_db: type[ModelDB], model_create: type[ModelCreate]):
         super().__init__(model_db, model_create)
 
@@ -139,6 +143,25 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
+    async def get_by_soporte_id(self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str) -> list[Movimiento]:
+        statement = (
+            select(self.model_db)
+            .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+            .where(self.model_db.soporte_id == soporte_id)
+        )
+        result = await session.execute(statement)
+        return list(result.scalars().all()) or []
+
+
+class MovimientoPorMetaAtributoQuery(BaseQuery[MovimientoPorMetaAtributo, MovimientoPorMetaAtributoCreate]):
+    def __init__(self) -> None:
+        super().__init__(MovimientoPorMetaAtributo, MovimientoPorMetaAtributoCreate)
+
+
+class MetaAtributoQuery(BaseQeuryNombre[MetaAtributo, MetaAtributoCreate]):
+    def __init__(self) -> None:
+        super().__init__(MetaAtributo, MetaAtributoCreate)
+
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
     def __init__(self) -> None:
@@ -187,7 +210,7 @@ class TiposMedidaQuery(BaseQuery[TiposMedida, TiposMedidaCreate]):
         super().__init__(TiposMedida, TiposMedidaCreate)
 
 
-class TipoSoporteQuery(BaseQeuryTipo[TipoSoporte, TipoSoporteCreate]):
+class TipoSoporteQuery(BaseQeuryNombre[TipoSoporte, TipoSoporteCreate]):
     def __init__(self) -> None:
         super().__init__(TipoSoporte, TipoSoporteCreate)
 
@@ -197,12 +220,12 @@ class MedidasPorVarianteQuery(BaseQuery[MedidasPorVariante, MedidasPorVarianteCr
         super().__init__(MedidasPorVariante, MedidasPorVarianteCreate)
 
 
-class TipoMovimientoQuery(BaseQeuryTipo[TipoMovimiento, TipoMovimientoCreate]):
+class TipoMovimientoQuery(BaseQeuryNombre[TipoMovimiento, TipoMovimientoCreate]):
     def __init__(self) -> None:
         super().__init__(TipoMovimiento, TipoMovimientoCreate)
 
 
-class EstadoVarianteQuery(BaseQeuryTipo[EstadoVariante, EstadoVarianteCreate]):
+class EstadoVarianteQuery(BaseQeuryNombre[EstadoVariante, EstadoVarianteCreate]):
     def __init__(self) -> None:
         super().__init__(EstadoVariante, EstadoVarianteCreate)
 

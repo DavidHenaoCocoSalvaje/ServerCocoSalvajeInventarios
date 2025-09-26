@@ -411,6 +411,36 @@ class ShopifyGraphQLClient(BaseClient):
 
         return orders_response.data.orders.nodes
 
+    async def temp_get_orders_by_range(self, start: date, end: date, num_items: int = 20) -> list[Order]:
+        start_str = DateTz.local(datetime(start.year, start.month, start.day)).utc.to_isostring
+        end_str = DateTz.local(datetime(end.year, end.month, end.day)).utc.to_isostring
+        query = """
+            query GetOrderByRange($num_items: Int!, $search_query: String!, $cursor: String) {
+                orders(first: $num_items, query: $search_query, after: $cursor) {
+                    nodes {
+                        id
+                        number
+                        tags
+                        app {
+                            name
+                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        """
+        # "search_query": "tofinancial_status:paid created_at:>=2025-08-01 and created_at:>=2025-08-31",
+        variables = self.Variables(
+            num_items=num_items, search_query=f'financial_status:paid created_at:>={start_str} created_at:<={end_str}'
+        ).model_dump(exclude_none=True)
+        orders_json = await self._get_all(query, ['data', 'orders'], variables)
+        orders_response = OrdersResponse(**orders_json)
+
+        return orders_response.data.orders.nodes
+
     async def get_order(self, order_gid: str) -> OrderResponse:
         query = """
         query GetOrder($gid: ID!) {
@@ -768,16 +798,20 @@ class ShopifyInventario:
                     if variante_elemento is None:
                         raise ValueError(f'No se encontró VarianteElemento con id {item.variant.legacyResourceId}')
 
+                    name_tipo_soporte = 'Pedido'
+                    tipo_soporte = await tipo_soporte_query.get_by_nombre(session, name_tipo_soporte)
+                    if tipo_soporte is None:
+                        raise ValueError(f'No se encontró TipoSoporte con nombre {name_tipo_soporte}')
+
                     movimiento = await movimiento_query.get_by_soporte_variante_id(
                         session,
-                        tipo_soporte_id=1,
+                        tipo_soporte_id=tipo_soporte.id,
                         soporte_id=str(orden.number),
                         variante_elemento_id=variante_elemento.id,
                     )
 
                     if movimiento is None:
                         tipo_movimiento = await tipo_movimiento_query.get_by_nombre(session, 'Salida')
-                        tipo_soporte = await tipo_soporte_query.get_by_nombre(session, 'Pedido')
                         estado_variante = await estado_variante_query.get_by_nombre(session, 'Descontado')
                         bodega = None
                         if len(orden.fulfillments) > 0:
@@ -797,7 +831,7 @@ class ShopifyInventario:
                             variante_id=variante_elemento.id,
                             estado_variante_id=estado_variante.id,
                             cantidad=item.quantity,
-                            valor=item.discounted_unit_price
+                            valor=item.discounted_unit_price,
                             bodega_id=bodega.id,
                             fecha=orden.createdAt,
                         )
@@ -819,9 +853,51 @@ class ShopifyInventario:
                 batch = orders[i : i + batch_size]
                 await gather(*[self.crear_movimientos_orden(orden) for orden in batch])
 
-            log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {range_end}')
+            log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {min(range_end, end)}')
             current_start = range_end + timedelta(days=1)
 
+    # async def temp_crear_metadatos_orden(self, orden: Order):
+    #     movimiento_query = MovimientoQuery()
+    #     movimiento_meta_atributo_query = MovimientoMetaAtributoQuery()
+    #     movimiento_meta_valor_query = MovimientoMetaValorQuery()
+    #     async for session in get_async_session():
+    #         async with session:
+    #             movimientos_orden = await movimiento_query.get_by_soporte_id(
+    #                 session,
+    #                 tipo_soporte_id=2,
+    #                 soporte_id=str(orden.number),
+    #             )
+    #             order_number = movimientos_orden
+    #             if movimiento is None:
+    #                 return
+                
+    #             movimiento_meta_atributo_create = MovimientoMetaAtributoCreate(
+    #                 movimiento_id=movimiento.id,
+    #                 atributo='tags'
+    #             )
+
+    #             meta_atributo = await movimiento_meta_atributo_query.create(
+    #                 session,
+    #             )
+
+
+
+    async def temp_get_metadata_orders_by_range(
+        self, start: date, end: date, step_days: int = 5, batch_size: int = 20
+    ):
+        shopify_client = ShopifyGraphQLClient()
+        # Realizar sincronización por rangos de fechas de acuerdo a step_days
+        current_start = start
+        while current_start <= end:
+            range_end = current_start + timedelta(days=step_days - 1)
+            orders = await shopify_client.get_orders_by_range(current_start, min(range_end, end))
+            for i in range(0, len(orders), batch_size):
+                batch = orders[i : i + batch_size]
+                await gather(*[self.crear_movimientos_orden(orden) for orden in batch])
+
+            log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {min(range_end, end)}')
+            current_start = range_end + timedelta(days=1)
+        
 
 if __name__ == '__main__':
     pass

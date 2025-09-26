@@ -27,8 +27,7 @@ url = URL.create(
     database=config.db_name,
 )
 
-async_engine = create_async_engine(url, pool_size=20)
-
+async_engine = create_async_engine(url, pool_size=25)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=async_engine,
