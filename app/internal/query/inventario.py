@@ -180,7 +180,7 @@ class MetaValorQuery(BaseQuery[MetaValor, MetaValorCreate]):
         super().__init__(MetaValor, MetaValorCreate)
 
     async def get_by_valor(self, session: AsyncSession, valor: str) -> MetaValor | None:
-        statement = select(self.model_db).where(self.model_db.valor == valor)
+        statement = select(self.model_db).where(self.model_db.valor == valor.strip().lower())
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 

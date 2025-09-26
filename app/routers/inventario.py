@@ -155,5 +155,18 @@ class RequestBodyDateRange(Base):
     dependencies=[Depends(validar_access_token)],
 )
 async def sync_movimientos_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
-    background_tasks.add_task(ShopifyInventario().sincronizar_movimientos_ordenes_by_range, date_range.start, date_range.end)
+    background_tasks.add_task(
+        ShopifyInventario().sincronizar_movimientos_ordenes_by_range, date_range.start, date_range.end
+    )
+    return True
+
+
+@shopify_router.post(
+    '/sync-metadata-ordenes-by-range',
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    dependencies=[Depends(validar_access_token)],
+)
+async def sync_metadata_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
+    background_tasks.add_task(ShopifyInventario().temp_crear_metadata_orders_by_range, date_range.start, date_range.end)
     return True

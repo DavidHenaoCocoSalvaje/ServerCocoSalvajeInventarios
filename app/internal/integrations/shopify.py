@@ -796,13 +796,6 @@ class ShopifyInventario:
         if tipo_soporte is None:
             raise ValueError('No se encontró TipoSoporte con nombre Pedido')
 
-        metadato_create = MetadatosPorSoporteCreate(
-            tipo_soporte_id=tipo_soporte.id,
-            soporte_id=str(order_number),
-            meta_atributo_id=meta_atributo.id,
-            meta_valor_id=meta_valor.id,
-        )
-
         metadato = await metadatos_por_soporte_query.get_by_ids(
             session,
             tipo_soporte_id=tipo_soporte.id,
@@ -812,6 +805,12 @@ class ShopifyInventario:
         )
 
         if metadato is None:
+            metadato_create = MetadatosPorSoporteCreate(
+                tipo_soporte_id=tipo_soporte.id,
+                soporte_id=str(order_number),
+                meta_atributo_id=meta_atributo.id,
+                meta_valor_id=meta_valor.id,
+            )
             metadato = await metadatos_por_soporte_query.create(session, metadato_create)
 
         return metadato
@@ -933,35 +932,39 @@ class ShopifyInventario:
             current_start = range_end + timedelta(days=1)
 
     async def temp_crear_metadata_orders_by_range(
-        self, session: AsyncSession, start: date, end: date, step_days: int = 5, batch_size: int = 20
+        self, start: date, end: date, step_days: int = 5, batch_size: int = 20
     ):
         shopify_client = ShopifyGraphQLClient()
         # Realizar sincronización por rangos de fechas de acuerdo a step_days
         current_start = start
-        while current_start <= end:
-            range_end = current_start + timedelta(days=step_days - 1)
-            orders = await shopify_client.get_orders_by_range(current_start, min(range_end, end))
+        async for session in get_async_session():
+            async with session:
+                while current_start <= end:
+                    range_end = current_start + timedelta(days=step_days - 1)
+                    orders = await shopify_client.get_orders_by_range(current_start, min(range_end, end))
 
-            # crear valores y atributos antes de usar gather para evitar duplicados por concurrencia
-            unique_tags = {tag.strip() for orden in orders for tag in orden.tags if tag.strip()}
-            unique_apps = {
-                orden.app.name.strip() for orden in orders if orden.app and orden.app.name and orden.app.name.strip()
-            }
+                    # crear valores y atributos antes de usar gather para evitar duplicados por concurrencia
+                    unique_tags = {tag.strip() for orden in orders for tag in orden.tags if tag.strip()}
+                    unique_apps = {
+                        orden.app.name.strip()
+                        for orden in orders
+                        if orden.app and orden.app.name and orden.app.name.strip()
+                    }
 
-            for tag in unique_tags:
-                await self.crear_meta_atributo(session, 'tag')
-                await self.crear_meta_valor(session, tag)
+                    for tag in unique_tags:
+                        await self.crear_meta_atributo(session, 'tag')
+                        await self.crear_meta_valor(session, tag)
 
-            for app in unique_apps:
-                await self.crear_meta_atributo(session, 'app')
-                await self.crear_meta_valor(session, app)
+                    for app in unique_apps:
+                        await self.crear_meta_atributo(session, 'app')
+                        await self.crear_meta_valor(session, app)
 
-            for i in range(0, len(orders), batch_size):
-                batch = orders[i : i + batch_size]
-                await gather(*[self.crear_metadatos_orden(orden) for orden in batch])
+                    for i in range(0, len(orders), batch_size):
+                        batch = orders[i : i + batch_size]
+                        await gather(*[self.crear_metadatos_orden(orden) for orden in batch])
 
-            log_shopify.info(msg=f'Metadatos creados desde {current_start} hasta {min(range_end, end)}')
-            current_start = range_end + timedelta(days=1)
+                    log_shopify.info(msg=f'Metadatos creados desde {current_start} hasta {min(range_end, end)}')
+                    current_start = range_end + timedelta(days=1)
 
 
 if __name__ == '__main__':
@@ -996,10 +999,6 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 15), 5)
 
-        async for session in get_async_session():
-            async with session:
-                await ShopifyInventario().temp_crear_metadata_orders_by_range(
-                    session, date(2025, 1, 1), date(2025, 1, 15)
-                )
+        await ShopifyInventario().temp_crear_metadata_orders_by_range(date(2025, 1, 1), date(2025, 1, 15))
 
     run(main())
