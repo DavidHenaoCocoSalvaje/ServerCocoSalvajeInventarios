@@ -36,6 +36,7 @@ class CRUD:
         # POST - Crear un nuevo recurso
         @router.post(
             f'/{name}',
+            operation_id=f'create_{name}',
             response_model=model_db,
             status_code=status.HTTP_201_CREATED,
             summary=f'Crear un nuevo {name.replace("_", " ")}',
@@ -51,6 +52,7 @@ class CRUD:
         # GET - Obtener lista de recursos
         @router.get(
             f'/{pluralizar_por_sep(name, "_", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
+            operation_id=f'get_{pluralizar_por_sep(name, "_", 1)}',
             response_model=list[model_db],
             summary=f'Obtener lista de {name.replace("_", " ")}s',
             description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "_", 1).replace("_", " ")}.',
@@ -67,6 +69,7 @@ class CRUD:
         # GET - Obtener un recurso por ID
         @router.get(
             f'/{name}/{{{name}_id}}',
+            operation_id=f'get_{name}_by_id',
             response_model=model_db,
             summary=f'Obtener un {name.replace("_", " ")} por ID',
             description=f'Obtiene los detalles de un {name.replace("_", " ")} específico mediante su ID.',
@@ -87,6 +90,7 @@ class CRUD:
         # PUT - Actualizar un recurso
         @router.put(
             f'/{name}/{{{name}_id}}',
+            operation_id=f'update_{name}',
             response_model=model_db,
             summary=f'Actualizar un {name.replace("_", " ")}',
         )
@@ -108,6 +112,7 @@ class CRUD:
         # DELETE - Eliminar un recurso
         @router.delete(
             f'/{name}/{{{name}_id}}',
+            operation_id=f'delete_{name}',
             response_model=model_db,
             summary=f'Eliminar un {name.replace("_", " ")}',
         )
