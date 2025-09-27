@@ -1,7 +1,10 @@
 # app/internal/query/base.py
+from datetime import date
+from enum import Enum
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import SQLModel, select
-from typing import Generic, Literal, TypeVar
+from typing import Generic, TypeVar
 
 from app.internal.log import factory_logger
 
@@ -10,6 +13,16 @@ ModelCreate = TypeVar('ModelCreate', bound=SQLModel)
 
 
 log_base_query = factory_logger('base_query', file=True)
+
+
+class Sort(str, Enum):
+    asc = 'asc'
+    desc = 'desc'
+
+
+class DateRange(BaseModel):
+    start_date: date
+    end_date: date
 
 
 class BaseQuery(Generic[ModelDB, ModelCreate]):
@@ -23,17 +36,19 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         return result
 
     async def get_list(
-        self, session: AsyncSession, skip: int = 0, limit: int = 100, order: Literal['asc', 'desc'] = 'desc'
+        self, session: AsyncSession, skip: int = 0, limit: int = 100, sort: Sort = Sort.desc
     ) -> list[ModelDB]:
         """Obtiene una lista de objetos de forma asíncrona."""
-        order_id = self.model_db.id.asc() if order == 'asc' else self.model_db.id.desc()  # type: ignore
+        order_id = self.model_db.id.asc() if sort == 'asc' else self.model_db.id.desc()  # type: ignore
         stmt = select(self.model_db).offset(skip).limit(limit).order_by(order_id)
         result = await session.execute(stmt)
         return list(result.scalars().all()) or []
 
     async def create(self, session: AsyncSession, obj: ModelCreate) -> ModelDB:
         """Crea un nuevo objeto de forma asíncrona."""
-        create_model = self.model_create(**obj.model_dump(mode='json'))  # Se garantiza que el objeto sea del tipo correcto
+        create_model = self.model_create(
+            **obj.model_dump(mode='json')
+        )  # Se garantiza que el objeto sea del tipo correcto
         db_model = self.model_db(**create_model.model_dump(mode='json'))  # Modelo de retorno
         session.add(db_model)
         await session.commit()

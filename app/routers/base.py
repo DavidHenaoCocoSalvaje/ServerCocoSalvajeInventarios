@@ -1,10 +1,10 @@
 # app/routers/base.py
-from typing import Annotated, Literal, TypeVar
+from typing import Annotated, TypeVar
 from fastapi import APIRouter, HTTPException, status
 from sqlmodel import SQLModel
 
 from app.internal.gen.utilities import pluralizar_por_sep
-from app.internal.query.base import BaseQuery
+from app.internal.query.base import BaseQuery, Sort
 from app.models.db.session import AsyncSessionDep
 
 
@@ -61,10 +61,10 @@ class CRUD:
             session: AsyncSessionDep,
             skip: int = 0,
             limit: int = 100,
-            order: Literal['asc', 'desc'] = 'desc',
+            sort: Sort = Sort.desc,
         ) -> list[ModelDB]:
             """Obtiene una lista de recursos."""
-            return await model_query.get_list(session=session, skip=skip, limit=limit, order=order)
+            return await model_query.get_list(session=session, skip=skip, limit=limit, sort=sort)
 
         # GET - Obtener un recurso por ID
         @router.get(

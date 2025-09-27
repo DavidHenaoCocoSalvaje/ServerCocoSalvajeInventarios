@@ -48,7 +48,7 @@ app.include_router(usuario.router)
 app.include_router(auth.router)
 # Incluye el router de elementos de inventario y shopify
 app.include_router(inventario.router)
-app.include_router(inventario.shopify_router)
+app.include_router(inventario.shopify_inventario_router)
 app.include_router(transacciones.router)
 
 

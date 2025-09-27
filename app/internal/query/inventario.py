@@ -1,7 +1,8 @@
 # app/internal/query/inventario.py
+from datetime import date, timedelta
 import json
 from os import path
-from sqlmodel import SQLModel, select, desc, func
+from sqlmodel import SQLModel, select, asc, desc, func, between
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -33,6 +34,7 @@ from app.models.db.inventario import (
     MovimientoCreate,
     MetadatosPorSoporte,
     MetadatosPorSoporteCreate,
+    MovimientoRead,
     PreciosPorVariante,
     PreciosPorVarianteCreate,
     TipoMovimiento,
@@ -46,7 +48,7 @@ from app.models.db.inventario import (
     VarianteElemento,
     VarianteElementoCreate,
 )
-from app.internal.query.base import BaseQuery, ModelCreate, ModelDB
+from app.internal.query.base import BaseQuery, ModelCreate, ModelDB, Sort
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.db.session import get_async_session
 
@@ -151,12 +153,30 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
 
+    async def get_with_relations(
+        self,
+        session: AsyncSession,
+        skip: int = 0,
+        limit: int = 100,
+        sort: Sort = Sort.desc,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> list[MovimientoRead]:
+        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
+        stmt = select(self.model_db)
+        if start_date and end_date and end_date >= start_date:
+            stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
+        stmt = stmt.offset(skip).limit(limit).order_by(sort_fecha)
+        result = await session.execute(stmt)
+        result = [MovimientoRead.model_validate(movimiento) for movimiento in result.scalars().all()]
+        return result or []
+
 
 class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoporteCreate]):
     def __init__(self) -> None:
         super().__init__(MetadatosPorSoporte, MetadatosPorSoporteCreate)
-    
-    async def get_by_ids(
+
+    async def get_by(
         self, session: AsyncSession, tipo_soporte_id: int, soporte_id: str, meta_atributo_id: int, meta_valor_id: int
     ) -> MetadatosPorSoporte | None:
         statement = (
@@ -284,12 +304,29 @@ async def seed_data_inventario():
 
 if __name__ == '__main__':
     import asyncio
+    # import logging
+
+    # logging.basicConfig()
+    # logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
     async def main():
         async for session in get_async_session():
             async with session:
-                await seed_data_inventario()
+                # await seed_data_inventario()
                 movimiento_query = MovimientoQuery()
-                await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
+                # await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
+
+                movimientos = await movimiento_query.get_with_relations(
+                    session=session,
+                    skip=0,
+                    limit=10,
+                    sort=Sort.desc,
+                    start_date=date(2025, 1, 1),
+                    end_date=date(2025, 1, 2),
+                )
+
+                for mov in movimientos:
+                    # print(mov.model_dump_json(indent=2))
+                    print(mov.model_dump_json(indent=4))
 
     asyncio.run(main())

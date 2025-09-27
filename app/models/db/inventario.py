@@ -184,17 +184,31 @@ class Movimiento(MovimientoCreate, table=True):
     id: int = Field(primary_key=True)
 
     # Relationships
-    variante: 'VarianteElemento' = Relationship(back_populates='movimientos')
-    estado_variante: 'EstadoVariante' = Relationship(back_populates='movimientos')
-    bodega: 'Bodega' = Relationship(back_populates='movimientos')
-    tipo_movimiento: 'TipoMovimiento' = Relationship(back_populates='movimientos')
-    tipo_soporte: 'TipoSoporte' = Relationship(back_populates='movimientos')
+    variante: 'VarianteElemento' = Relationship(back_populates='movimientos', sa_relationship_kwargs={'lazy': 'joined'})
+    estado_variante: 'EstadoVariante' = Relationship(
+        back_populates='movimientos', sa_relationship_kwargs={'lazy': 'joined'}
+    )
+    bodega: 'Bodega' = Relationship(back_populates='movimientos', sa_relationship_kwargs={'lazy': 'joined'})
+    tipo_movimiento: 'TipoMovimiento' = Relationship(
+        back_populates='movimientos', sa_relationship_kwargs={'lazy': 'joined'}
+    )
+    tipo_soporte: 'TipoSoporte' = Relationship(back_populates='movimientos', sa_relationship_kwargs={'lazy': 'joined'})
     metadatos: list['MetadatosPorSoporte'] = Relationship(
         sa_relationship_kwargs={
             'primaryjoin': 'and_(Movimiento.tipo_soporte_id==foreign(MetadatosPorSoporte.tipo_soporte_id), Movimiento.soporte_id==foreign(MetadatosPorSoporte.soporte_id))',
             'viewonly': True,
+            'lazy': 'selectin',
         }
     )
+
+
+class MovimientoRead(MovimientoCreate):
+    variante: 'VarianteElemento | None' = None
+    bodega: 'Bodega | None' = None
+    tipo_movimiento: 'TipoMovimiento | None' = None
+    estado_variante: 'EstadoVariante | None' = None
+    tipo_soporte: 'TipoSoporte | None' = None
+    metadatos: list['MetadatosPorSoporteRead'] = []
 
 
 # region metadatos
@@ -212,9 +226,15 @@ class MetadatosPorSoporte(MetadatosPorSoporteCreate, table=True):
     id: int = Field(primary_key=True)
 
     # Relationships
-    tipo_soporte: 'TipoSoporte' = Relationship(back_populates='metadatos')
-    meta_atributo: 'MetaAtributo' = Relationship(back_populates='soportes')
-    meta_valor: 'MetaValor' = Relationship(back_populates='soportes')
+    tipo_soporte: 'TipoSoporte' = Relationship(back_populates='metadatos', sa_relationship_kwargs={'lazy': 'joined'})
+    meta_atributo: 'MetaAtributo' = Relationship(back_populates='soportes', sa_relationship_kwargs={'lazy': 'joined'})
+    meta_valor: 'MetaValor' = Relationship(back_populates='soportes', sa_relationship_kwargs={'lazy': 'joined'})
+
+
+class MetadatosPorSoporteRead(MetadatosPorSoporteCreate):
+    tipo_soporte: 'TipoSoporte | None' = None
+    meta_atributo: 'MetaAtributo | None' = None
+    meta_valor: 'MetaValor | None' = None
 
 
 class MetaAtributoCreate(InventarioLower):

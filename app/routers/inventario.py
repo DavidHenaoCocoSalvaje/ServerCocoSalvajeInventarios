@@ -4,6 +4,8 @@ from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 
 from app.internal.integrations.shopify import ShopifyInventario
+from app.models.db.session import AsyncSessionDep
+from app.internal.query.base import DateRange, Sort
 from app.internal.query.inventario import (
     BodegaQuery,
     ComponentesPorVarianteQuery,
@@ -19,7 +21,6 @@ from app.internal.query.inventario import (
     TiposMedidaQuery,
     VarianteElementoQuery,
 )
-from ..models.pydantic.base import Base
 from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
@@ -46,6 +47,7 @@ from app.models.db.inventario import (
     MedidasPorVarianteCreate,
     Movimiento,
     MovimientoCreate,
+    MovimientoRead,
     PreciosPorVariante,
     PreciosPorVarianteCreate,
     TipoMovimiento,
@@ -79,7 +81,7 @@ router = APIRouter(
     dependencies=[Depends(validar_access_token)],
 )
 
-shopify_router = APIRouter(
+shopify_inventario_router = APIRouter(
     prefix='/inventario/shopify',
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     responses={404: {'description': 'No encontrado'}},
@@ -97,33 +99,44 @@ CRUD(router, 'precio', PrecioPorVarianteQuery(), PreciosPorVariante, PreciosPorV
 CRUD(router, 'tipo_precio', TipoPrecioQuery(), TipoPrecio, TipoPrecioCreate)
 CRUD(router, 'tipo_medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
 CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPorVarianteCreate)
-CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
 CRUD(router, 'tipo_movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
 
 
-# Sincronización
-@shopify_router.post(
-    '/sync-shopify',
-    response_model=bool,
-    summary='Sincroniza inventarios de Shopify con base de datos',
-    description='Se registran movimiento de cargue.',
+@router.get(
+    '/movimmiento-with-relations',
     status_code=status.HTTP_200_OK,
-    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    response_model=list[MovimientoRead],
+    summary='Obtiene una lista de movimientos con relaciones',
+    description='Obtiene una lista paginada de movimientos con sus relaciones cargadas y opcionalmente filtrados por rango de fechas.',
+    tags=[Tags.INVENTARIO],
     dependencies=[Depends(validar_access_token)],
 )
-async def sync_shopify():
-    """Sincroniza los datos de inventario desde Shopify."""
-    try:
-        await ShopifyInventario().sicnronizar_inventario(True)
-        return True
-    except Exception as e:
-        log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+async def get_movimientos_with_relations(
+    session: AsyncSessionDep,
+    skip: int = 0,
+    limit: int = 100,
+    sort: Sort = Sort.desc,
+    start_date: date | None = None,
+    end_date: date | None = None,
+):
+    movimiento_query = MovimientoQuery()
+    movimientos = await movimiento_query.get_with_relations(
+        session=session,
+        skip=skip,
+        limit=limit,
+        sort=sort,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    return movimientos
+
+
+CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
 
 
 # Pedidos
-@shopify_router.post(
+@shopify_inventario_router.post(
     '/pedido',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
@@ -143,30 +156,51 @@ async def recibir_pedido_shopify(
     return True
 
 
-class RequestBodyDateRange(Base):
-    start: date
-    end: date
+# Sincronización
+@shopify_inventario_router.post(
+    '/sync-shopify',
+    response_model=bool,
+    summary='Sincroniza inventarios de Shopify con base de datos',
+    description='Se registran movimiento de cargue.',
+    status_code=status.HTTP_200_OK,
+    tags=[Tags.INVENTARIO, Tags.SHOPIFY],
+    dependencies=[Depends(validar_access_token)],
+)
+async def sync_shopify():
+    """Sincroniza los datos de inventario desde Shopify."""
+    try:
+        await ShopifyInventario().sicnronizar_inventario(True)
+        return True
+    except Exception as e:
+        log_inventario_shopify.error(f'Error al sincronizar inventarios de Shopify: {e}')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@shopify_router.post(
+@shopify_inventario_router.post(
     '/sync-movimientos-ordenes-by-range',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(validar_access_token)],
 )
-async def sync_movimientos_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
+async def sync_movimientos_ordenes_by_range(date_range: DateRange, background_tasks: BackgroundTasks):
     background_tasks.add_task(
-        ShopifyInventario().sincronizar_movimientos_ordenes_by_range, date_range.start, date_range.end
+        ShopifyInventario().sincronizar_movimientos_ordenes_by_range,
+        date_range.start_date,
+        date_range.end_date,
     )
     return True
 
 
-@shopify_router.post(
+@shopify_inventario_router.post(
     '/sync-metadata-ordenes-by-range',
     status_code=status.HTTP_200_OK,
     tags=[Tags.INVENTARIO, Tags.SHOPIFY],
     dependencies=[Depends(validar_access_token)],
 )
-async def sync_metadata_ordenes_by_range(date_range: RequestBodyDateRange, background_tasks: BackgroundTasks):
-    background_tasks.add_task(ShopifyInventario().temp_crear_metadata_orders_by_range, date_range.start, date_range.end)
+async def sync_metadata_ordenes_by_range(date_range: DateRange, background_tasks: BackgroundTasks):
+    background_tasks.add_task(
+        ShopifyInventario().crear_metadata_orders_by_range,
+        date_range.start_date,
+        date_range.end_date,
+    )
     return True
