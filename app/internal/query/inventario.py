@@ -186,6 +186,30 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         result = [MovimientoRead.model_validate(movimiento) for movimiento in result.scalars().all()]
         return result or []
 
+    async def get_saldos(self, session: AsyncSession):
+        stmt = (
+            select(
+                Elemento.nombre.label("producto"), # type: ignore
+                VarianteElemento.sku,
+                func.sum(Movimiento.cantidad * TipoMovimiento.comportamiento).label("saldo"),
+            )
+            .join(TipoMovimiento, Movimiento.tipo_movimiento_id == TipoMovimiento.id) # type: ignore
+            .join(VarianteElemento, Movimiento.variante_id == VarianteElemento.id) # type: ignore
+            .join(Elemento, VarianteElemento.elemento_id == Elemento.id) # type: ignore
+            .group_by(VarianteElemento.sku, Elemento.nombre)
+        )
+
+        result = await session.execute(stmt)
+
+        return [
+            {
+                "producto": row.producto,
+                "sku": row.sku,
+                "saldo": row.saldo,
+            }
+            for row in result.all()
+        ]
+
 
 class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoporteCreate]):
     def __init__(self) -> None:
@@ -331,15 +355,14 @@ if __name__ == '__main__':
                 movimiento_query = MovimientoQuery()
                 # await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
 
-                movimientos = await movimiento_query.get_with_relations(
-                    session=session,
-                    sort=Sort.desc,
-                    start_date=date(2025, 1, 1),
-                    end_date=date(2025, 1, 30),
-                )
+                # movimientos = await movimiento_query.get_with_relations(
+                #     session=session,
+                #     sort=Sort.desc,
+                #     start_date=date(2025, 1, 1),
+                #     end_date=date(2025, 1, 30),
+                # )
 
-                for mov in movimientos:
-                    # print(mov.model_dump_json(indent=2))
-                    print(mov.model_dump_json(indent=4))
+                saldos = await movimiento_query.get_saldos(session)
+                print(saldos)
 
     asyncio.run(main())
