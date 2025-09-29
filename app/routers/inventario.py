@@ -2,6 +2,14 @@
 from datetime import date
 from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
+from pandas import DataFrame, Grouper
+
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
+
 
 from app.internal.integrations.shopify import ShopifyInventario
 from app.models.db.session import AsyncSessionDep
@@ -114,22 +122,58 @@ CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCrea
 )
 async def get_movimientos_with_relations(
     session: AsyncSessionDep,
-    skip: int = 0,
-    limit: int = 100,
+    start_date: date,
+    end_date: date,
     sort: Sort = Sort.desc,
-    start_date: date | None = None,
-    end_date: date | None = None,
 ):
     movimiento_query = MovimientoQuery()
     movimientos = await movimiento_query.get_with_relations(
         session=session,
-        skip=skip,
-        limit=limit,
         sort=sort,
         start_date=start_date,
         end_date=end_date,
     )
     return movimientos
+
+
+class Frequency(str, Enum):
+    DAILY = 'D'
+    WEEKLY = 'W'
+    MONTHLY = 'M'
+    YEARLY = 'Y'
+
+
+@router.get(
+    '/movimiento-reporte',
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(validar_access_token)],
+)
+async def get_movimientos_por_variante(
+    session: AsyncSessionDep,
+    start_date: date,
+    end_date: date,
+    sort: Sort = Sort.desc,
+    frequency: Frequency = Frequency.DAILY,
+):
+    movimiento_query = MovimientoQuery()
+    movimientos = await movimiento_query.get_by_dates(
+        session=session, start_date=start_date, end_date=end_date, sort=sort
+    )
+    df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
+    df_movimientos_grouped = (
+        df_movimientos.set_index('fecha')
+        .groupby([Grouper(freq=frequency.value), 'bodega_id', 'variante_id', 'tipo_movimiento_id'])
+        .agg(
+            {
+                'cantidad': 'sum',
+                'valor': 'sum',
+            }
+        )
+        .reset_index()
+    )
+    print(df_movimientos_grouped)
+    result = df_movimientos_grouped.to_dict(orient='records')
+    return result
 
 
 CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
@@ -204,3 +248,21 @@ async def sync_metadata_ordenes_by_range(date_range: DateRange, background_tasks
         date_range.end_date,
     )
     return True
+
+
+if __name__ == '__main__':
+    from asyncio import run
+    from app.models.db.session import get_async_session
+
+    async def main():
+        async for session in get_async_session():
+            async with session:
+                await get_movimientos_por_variante(
+                    session=session,
+                    start_date=date(2025, 1, 1),
+                    end_date=date(2025, 1, 30),
+                    sort=Sort.desc,
+                    frequency=Frequency.DAILY
+                )
+
+    run(main())

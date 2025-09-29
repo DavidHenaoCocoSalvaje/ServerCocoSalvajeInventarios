@@ -153,20 +153,35 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
 
-    async def get_with_relations(
+    async def get_by_dates(
         self,
         session: AsyncSession,
+        start_date: date,
+        end_date: date,
         skip: int = 0,
         limit: int = 100,
         sort: Sort = Sort.desc,
-        start_date: date | None = None,
-        end_date: date | None = None,
-    ) -> list[MovimientoRead]:
-        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
+    ) -> list[Movimiento]:
         stmt = select(self.model_db)
         if start_date and end_date and end_date >= start_date:
             stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
-        stmt = stmt.offset(skip).limit(limit).order_by(sort_fecha)
+        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
+        stmt = stmt.order_by(sort_fecha).offset(skip).limit(limit)
+        result = await session.execute(stmt)
+        return list(result.scalars().all()) or []
+
+    async def get_with_relations(
+        self,
+        session: AsyncSession,
+        start_date: date,
+        end_date: date,
+        sort: Sort = Sort.desc,
+    ) -> list[MovimientoRead]:
+        stmt = select(self.model_db)
+        if start_date and end_date and end_date >= start_date:
+            stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
+        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
+        stmt = stmt.order_by(sort_fecha)
         result = await session.execute(stmt)
         result = [MovimientoRead.model_validate(movimiento) for movimiento in result.scalars().all()]
         return result or []
@@ -318,11 +333,9 @@ if __name__ == '__main__':
 
                 movimientos = await movimiento_query.get_with_relations(
                     session=session,
-                    skip=0,
-                    limit=10,
                     sort=Sort.desc,
                     start_date=date(2025, 1, 1),
-                    end_date=date(2025, 1, 2),
+                    end_date=date(2025, 1, 30),
                 )
 
                 for mov in movimientos:
