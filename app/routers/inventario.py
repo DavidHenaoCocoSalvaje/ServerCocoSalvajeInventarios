@@ -156,7 +156,7 @@ class FiltroTipoMovimiento(str, Enum):
     CARGUE_INICIAL = 'cargue inicial'
 
 
-@router.get(
+@router.post(
     '/movimiento-reporte',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
@@ -167,8 +167,8 @@ async def get_movimientos_por_variante(
     end_date: date,
     sort: Sort = Sort.desc,
     frequency: Frequency = Frequency.DAILY,
-    group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE},
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
+    group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE},
 ):
     tipo_movimiento_id = None
     if filtro_tipo_movimiento:
