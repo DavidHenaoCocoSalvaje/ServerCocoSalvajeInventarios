@@ -143,6 +143,19 @@ class Frequency(str, Enum):
     YEARLY = 'Y'
 
 
+class GroupByMovimientos(str, Enum):
+    BODEGA = 'bodega_id'
+    VARIANTE = 'variante_id'
+
+
+class FiltroTipoMovimiento(str, Enum):
+    SALIDA = 'salida'
+    ENTRADA = 'entrada'
+    AUMENTO = 'aumento'
+    DISMINUCION = 'disminucion'
+    CARGUE_INICIAL = 'cargue inicial'
+
+
 @router.get(
     '/movimiento-reporte',
     status_code=status.HTTP_200_OK,
@@ -154,15 +167,28 @@ async def get_movimientos_por_variante(
     end_date: date,
     sort: Sort = Sort.desc,
     frequency: Frequency = Frequency.DAILY,
+    group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE},
+    filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
 ):
-    movimiento_query = MovimientoQuery()
-    movimientos = await movimiento_query.get_by_dates(
-        session=session, start_date=start_date, end_date=end_date, sort=sort
+    tipo_movimiento_id = None
+    if filtro_tipo_movimiento:
+        tipo_movimiento_id = await TipoMovimientoQuery().get_by_nombre(session, filtro_tipo_movimiento.value)
+        if not tipo_movimiento_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tipo de movimiento no encontrado')
+        else:
+            tipo_movimiento_id = tipo_movimiento_id.id
+
+    movimientos = await MovimientoQuery().get_by_dates(
+        session=session, start_date=start_date, end_date=end_date, sort=sort, tipo_movimiento_id=tipo_movimiento_id
     )
+
+    if not movimientos:
+        return []
+
     df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
     df_movimientos_grouped = (
         df_movimientos.set_index('fecha')
-        .groupby([Grouper(freq=frequency.value), 'bodega_id', 'variante_id', 'tipo_movimiento_id'])
+        .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *group_by])
         .agg(
             {
                 'cantidad': 'sum',
@@ -171,9 +197,35 @@ async def get_movimientos_por_variante(
         )
         .reset_index()
     )
-    print(df_movimientos_grouped)
-    result = df_movimientos_grouped.to_dict(orient='records')
-    return result
+    movimientos = df_movimientos_grouped.to_dict(orient='records')
+    variantes_elemento = await VarianteElementoQuery().get_list(session)
+
+    df_variantes = DataFrame([ve.model_dump() for ve in variantes_elemento])
+
+    df = df_movimientos_grouped.merge(df_variantes, left_on='variante_id', right_on='id', how='left')
+    df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
+    df = df.rename(columns={'nombre': 'variante'})
+
+    if GroupByMovimientos.BODEGA in group_by:
+        bodegas = await BodegaQuery().get_list(session)
+        df_bodegas = DataFrame([bodega.model_dump() for bodega in bodegas])
+        df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
+        df = df.drop(columns=['id', 'bodega_id', 'shopify_id'])
+
+    print(df)
+
+    return df.to_dict(orient='records')
+
+
+@router.get(
+    '/saldos',
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(validar_access_token)],
+)
+async def get_saldos(session: AsyncSessionDep):
+    movimiento_query = MovimientoQuery()
+    saldos = await movimiento_query.get_saldos(session)
+    return saldos
 
 
 CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
@@ -262,7 +314,9 @@ if __name__ == '__main__':
                     start_date=date(2025, 1, 1),
                     end_date=date(2025, 1, 30),
                     sort=Sort.desc,
-                    frequency=Frequency.DAILY
+                    frequency=Frequency.DAILY,
+                    group_by={GroupByMovimientos.VARIANTE, GroupByMovimientos.BODEGA},
+                    filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
 
     run(main())

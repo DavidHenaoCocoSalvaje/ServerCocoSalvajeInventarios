@@ -71,8 +71,8 @@ class CRUD:
             f'/{name}/{{{name}_id}}',
             operation_id=f'get_{name}_by_id',
             response_model=model_db,
-            summary=f'Obtener un {name.replace("_", " ")} por ID',
-            description=f'Obtiene los detalles de un {name.replace("_", " ")} específico mediante su ID.',
+            summary=f'Obtener {name.replace("_", " ")} por ID',
+            description=f'Obtiene los detalles de {name.replace("_", " ")} específico mediante su ID.',
         )
         async def get_resource(
             session: AsyncSessionDep,
@@ -92,7 +92,7 @@ class CRUD:
             f'/{name}/{{{name}_id}}',
             operation_id=f'update_{name}',
             response_model=model_db,
-            summary=f'Actualizar un {name.replace("_", " ")}',
+            summary=f'Actualizar {name.replace("_", " ")}',
         )
         async def update_resource(
             session: AsyncSessionDep,
@@ -114,7 +114,7 @@ class CRUD:
             f'/{name}/{{{name}_id}}',
             operation_id=f'delete_{name}',
             response_model=model_db,
-            summary=f'Eliminar un {name.replace("_", " ")}',
+            summary=f'Eliminar {name.replace("_", " ")}',
         )
         async def delete_resource(
             session: AsyncSessionDep,

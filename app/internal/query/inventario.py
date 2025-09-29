@@ -75,7 +75,12 @@ class BaseQeuryNombre(BaseQuery[ModelDB, ModelCreate]):
     async def get_by_nombre(self, session: AsyncSession, nombre: str) -> ModelDB | None:
         statement = select(self.model_db).where(func.lower(self.model_db.nombre) == nombre.lower())  # type: ignore
         result = await session.execute(statement)
-        return result.scalar_one_or_none()
+        result = result.scalar_one_or_none()
+        if result is None:
+            statement = select(self.model_db).where(func.lower(self.model_db.nombre).like(f'%{nombre.lower()}%'))  # type: ignore
+            result = await session.execute(statement)
+            result = result.scalar_one_or_none()
+        return result
 
 
 class PrecioPorVarianteQuery(BaseQuery[PreciosPorVariante, PreciosPorVarianteCreate]):
@@ -161,10 +166,13 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         skip: int = 0,
         limit: int = 100,
         sort: Sort = Sort.desc,
+        tipo_movimiento_id: int | None = None,
     ) -> list[Movimiento]:
         stmt = select(self.model_db)
         if start_date and end_date and end_date >= start_date:
             stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
+        if tipo_movimiento_id:
+            stmt = stmt.where(self.model_db.tipo_movimiento_id == tipo_movimiento_id)
         sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
         stmt = stmt.order_by(sort_fecha).offset(skip).limit(limit)
         result = await session.execute(stmt)
@@ -189,13 +197,13 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
     async def get_saldos(self, session: AsyncSession):
         stmt = (
             select(
-                Elemento.nombre.label("producto"), # type: ignore
+                Elemento.nombre.label('producto'),  # type: ignore
                 VarianteElemento.sku,
-                func.sum(Movimiento.cantidad * TipoMovimiento.comportamiento).label("saldo"),
+                func.sum(Movimiento.cantidad * TipoMovimiento.comportamiento).label('saldo'),
             )
-            .join(TipoMovimiento, Movimiento.tipo_movimiento_id == TipoMovimiento.id) # type: ignore
-            .join(VarianteElemento, Movimiento.variante_id == VarianteElemento.id) # type: ignore
-            .join(Elemento, VarianteElemento.elemento_id == Elemento.id) # type: ignore
+            .join(TipoMovimiento, Movimiento.tipo_movimiento_id == TipoMovimiento.id)  # type: ignore
+            .join(VarianteElemento, Movimiento.variante_id == VarianteElemento.id)  # type: ignore
+            .join(Elemento, VarianteElemento.elemento_id == Elemento.id)  # type: ignore
             .group_by(VarianteElemento.sku, Elemento.nombre)
         )
 
@@ -203,9 +211,9 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
 
         return [
             {
-                "producto": row.producto,
-                "sku": row.sku,
-                "saldo": row.saldo,
+                'producto': row.producto,
+                'sku': row.sku,
+                'saldo': row.saldo,
             }
             for row in result.all()
         ]
@@ -353,7 +361,7 @@ if __name__ == '__main__':
             async with session:
                 # await seed_data_inventario()
                 movimiento_query = MovimientoQuery()
-                # await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
+                await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
 
                 # movimientos = await movimiento_query.get_with_relations(
                 #     session=session,
