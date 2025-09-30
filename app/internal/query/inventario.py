@@ -3,7 +3,6 @@ from datetime import date, timedelta
 import json
 from os import path
 from sqlmodel import SQLModel, select, asc, desc, func, between
-from sqlalchemy.dialects import postgresql
 
 
 if __name__ == '__main__':
