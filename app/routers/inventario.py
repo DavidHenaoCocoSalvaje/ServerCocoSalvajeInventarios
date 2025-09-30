@@ -3,6 +3,7 @@ from datetime import date
 from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 from pandas import DataFrame, Grouper
+from pydantic import BaseModel
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -124,7 +125,7 @@ async def get_movimientos_with_relations(
     session: AsyncSessionDep,
     start_date: date,
     end_date: date,
-    sort: Sort = Sort.desc,
+    sort: Sort = Sort.DESC,
 ):
     movimiento_query = MovimientoQuery()
     movimientos = await movimiento_query.get_with_relations(
@@ -155,6 +156,8 @@ class FiltroTipoMovimiento(str, Enum):
     DISMINUCION = 'disminucion'
     CARGUE_INICIAL = 'cargue inicial'
 
+class GroupBy(BaseModel):
+    group_by: set[GroupByMovimientos]
 
 @router.post(
     '/movimiento-reporte',
@@ -165,10 +168,10 @@ async def get_movimientos_por_variante(
     session: AsyncSessionDep,
     start_date: date,
     end_date: date,
-    sort: Sort = Sort.desc,
+    sort: Sort = Sort.DESC,
     frequency: Frequency = Frequency.DAILY,
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
-    group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE},
+    group_by: GroupBy = GroupBy(group_by={GroupByMovimientos.VARIANTE}),
 ):
     tipo_movimiento_id = None
     if filtro_tipo_movimiento:
@@ -188,7 +191,7 @@ async def get_movimientos_por_variante(
     df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
     df_movimientos_grouped = (
         df_movimientos.set_index('fecha')
-        .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *group_by])
+        .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *group_by.group_by])
         .agg(
             {
                 'cantidad': 'sum',
@@ -206,13 +209,11 @@ async def get_movimientos_por_variante(
     df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
     df = df.rename(columns={'nombre': 'variante'})
 
-    if GroupByMovimientos.BODEGA in group_by:
+    if GroupByMovimientos.BODEGA in group_by.group_by:
         bodegas = await BodegaQuery().get_list(session)
         df_bodegas = DataFrame([bodega.model_dump() for bodega in bodegas])
         df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
         df = df.drop(columns=['id', 'bodega_id', 'shopify_id'])
-
-    print(df)
 
     return df.to_dict(orient='records')
 
@@ -311,11 +312,11 @@ if __name__ == '__main__':
             async with session:
                 await get_movimientos_por_variante(
                     session=session,
-                    start_date=date(2025, 1, 1),
-                    end_date=date(2025, 1, 30),
-                    sort=Sort.desc,
+                    start_date=date(2025, 8, 1),
+                    end_date=date(2025, 8, 31),
+                    sort=Sort.DESC,
                     frequency=Frequency.DAILY,
-                    group_by={GroupByMovimientos.VARIANTE, GroupByMovimientos.BODEGA},
+                    group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE, GroupByMovimientos.BODEGA}),
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
 

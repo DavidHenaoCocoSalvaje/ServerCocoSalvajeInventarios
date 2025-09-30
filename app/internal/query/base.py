@@ -16,8 +16,8 @@ log_base_query = factory_logger('base_query', file=True)
 
 
 class Sort(str, Enum):
-    asc = 'asc'
-    desc = 'desc'
+    ASC = 'asc'
+    DESC = 'desc'
 
 
 class DateRange(BaseModel):
@@ -36,7 +36,7 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         return result
 
     async def get_list(
-        self, session: AsyncSession, skip: int = 0, limit: int = 100, sort: Sort = Sort.desc
+        self, session: AsyncSession, skip: int = 0, limit: int = 100, sort: Sort = Sort.DESC
     ) -> list[ModelDB]:
         """Obtiene una lista de objetos de forma asíncrona."""
         order_id = self.model_db.id.asc() if sort == 'asc' else self.model_db.id.desc()  # type: ignore

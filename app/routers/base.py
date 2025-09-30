@@ -61,7 +61,7 @@ class CRUD:
             session: AsyncSessionDep,
             skip: int = 0,
             limit: int = 100,
-            sort: Sort = Sort.desc,
+            sort: Sort = Sort.DESC,
         ) -> list[ModelDB]:
             """Obtiene una lista de recursos."""
             return await model_query.get_list(session=session, skip=skip, limit=limit, sort=sort)

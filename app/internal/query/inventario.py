@@ -3,6 +3,8 @@ from datetime import date, timedelta
 import json
 from os import path
 from sqlmodel import SQLModel, select, asc, desc, func, between
+from sqlalchemy.dialects import postgresql
+
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -163,9 +165,7 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         session: AsyncSession,
         start_date: date,
         end_date: date,
-        skip: int = 0,
-        limit: int = 100,
-        sort: Sort = Sort.desc,
+        sort: Sort = Sort.DESC,
         tipo_movimiento_id: int | None = None,
     ) -> list[Movimiento]:
         stmt = select(self.model_db)
@@ -173,8 +173,8 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
             stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
         if tipo_movimiento_id:
             stmt = stmt.where(self.model_db.tipo_movimiento_id == tipo_movimiento_id)
-        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
-        stmt = stmt.order_by(sort_fecha).offset(skip).limit(limit)
+        sort_fecha = asc(self.model_db.fecha) if sort == Sort.ASC else desc(self.model_db.fecha)
+        stmt = stmt.order_by(sort_fecha)
         result = await session.execute(stmt)
         return list(result.scalars().all()) or []
 
@@ -183,12 +183,12 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         session: AsyncSession,
         start_date: date,
         end_date: date,
-        sort: Sort = Sort.desc,
+        sort: Sort = Sort.DESC,
     ) -> list[MovimientoRead]:
         stmt = select(self.model_db)
         if start_date and end_date and end_date >= start_date:
             stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
-        sort_fecha = asc(self.model_db.fecha) if sort == Sort.asc else desc(self.model_db.fecha)
+        sort_fecha = asc(self.model_db.fecha) if sort == Sort.ASC else desc(self.model_db.fecha)
         stmt = stmt.order_by(sort_fecha)
         result = await session.execute(stmt)
         result = [MovimientoRead.model_validate(movimiento) for movimiento in result.scalars().all()]
