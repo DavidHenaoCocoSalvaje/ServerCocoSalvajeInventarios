@@ -216,7 +216,7 @@ async def get_movimientos_agrupados(
     df = df_movimientos.copy()
 
     metadatos = None
-    if tipo_soporte_id:
+    if tipo_soporte_id and {GroupByMovimientos.META_ATRIBUTO, GroupByMovimientos.META_VALOR} & group_by.group_by:
         metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(
             session=session,
             tipo_soporte_id=tipo_soporte_id,
@@ -370,7 +370,7 @@ if __name__ == '__main__':
                     end_date=date(2025, 8, 31),
                     sort=Sort.DESC,
                     frequency=Frequency.MONTHLY,
-                    group_by=GroupBy(group_by={GroupByMovimientos.META_ATRIBUTO, GroupByMovimientos.META_VALOR}),
+                    group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE}),
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
