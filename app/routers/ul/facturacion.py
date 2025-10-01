@@ -4,7 +4,7 @@
 import traceback
 
 from app.internal.gen.utilities import DateTz
-from app.internal.integrations.shopify import ShopifyGraphQLClient
+from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
 from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
@@ -41,6 +41,8 @@ async def procesar_pedido_shopify(
         msg = 'No se proporciono order_gid ni pedido_number'
         log_facturacion.error(msg)
         return
+    
+    await ShopifyInventario().crear_movimientos_orden(order)
 
     async for session in get_async_session():
         async with session:

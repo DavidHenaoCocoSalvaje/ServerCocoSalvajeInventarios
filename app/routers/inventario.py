@@ -366,15 +366,16 @@ if __name__ == '__main__':
             async with session:
                 records = await get_movimientos_agrupados(
                     session=session,
-                    start_date=date(2025, 8, 1),
-                    end_date=date(2025, 8, 31),
+                    start_date=date(2025, 9, 1),
+                    end_date=date(2025, 9, 30),
                     sort=Sort.DESC,
                     frequency=Frequency.MONTHLY,
                     group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE}),
-                    filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
+                    # filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
                 df = DataFrame(records)
+                print(df.valor.sum())
                 print(df)
 
     run(main())
