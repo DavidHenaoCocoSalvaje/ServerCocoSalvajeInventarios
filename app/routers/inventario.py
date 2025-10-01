@@ -23,10 +23,12 @@ from app.internal.query.inventario import (
     GrupoQuery,
     MedidaQuery,
     MedidasPorVarianteQuery,
+    MetadatosPorSoporteQuery,
     MovimientoQuery,
     PrecioPorVarianteQuery,
     TipoMovimientoQuery,
     TipoPrecioQuery,
+    TipoSoporteQuery,
     TiposMedidaQuery,
     VarianteElementoQuery,
 )
@@ -140,13 +142,15 @@ async def get_movimientos_with_relations(
 class Frequency(str, Enum):
     DAILY = 'D'
     WEEKLY = 'W'
-    MONTHLY = 'M'
+    MONTHLY = 'ME'
     YEARLY = 'Y'
 
 
 class GroupByMovimientos(str, Enum):
     BODEGA = 'bodega_id'
     VARIANTE = 'variante_id'
+    META_ATRIBUTO = 'meta_atributo'
+    META_VALOR = 'meta_valor'
 
 
 class FiltroTipoMovimiento(str, Enum):
@@ -156,41 +160,84 @@ class FiltroTipoMovimiento(str, Enum):
     DISMINUCION = 'disminucion'
     CARGUE_INICIAL = 'cargue inicial'
 
+
+class FiltroTipoSoporte(str, Enum):
+    COMPRA = 'factura de compra'
+    PEDIDO = 'pedido'
+    VENTA = 'venta'
+    TRASLADO = 'traslado'
+
+
 class GroupBy(BaseModel):
     group_by: set[GroupByMovimientos]
+
 
 @router.post(
     '/movimiento-reporte',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
-async def get_movimientos_por_variante(
+async def get_movimientos_agrupados(
     session: AsyncSessionDep,
     start_date: date,
     end_date: date,
     sort: Sort = Sort.DESC,
     frequency: Frequency = Frequency.DAILY,
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
+    filtro_tipo_soporte: FiltroTipoSoporte | None = None,
     group_by: GroupBy = GroupBy(group_by={GroupByMovimientos.VARIANTE}),
 ):
     tipo_movimiento_id = None
+    tipo_soporte_id = None
     if filtro_tipo_movimiento:
-        tipo_movimiento_id = await TipoMovimientoQuery().get_by_nombre(session, filtro_tipo_movimiento.value)
-        if not tipo_movimiento_id:
+        tipo_movimiento = await TipoMovimientoQuery().get_by_nombre(session, filtro_tipo_movimiento.value)
+        if not tipo_movimiento:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tipo de movimiento no encontrado')
-        else:
-            tipo_movimiento_id = tipo_movimiento_id.id
+        tipo_movimiento_id = tipo_movimiento.id
+    if filtro_tipo_soporte:
+        tipo_soporte = await TipoSoporteQuery().get_by_nombre(session, filtro_tipo_soporte.value)
+        if not tipo_soporte:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Tipo de soporte no encontrado')
+        tipo_soporte_id = tipo_soporte.id
 
     movimientos = await MovimientoQuery().get_by_dates(
-        session=session, start_date=start_date, end_date=end_date, sort=sort, tipo_movimiento_id=tipo_movimiento_id
+        session=session,
+        start_date=start_date,
+        end_date=end_date,
+        sort=sort,
+        tipo_movimiento_id=tipo_movimiento_id,
+        tipo_soporte_id=tipo_soporte_id,
     )
 
     if not movimientos:
         return []
 
     df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
-    df_movimientos_grouped = (
-        df_movimientos.set_index('fecha')
+    df = df_movimientos.copy()
+
+    metadatos = None
+    if tipo_soporte_id:
+        metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(
+            session=session,
+            tipo_soporte_id=tipo_soporte_id,
+            soporte_ids=[movimiento.soporte_id for movimiento in movimientos if movimiento.soporte_id],
+        )
+        metadatos = [metadato.model_dump() for metadato in metadatos]
+        # aplanar metadatos
+        for m in metadatos:
+            m['meta_valor'] = m['meta_valor']['valor']
+            m['meta_atributo'] = m['meta_atributo']['nombre']
+            del m['tipo_soporte']
+            del m['tipo_soporte_id']
+            del m['meta_atributo_id']
+            del m['meta_valor_id']
+
+    if metadatos:
+        df_metadatos = DataFrame(metadatos)
+        df = df.merge(df_metadatos, left_on='soporte_id', right_on='soporte_id', how='left')
+
+    df = (
+        df.set_index('fecha')
         .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *group_by.group_by])
         .agg(
             {
@@ -200,14 +247,21 @@ async def get_movimientos_por_variante(
         )
         .reset_index()
     )
-    movimientos = df_movimientos_grouped.to_dict(orient='records')
-    variantes_elemento = await VarianteElementoQuery().get_list(session)
 
-    df_variantes = DataFrame([ve.model_dump() for ve in variantes_elemento])
+    total_cantidad = df['cantidad'].sum()
+    df['cantidad_%'] = df['cantidad'] / total_cantidad * 100
 
-    df = df_movimientos_grouped.merge(df_variantes, left_on='variante_id', right_on='id', how='left')
-    df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
-    df = df.rename(columns={'nombre': 'variante'})
+    total_valor = df['valor'].sum()
+    df['valor_%'] = df['valor'] / total_valor * 100
+
+    if GroupByMovimientos.VARIANTE in group_by.group_by:
+        variantes_elemento = await VarianteElementoQuery().get_list(session)
+
+        df_variantes = DataFrame([ve.model_dump() for ve in variantes_elemento])
+
+        df = df.merge(df_variantes, left_on='variante_id', right_on='id', how='left')
+        df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
+        df = df.rename(columns={'nombre': 'variante'})
 
     if GroupByMovimientos.BODEGA in group_by.group_by:
         bodegas = await BodegaQuery().get_list(session)
@@ -310,14 +364,17 @@ if __name__ == '__main__':
     async def main():
         async for session in get_async_session():
             async with session:
-                await get_movimientos_por_variante(
+                records = await get_movimientos_agrupados(
                     session=session,
                     start_date=date(2025, 8, 1),
                     end_date=date(2025, 8, 31),
                     sort=Sort.DESC,
-                    frequency=Frequency.DAILY,
-                    group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE, GroupByMovimientos.BODEGA}),
+                    frequency=Frequency.MONTHLY,
+                    group_by=GroupBy(group_by={GroupByMovimientos.META_ATRIBUTO, GroupByMovimientos.META_VALOR}),
+                    filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
+                df = DataFrame(records)
+                print(df)
 
     run(main())

@@ -31,6 +31,7 @@ from app.models.db.inventario import (
     MetaAtributoCreate,
     MetaValor,
     MetaValorCreate,
+    MetadatosPorSoporteRead,
     Movimiento,
     MovimientoCreate,
     MetadatosPorSoporte,
@@ -165,11 +166,14 @@ class MovimientoQuery(BaseQuery[Movimiento, MovimientoCreate]):
         start_date: date,
         end_date: date,
         sort: Sort = Sort.DESC,
+        tipo_soporte_id: int | None = None,
         tipo_movimiento_id: int | None = None,
     ) -> list[Movimiento]:
         stmt = select(self.model_db)
         if start_date and end_date and end_date >= start_date:
             stmt = stmt.where(between(self.model_db.fecha, start_date, end_date + timedelta(days=1)))
+        if tipo_soporte_id:
+            stmt = stmt.where(self.model_db.tipo_soporte_id == tipo_soporte_id)
         if tipo_movimiento_id:
             stmt = stmt.where(self.model_db.tipo_movimiento_id == tipo_movimiento_id)
         sort_fecha = asc(self.model_db.fecha) if sort == Sort.ASC else desc(self.model_db.fecha)
@@ -234,6 +238,42 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         )
         result = await session.execute(statement)
         return result.scalar_one_or_none()
+
+    async def get_list_by_soporte(
+        self,
+        session: AsyncSession,
+        tipo_soporte_id: int,
+        soporte_ids: list[str] = [],
+        meta_atributo_ids: list[int] | None = None,
+        meta_valor_ids: list[int] | None = None,
+    ) -> list[MetadatosPorSoporteRead]:
+        statement = select(self.model_db).where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+        if soporte_ids:
+            statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
+        if meta_atributo_ids:
+            statement = statement.where(self.model_db.meta_atributo_id.in_(meta_atributo_ids))  # type: ignore
+        if meta_valor_ids:
+            statement = statement.where(self.model_db.meta_valor_id.in_(meta_valor_ids))  # type: ignore
+        result = await session.execute(statement)
+        return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
+    
+    async def get_list_by_soporte_like(
+        self,
+        session: AsyncSession,
+        tipo_soporte_id: int,
+        soporte_ids: list[str] = [],
+        meta_atributo: str | None = None,
+        meta_valor: str | None = None,
+    ) -> list[MetadatosPorSoporteRead]:
+        statement = select(self.model_db).where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+        if soporte_ids:
+            statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
+        if meta_atributo:
+            statement = statement.where(self.model_db.meta_atributo_id.like(f'%{meta_atributo}%')) # type: ignore
+        if meta_valor:
+            statement = statement.where(self.model_db.meta_valor_id.like(f'%{meta_valor}%')) # type: ignore
+        result = await session.execute(statement)
+        return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
 
 
 class MetaAtributoQuery(BaseQeuryNombre[MetaAtributo, MetaAtributoCreate]):
@@ -362,14 +402,10 @@ if __name__ == '__main__':
                 movimiento_query = MovimientoQuery()
                 await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
 
-                # movimientos = await movimiento_query.get_with_relations(
-                #     session=session,
-                #     sort=Sort.desc,
-                #     start_date=date(2025, 1, 1),
-                #     end_date=date(2025, 1, 30),
-                # )
-
                 saldos = await movimiento_query.get_saldos(session)
                 print(saldos)
+
+                metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(session, 2, meta_atributo_ids=[2])  # 2: Pedido
+                print(metadatos)
 
     asyncio.run(main())
