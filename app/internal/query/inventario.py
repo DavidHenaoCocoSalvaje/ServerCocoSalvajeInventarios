@@ -290,7 +290,7 @@ class MetaValorQuery(BaseQuery[MetaValor, MetaValorCreate]):
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
-    async def get_distinct_values(self, session: AsyncSession) -> list[str]:
+    async def get_meta_valores(self, session: AsyncSession) -> list[str]:
         statement = select(self.model_db.valor).distinct()
         result = await session.execute(statement)
         return list(result.scalars().all()) or []
@@ -416,7 +416,7 @@ if __name__ == '__main__':
                 # print(metadatos)
 
                 metavalor_query = MetaValorQuery()
-                metavalores = await metavalor_query.get_distinct_values(session)
+                metavalores = await metavalor_query.get_meta_valores(session)
                 print(metavalores)
 
     asyncio.run(main())
