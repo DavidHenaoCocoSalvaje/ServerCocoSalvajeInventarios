@@ -72,8 +72,12 @@ class Address(Base):
     def identificacion(self) -> str:
         identificacion = self.company
         if '-' in identificacion:
-            identificacion = self.company.split('-')[0]
-        return re.sub(r'[^0-9]', '', identificacion)
+            identificacion = self.company
+        identificacion = re.sub(r'[^0-9]', '', identificacion)
+        # Validar una longitud entre 5 y 10 digitos
+        if len(identificacion) < 5 or len(identificacion) > 10:
+            raise ValueError('La identificación debe tener entre 5 y 10 dígitos')
+        return identificacion
 
     @computed_field
     @property
