@@ -70,7 +70,15 @@ async def procesar_pedido_shopify(
                 await pedido_query.update(session, pedido_update, pedido.id)
 
             wo_client = WoClient()
-            identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
+            try:
+                identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
+            except Exception as e:
+                identificacion_tercero = None
+                pedido_update = pedido.model_copy()
+                pedido_update.log = f'{type(e).__name__}: {e}'
+                await pedido_query.update(session, pedido_update, pedido.id)
+                return
+
             if not pedido.factura_id:
                 order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
                 for tag in order_tags_lower:
