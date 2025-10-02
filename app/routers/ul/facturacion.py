@@ -74,7 +74,7 @@ async def procesar_pedido_shopify(
             if not pedido.factura_id:
                 order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
                 for tag in order_tags_lower:
-                    if 'no_facturar' in tag and not f:
+                    if PedidoLogs.NO_FACTURAR.value.lower() in tag and not f:
                         pedido_update = pedido.model_copy()
                         pedido_update.log = PedidoLogs.NO_FACTURAR.value
                         pedido_update.q_intentos = 0
