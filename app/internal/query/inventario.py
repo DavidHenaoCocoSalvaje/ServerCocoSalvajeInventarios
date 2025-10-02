@@ -256,7 +256,7 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
             statement = statement.where(self.model_db.meta_valor_id.in_(meta_valor_ids))  # type: ignore
         result = await session.execute(statement)
         return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
-    
+
     async def get_list_by_soporte_like(
         self,
         session: AsyncSession,
@@ -269,9 +269,9 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         if soporte_ids:
             statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
         if meta_atributo:
-            statement = statement.where(self.model_db.meta_atributo_id.like(f'%{meta_atributo}%')) # type: ignore
+            statement = statement.where(self.model_db.meta_atributo_id.like(f'%{meta_atributo}%'))  # type: ignore
         if meta_valor:
-            statement = statement.where(self.model_db.meta_valor_id.like(f'%{meta_valor}%')) # type: ignore
+            statement = statement.where(self.model_db.meta_valor_id.like(f'%{meta_valor}%'))  # type: ignore
         result = await session.execute(statement)
         return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
 
@@ -289,6 +289,11 @@ class MetaValorQuery(BaseQuery[MetaValor, MetaValorCreate]):
         statement = select(self.model_db).where(self.model_db.valor == valor.strip().lower())
         result = await session.execute(statement)
         return result.scalar_one_or_none()
+
+    async def get_distinct_values(self, session: AsyncSession) -> list[str]:
+        statement = select(self.model_db.valor).distinct()
+        result = await session.execute(statement)
+        return list(result.scalars().all()) or []
 
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
@@ -399,13 +404,19 @@ if __name__ == '__main__':
         async for session in get_async_session():
             async with session:
                 # await seed_data_inventario()
-                movimiento_query = MovimientoQuery()
-                await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
+                # movimiento_query = MovimientoQuery()
+                # await movimiento_query.get_total_by(session, variante_id=5, tipo_movimiento_id=1)
 
-                saldos = await movimiento_query.get_saldos(session)
-                print(saldos)
+                # saldos = await movimiento_query.get_saldos(session)
+                # print(saldos)
 
-                metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(session, 2, meta_atributo_ids=[2])  # 2: Pedido
-                print(metadatos)
+                # metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(
+                #     session, 2, meta_atributo_ids=[2]
+                # )  # 2: Pedido
+                # print(metadatos)
+
+                metavalor_query = MetaValorQuery()
+                metavalores = await metavalor_query.get_distinct_values(session)
+                print(metavalores)
 
     asyncio.run(main())

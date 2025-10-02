@@ -4,6 +4,7 @@ from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 from pandas import DataFrame, Grouper
 from pydantic import BaseModel
+from websockets import route
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -23,6 +24,7 @@ from app.internal.query.inventario import (
     GrupoQuery,
     MedidaQuery,
     MedidasPorVarianteQuery,
+    MetaValorQuery,
     MetadatosPorSoporteQuery,
     MovimientoQuery,
     PrecioPorVarianteQuery,
@@ -56,6 +58,8 @@ from app.models.db.inventario import (
     MedidaCreate,
     MedidasPorVariante,
     MedidasPorVarianteCreate,
+    MetaValor,
+    MetaValorCreate,
     Movimiento,
     MovimientoCreate,
     MovimientoRead,
@@ -112,6 +116,21 @@ CRUD(router, 'tipo_medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
 CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPorVarianteCreate)
 CRUD(router, 'tipo_movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
+CRUD(router, 'meta_valor', MetaValorQuery(), MetaValor, MetaValorCreate)
+
+
+@router.get(
+    '/metadatos-distinct',
+    status_code=status.HTTP_200_OK,
+    response_model=list[str],
+    summary='Obtiene una lista de metadatos distintos',
+    description='Obtiene una lista de metadatos distintos.',
+    tags=[Tags.INVENTARIO],
+    dependencies=[Depends(validar_access_token)],
+)
+async def get_metadatos_distinct(session: AsyncSessionDep):
+    metadatos = await MetaValorQuery().get_distinct_values(session)
+    return metadatos
 
 
 @router.get(
