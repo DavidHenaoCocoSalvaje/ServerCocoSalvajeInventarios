@@ -78,7 +78,7 @@ class Address(Base):
         identificacion = re.sub(r'[^0-9]', '', identificacion)
         # Validar una longitud entre 5 y 10 digitos para evitar facturar con documentos inválidos
         if len(identificacion) < 5 or len(identificacion) > 10:
-            raise ValueError('La identificación debe tener entre 5 y 10 dígitos')
+            raise ValueError(f'La identificación debe tener entre 5 y 10 dígitos, valor: {self.company}')
         return identificacion
 
     @computed_field
