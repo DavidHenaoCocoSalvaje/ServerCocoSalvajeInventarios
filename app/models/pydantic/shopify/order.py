@@ -71,10 +71,11 @@ class Address(Base):
     @property
     def identificacion(self) -> str:
         identificacion = self.company
+        # Se elimina dígito de verificación si es un NIT
         if '-' in identificacion:
-            identificacion = self.company
+            identificacion = self.company.split('-')[0]
         identificacion = re.sub(r'[^0-9]', '', identificacion)
-        # Validar una longitud entre 5 y 10 digitos
+        # Validar una longitud entre 5 y 10 digitos para evitar facturar con documentos inválidos
         if len(identificacion) < 5 or len(identificacion) > 10:
             raise ValueError('La identificación debe tener entre 5 y 10 dígitos')
         return identificacion
