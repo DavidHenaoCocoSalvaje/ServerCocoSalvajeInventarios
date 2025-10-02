@@ -70,10 +70,11 @@ class Address(Base):
     @computed_field
     @property
     def identificacion(self) -> str:
-        identificacion = self.company
-        # Se elimina dígito de verificación si es un NIT
-        if '-' in identificacion:
-            identificacion = self.company.split('-')[0]
+        identificacion = self.company.replace(' ', '')
+        # Eliminar dígito de verificación si se encuentra que es un formato de nit (termina en "-#")
+        if identificacion[-2] == '-' and identificacion[-1].isdigit():
+            identificacion = identificacion[:-2]
+        # Eliminar caracteres no numéricos
         identificacion = re.sub(r'[^0-9]', '', identificacion)
         # Validar una longitud entre 5 y 10 digitos para evitar facturar con documentos inválidos
         if len(identificacion) < 5 or len(identificacion) > 10:
