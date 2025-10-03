@@ -376,17 +376,18 @@ if __name__ == '__main__':
     async def main():
         async for session in get_async_session():
             async with session:
-                records = await get_movimientos_agrupados(
-                    session=session,
-                    start_date=date(2025, 9, 1),
-                    end_date=date(2025, 9, 30),
-                    sort=Sort.DESC,
-                    frequency=Frequency.MONTHLY,
-                    group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE}),
-                    # filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
-                    filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                )
-                df = DataFrame(records)
+                # records = await get_movimientos_agrupados(
+                #     session=session,
+                #     start_date=date(2025, 9, 1),
+                #     end_date=date(2025, 9, 30),
+                #     sort=Sort.DESC,
+                #     frequency=Frequency.MONTHLY,
+                #     group_by=GroupBy(group_by={GroupByMovimientos.VARIANTE}),
+                #     # filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
+                #     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
+                # )
+                # df = DataFrame(records)
+
 
                 meta_datos = await MetadatosPorSoporteQuery().get_like(session, 2, meta_atributo='tag', meta_valor='keila')
                 for m in meta_datos:
