@@ -23,6 +23,7 @@ from app.internal.query.inventario import (
     GrupoQuery,
     MedidaQuery,
     MedidasPorVarianteQuery,
+    MetaAtributoQuery,
     MetaValorQuery,
     MetadatosPorSoporteQuery,
     MovimientoQuery,
@@ -57,6 +58,7 @@ from app.models.db.inventario import (
     MedidaCreate,
     MedidasPorVariante,
     MedidasPorVarianteCreate,
+    MetaAtributo,
     MetaValor,
     MetaValorCreate,
     Movimiento,
@@ -116,7 +118,7 @@ CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPor
 CRUD(router, 'tipo-movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
 CRUD(router, 'metavalor', MetaValorQuery(), MetaValor, MetaValorCreate)
-CRUD(router, 'metaatributo', MetaValorQuery(), MetaValor, MetaValorCreate)
+CRUD(router, 'metaatributo', MetaAtributoQuery(), MetaAtributo, MetaValorCreate)
 
 
 @router.get(
