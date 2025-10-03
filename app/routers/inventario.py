@@ -116,20 +116,7 @@ CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPor
 CRUD(router, 'tipo_movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
 CRUD(router, 'meta_valor', MetaValorQuery(), MetaValor, MetaValorCreate)
-
-
-@router.get(
-    '/meta-valores',
-    status_code=status.HTTP_200_OK,
-    response_model=list[str],
-    summary='Obtiene una lista de metadatos distintos',
-    description='Obtiene una lista de metadatos distintos.',
-    tags=[Tags.INVENTARIO],
-    dependencies=[Depends(validar_access_token)],
-)
-async def get_meta_valores(session: AsyncSessionDep):
-    metadatos = await MetaValorQuery().get_meta_valores(session)
-    return metadatos
+CRUD(router, 'meta_atributo', MetaValorQuery(), MetaValor, MetaValorCreate)
 
 
 @router.get(
@@ -189,7 +176,14 @@ class FiltroTipoSoporte(str, Enum):
 class GroupBy(BaseModel):
     group_by: set[GroupByMovimientos]
 
+@router.post(
+    '/metadatos-por-atributo',
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(validar_access_token)],
+)
+async def get_metadatos_por_atributo():...
 
+#region reportes
 @router.post(
     '/movimiento-reporte',
     status_code=status.HTTP_200_OK,
@@ -302,7 +296,7 @@ async def get_saldos(session: AsyncSessionDep):
 
 
 CRUD(router, 'movimiento', MovimientoQuery(), Movimiento, MovimientoCreate)
-
+#endregion reportes
 
 # Pedidos
 @shopify_inventario_router.post(
@@ -393,7 +387,11 @@ if __name__ == '__main__':
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
                 df = DataFrame(records)
-                print(df.valor.sum())
-                print(df)
+
+                meta_datos = await MetadatosPorSoporteQuery().get_like(session, 2, meta_atributo='tag', meta_valor='keila')
+                for m in meta_datos:
+                    print(m)
+
+
 
     run(main())

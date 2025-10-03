@@ -2,7 +2,7 @@
 from datetime import date, timedelta
 import json
 from os import path
-from sqlmodel import SQLModel, select, asc, desc, func, between
+from sqlmodel import SQLModel, distinct, select, asc, desc, func, between, literal
 
 
 if __name__ == '__main__':
@@ -257,23 +257,38 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         result = await session.execute(statement)
         return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
 
-    async def get_list_by_soporte_like(
+    async def get_meta_valores_id_por_atributo_id(self, session: AsyncSession, meta_atributo_id: int):
+        statement = select(distinct(self.model_db.meta_valor_id)).where(
+            self.model_db.meta_atributo_id == meta_atributo_id
+        )
+        result = await session.execute(statement)
+        return list(result.scalars().all())
+
+    async def get_like(
         self,
         session: AsyncSession,
         tipo_soporte_id: int,
         soporte_ids: list[str] = [],
         meta_atributo: str | None = None,
         meta_valor: str | None = None,
-    ) -> list[MetadatosPorSoporteRead]:
-        statement = select(self.model_db).where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+    ):
+        select_colums = []
+        if meta_atributo:
+            select_colums.append(MetaAtributo.nombre)
+        if meta_valor:
+            select_colums.append(literal(meta_valor).label('valor'))
+
+        statement = select(self.model_db.soporte_id, *select_colums).distinct().where(
+            self.model_db.tipo_soporte_id == tipo_soporte_id
+        )
         if soporte_ids:
             statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
         if meta_atributo:
-            statement = statement.where(self.model_db.meta_atributo_id.like(f'%{meta_atributo}%'))  # type: ignore
+            statement = statement.join(MetaAtributo).where(MetaAtributo.nombre.like(f'%{meta_atributo}%'))  # type: ignore
         if meta_valor:
-            statement = statement.where(self.model_db.meta_valor_id.like(f'%{meta_valor}%'))  # type: ignore
+            statement = statement.join(MetaValor).where(MetaValor.valor.like(f'%{meta_valor}%'))  # type: ignore
         result = await session.execute(statement)
-        return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
+        return [result.mappings().all()]
 
 
 class MetaAtributoQuery(BaseQeuryNombre[MetaAtributo, MetaAtributoCreate]):
@@ -286,14 +301,10 @@ class MetaValorQuery(BaseQuery[MetaValor, MetaValorCreate]):
         super().__init__(MetaValor, MetaValorCreate)
 
     async def get_by_valor(self, session: AsyncSession, valor: str) -> MetaValor | None:
+        # Todos los metadatos/atributos se guarndan en lowercase
         statement = select(self.model_db).where(self.model_db.valor == valor.strip().lower())
         result = await session.execute(statement)
         return result.scalar_one_or_none()
-
-    async def get_meta_valores(self, session: AsyncSession) -> list[str]:
-        statement = select(self.model_db.valor).distinct()
-        result = await session.execute(statement)
-        return list(result.scalars().all()) or []
 
 
 class ElementoQuery(BaseQueryWithShopifyId[Elemento, ElementoCreate]):
@@ -415,8 +426,17 @@ if __name__ == '__main__':
                 # )  # 2: Pedido
                 # print(metadatos)
 
-                metavalor_query = MetaValorQuery()
-                metavalores = await metavalor_query.get_meta_valores(session)
-                print(metavalores)
+                # meta_ids_por_meta_atributo = await MetadatosPorSoporteQuery().get_meta_valores_id_por_atributo_id(
+                #     session, 1
+                # )
+                # print(meta_ids_por_meta_atributo)
+
+                # meta_valores = await MetaValorQuery().get_list_by_ids(session, meta_ids_por_meta_atributo)
+                # print(meta_valores)
+
+                meta_datos = await MetadatosPorSoporteQuery().get_like(session, 2, meta_atributo='tag', meta_valor='keila')
+                for m in meta_datos:
+                    print(m)
+
 
     asyncio.run(main())

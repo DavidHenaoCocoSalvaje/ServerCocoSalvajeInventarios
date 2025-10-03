@@ -44,6 +44,15 @@ class BaseQuery(Generic[ModelDB, ModelCreate]):
         result = await session.execute(stmt)
         return list(result.scalars().all()) or []
 
+    async def get_list_by_ids(
+        self, session: AsyncSession, ids: list[int], sort: Sort = Sort.DESC
+    ) -> list[ModelDB]:
+        """Obtiene una lista de objetos de forma asíncrona."""
+        order_id = self.model_db.id.asc() if sort == 'asc' else self.model_db.id.desc()  # type: ignore
+        stmt = select(self.model_db).where(self.model_db.id.in_(ids)).order_by(order_id)  # type: ignore
+        result = await session.execute(stmt)
+        return list(result.scalars().all()) or []
+
     async def create(self, session: AsyncSession, obj: ModelCreate) -> ModelDB:
         """Crea un nuevo objeto de forma asíncrona."""
         create_model = self.model_create(
