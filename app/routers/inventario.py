@@ -115,8 +115,8 @@ CRUD(router, 'tipo-medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
 CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPorVarianteCreate)
 CRUD(router, 'tipo-movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
-CRUD(router, 'meta-valor', MetaValorQuery(), MetaValor, MetaValorCreate)
-CRUD(router, 'meta-atributo', MetaValorQuery(), MetaValor, MetaValorCreate)
+CRUD(router, 'metavalor', MetaValorQuery(), MetaValor, MetaValorCreate)
+CRUD(router, 'metaatributo', MetaValorQuery(), MetaValor, MetaValorCreate)
 
 
 @router.get(
