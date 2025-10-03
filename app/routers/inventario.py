@@ -108,15 +108,15 @@ CRUD(router, 'variante', VarianteElementoQuery(), VarianteElemento, VarianteElem
 CRUD(router, 'componente', ComponentesPorVarianteQuery(), ComponentesPorVariante, ComponentesPorVarianteCreate)
 CRUD(router, 'bodega', BodegaQuery(), Bodega, BodegaCreate)
 CRUD(router, 'grupo', GrupoQuery(), Grupo, GrupoCreate)
-CRUD(router, 'unidad_medida', MedidaQuery(), Medida, MedidaCreate)
+CRUD(router, 'unidad-medida', MedidaQuery(), Medida, MedidaCreate)
 CRUD(router, 'precio', PrecioPorVarianteQuery(), PreciosPorVariante, PreciosPorVarianteCreate)
-CRUD(router, 'tipo_precio', TipoPrecioQuery(), TipoPrecio, TipoPrecioCreate)
-CRUD(router, 'tipo_medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
+CRUD(router, 'tipo-precio', TipoPrecioQuery(), TipoPrecio, TipoPrecioCreate)
+CRUD(router, 'tipo-medida', TiposMedidaQuery(), TiposMedida, TiposMedidaCreate)
 CRUD(router, 'medida', MedidasPorVarianteQuery(), MedidasPorVariante, MedidasPorVarianteCreate)
-CRUD(router, 'tipo_movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
+CRUD(router, 'tipo-movimiento', TipoMovimientoQuery(), TipoMovimiento, TipoMovimientoCreate)
 CRUD(router, 'estado', EstadoVarianteQuery(), EstadoVariante, EstadoVarianteCreate)
-CRUD(router, 'meta_valor', MetaValorQuery(), MetaValor, MetaValorCreate)
-CRUD(router, 'meta_atributo', MetaValorQuery(), MetaValor, MetaValorCreate)
+CRUD(router, 'meta-valor', MetaValorQuery(), MetaValor, MetaValorCreate)
+CRUD(router, 'meta-atributo', MetaValorQuery(), MetaValor, MetaValorCreate)
 
 
 @router.get(
