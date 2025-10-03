@@ -39,8 +39,8 @@ class CRUD:
             operation_id=f'create_{name}',
             response_model=model_db,
             status_code=status.HTTP_201_CREATED,
-            summary=f'Crear un nuevo {name.replace("_", " ")}',
-            description=f'Crea un nuevo {name.replace("_", " ")} con los datos proporcionados.',
+            summary=f'Crear un nuevo {name.replace("-", " ")}',
+            description=f'Crea un nuevo {name.replace("-", " ")} con los datos proporcionados.',
         )
         async def create_resource(
             resource: Annotated[SQLModel, model_create],
@@ -52,10 +52,10 @@ class CRUD:
         # GET - Obtener lista de recursos
         @router.get(
             f'/{pluralizar_por_sep(name, "-", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
-            operation_id=f'get_{pluralizar_por_sep(name, "_", 1)}',
+            operation_id=f'get_{pluralizar_por_sep(name, "-", 1)}',
             response_model=list[model_db],
-            summary=f'Obtener lista de {name.replace("_", " ")}s',
-            description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "_", 1).replace("_", " ")}.',
+            summary=f'Obtener lista de {name.replace("-", " ")}s',
+            description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "-", 1).replace("-", " ")}.',
         )
         async def get_resources(
             session: AsyncSessionDep,
@@ -71,8 +71,8 @@ class CRUD:
             f'/{name}/{{{name}-id}}',
             operation_id=f'get_{name}_by_id',
             response_model=model_db,
-            summary=f'Obtener {name.replace("_", " ")} por ID',
-            description=f'Obtiene los detalles de {name.replace("_", " ")} específico mediante su ID.',
+            summary=f'Obtener {name.replace("-", " ")} por ID',
+            description=f'Obtiene los detalles de {name.replace("-", " ")} específico mediante su ID.',
         )
         async def get_resource(
             session: AsyncSessionDep,
@@ -92,7 +92,7 @@ class CRUD:
             f'/{name}/{{{name}-id}}',
             operation_id=f'update_{name}',
             response_model=model_db,
-            summary=f'Actualizar {name.replace("_", " ")}',
+            summary=f'Actualizar {name.replace("-", " ")}',
         )
         async def update_resource(
             session: AsyncSessionDep,
@@ -114,7 +114,7 @@ class CRUD:
             f'/{name}/{{{name}-id}}',
             operation_id=f'delete_{name}',
             response_model=model_db,
-            summary=f'Eliminar {name.replace("_", " ")}',
+            summary=f'Eliminar {name.replace("-", " ")}',
         )
         async def delete_resource(
             session: AsyncSessionDep,
