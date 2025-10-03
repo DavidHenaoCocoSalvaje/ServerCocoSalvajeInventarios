@@ -51,7 +51,7 @@ class CRUD:
 
         # GET - Obtener lista de recursos
         @router.get(
-            f'/{pluralizar_por_sep(name, "_", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
+            f'/{pluralizar_por_sep(name, "-", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
             operation_id=f'get_{pluralizar_por_sep(name, "_", 1)}',
             response_model=list[model_db],
             summary=f'Obtener lista de {name.replace("_", " ")}s',
@@ -68,7 +68,7 @@ class CRUD:
 
         # GET - Obtener un recurso por ID
         @router.get(
-            f'/{name}/{{{name}_id}}',
+            f'/{name}/{{{name}-id}}',
             operation_id=f'get_{name}_by_id',
             response_model=model_db,
             summary=f'Obtener {name.replace("_", " ")} por ID',
@@ -89,7 +89,7 @@ class CRUD:
 
         # PUT - Actualizar un recurso
         @router.put(
-            f'/{name}/{{{name}_id}}',
+            f'/{name}/{{{name}-id}}',
             operation_id=f'update_{name}',
             response_model=model_db,
             summary=f'Actualizar {name.replace("_", " ")}',
@@ -111,7 +111,7 @@ class CRUD:
 
         # DELETE - Eliminar un recurso
         @router.delete(
-            f'/{name}/{{{name}_id}}',
+            f'/{name}/{{{name}-id}}',
             operation_id=f'delete_{name}',
             response_model=model_db,
             summary=f'Eliminar {name.replace("_", " ")}',

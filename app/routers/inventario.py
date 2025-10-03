@@ -388,11 +388,8 @@ if __name__ == '__main__':
                 # )
                 # df = DataFrame(records)
 
-
                 meta_datos = await MetadatosPorSoporteQuery().get_like(session, 2, meta_atributo='tag', meta_valor='keila')
                 for m in meta_datos:
                     print(m)
-
-
 
     run(main())
