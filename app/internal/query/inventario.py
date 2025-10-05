@@ -2,7 +2,7 @@
 from datetime import date, timedelta
 import json
 from os import path
-from sqlmodel import SQLModel, distinct, select, asc, desc, func, between, literal
+from sqlmodel import SQLModel, select, asc, desc, func, between, literal
 
 
 if __name__ == '__main__':
@@ -31,7 +31,6 @@ from app.models.db.inventario import (
     MetaAtributoCreate,
     MetaValor,
     MetaValorCreate,
-    MetadatosPorSoporteRead,
     Movimiento,
     MovimientoCreate,
     MetadatosPorSoporte,
@@ -239,30 +238,52 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
-    async def get_list_by_soporte(
+    async def get_distinct(self, session: AsyncSession):
+        statement = (
+            select(
+                self.model_db.meta_atributo_id,
+                self.model_db.meta_valor_id,
+                MetaAtributo.nombre.label('meta_atributo'),  # type: ignore
+                MetaValor.valor.label('meta_valor'),  # type: ignore
+            )
+            .distinct()
+            .join(MetaAtributo)
+            .join(MetaValor)
+        )
+
+        result = await session.execute(statement)
+        return [dict(row) for row in result.mappings().all()]
+
+    async def get_list_by(
         self,
         session: AsyncSession,
         tipo_soporte_id: int,
         soporte_ids: list[str] = [],
         meta_atributo_ids: list[int] | None = None,
         meta_valor_ids: list[int] | None = None,
-    ) -> list[MetadatosPorSoporteRead]:
-        statement = select(self.model_db).where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+    ):
+        statement = (
+            select(
+                self.model_db.soporte_id,
+                self.model_db.meta_atributo_id,
+                self.model_db.meta_valor_id,
+                MetaAtributo.nombre.label('meta_atributo'),  # type: ignore
+                MetaValor.valor.label('meta_valor'),  # type: ignore
+            )
+            .join(MetaAtributo)
+            .join(MetaValor)
+            .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
+        )
+
         if soporte_ids:
             statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
         if meta_atributo_ids:
             statement = statement.where(self.model_db.meta_atributo_id.in_(meta_atributo_ids))  # type: ignore
         if meta_valor_ids:
             statement = statement.where(self.model_db.meta_valor_id.in_(meta_valor_ids))  # type: ignore
-        result = await session.execute(statement)
-        return [MetadatosPorSoporteRead.model_validate(metadato) for metadato in result.scalars().all()]
 
-    async def get_meta_valores_id_por_atributo_id(self, session: AsyncSession, meta_atributo_id: int):
-        statement = select(distinct(self.model_db.meta_valor_id)).where(
-            self.model_db.meta_atributo_id == meta_atributo_id
-        )
         result = await session.execute(statement)
-        return list(result.scalars().all())
+        return [dict(row) for row in result.mappings().all()]
 
     async def get_like(
         self,
@@ -276,10 +297,12 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         if meta_atributo:
             select_colums.append(MetaAtributo.nombre)
         if meta_valor:
-            select_colums.append(literal(meta_valor).label('valor'))
+            select_colums.append(literal(meta_valor).label('meta_valor'))
 
-        statement = select(self.model_db.soporte_id, *select_colums).distinct().where(
-            self.model_db.tipo_soporte_id == tipo_soporte_id
+        statement = (
+            select(self.model_db.soporte_id, *select_colums)
+            .distinct()
+            .where(self.model_db.tipo_soporte_id == tipo_soporte_id)
         )
         if soporte_ids:
             statement = statement.where(self.model_db.soporte_id.in_(soporte_ids))  # type: ignore
@@ -288,7 +311,7 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         if meta_valor:
             statement = statement.join(MetaValor).where(MetaValor.valor.like(f'%{meta_valor}%'))  # type: ignore
         result = await session.execute(statement)
-        return [result.mappings().all()]
+        return [dict(row) for row in result.mappings().all()]
 
 
 class MetaAtributoQuery(BaseQeuryNombre[MetaAtributo, MetaAtributoCreate]):
@@ -424,7 +447,6 @@ if __name__ == '__main__':
                 # metadatos = await MetadatosPorSoporteQuery().get_list_by_soporte(
                 #     session, 2, meta_atributo_ids=[2]
                 # )  # 2: Pedido
-                # print(metadatos)
 
                 # meta_ids_por_meta_atributo = await MetadatosPorSoporteQuery().get_meta_valores_id_por_atributo_id(
                 #     session, 1
@@ -434,9 +456,13 @@ if __name__ == '__main__':
                 # meta_valores = await MetaValorQuery().get_list_by_ids(session, meta_ids_por_meta_atributo)
                 # print(meta_valores)
 
-                meta_datos = await MetadatosPorSoporteQuery().get_like(session, 2, meta_atributo='tag', meta_valor='keila')
-                for m in meta_datos:
-                    print(m)
+                # metadatos = await MetadatosPorSoporteQuery().get_like(
+                #     session, 2, meta_atributo='tag', meta_valor='keila'
+                # )
 
+                metadatos = await MetadatosPorSoporteQuery().get_distinct(session)
+
+                for m in metadatos:
+                    print(json.dumps(m, indent=4))
 
     asyncio.run(main())
