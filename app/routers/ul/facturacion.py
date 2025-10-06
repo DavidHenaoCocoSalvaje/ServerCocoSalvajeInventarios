@@ -3,7 +3,7 @@
 
 import traceback
 
-from app.internal.gen.utilities import DateTz
+from app.internal.gen.utilities import DateTz, reemplazar_acentos_graves
 from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
 from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
@@ -41,7 +41,7 @@ async def procesar_pedido_shopify(
         msg = 'No se proporciono order_gid ni pedido_number'
         log_facturacion.error(msg)
         return
-    
+
     await ShopifyInventario().crear_movimientos_orden(order)
 
     async for session in get_async_session():
@@ -170,14 +170,14 @@ async def facturar_orden(
     names = order.billingAddress.firstName.strip() or order.shippingAddress.firstName.strip()
     names_split = names.split(' ')
     names_split_capitalized = [x.capitalize() for x in names_split]
-    primer_nombre = names_split_capitalized[0]
-    segundo_nombre = ' '.join(names_split_capitalized[1:]) if len(names_split) > 1 else ''
+    primer_nombre = reemplazar_acentos_graves(names_split_capitalized[0])
+    segundo_nombre = reemplazar_acentos_graves(' '.join(names_split_capitalized[1:]) if len(names_split) > 1 else '')
 
     last_name = order.billingAddress.lastName.strip() or order.shippingAddress.lastName.strip()
     last_name_split = last_name.split(' ')
     last_name_split_capitalized = [x.capitalize() for x in last_name_split]
-    primer_apellido = last_name_split_capitalized[0]
-    segundo_apellido = ' '.join(last_name_split_capitalized[1:]) if len(last_name_split) > 1 else ''
+    primer_apellido = reemplazar_acentos_graves(last_name_split_capitalized[0])
+    segundo_apellido = reemplazar_acentos_graves(' '.join(last_name_split_capitalized[1:]) if len(last_name_split) > 1 else '')
 
     wo_tercero = await wo_client.get_tercero(identificacion_tercero)
 

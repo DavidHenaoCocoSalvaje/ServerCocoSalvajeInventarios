@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import re
 from zoneinfo import ZoneInfo
 
 if __name__ == '__main__':
@@ -87,6 +88,14 @@ def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
     return sep.join(palabras_en_plural + palabras_en_singular)
 
 
+def reemplazar_acentos_graves(cadena: str) -> str:
+    tabla_traduccion = str.maketrans(
+        'àèìòùÀÈÌÒÙ',
+        'áéíóúÁÉÍÓÚ'
+    )
+    return cadena.translate(tabla_traduccion)
+
+
 def divide(dividendo: int | float, divisor: int | float) -> float:
     """
     Evita ZeroDivisionError.
@@ -99,3 +108,6 @@ def divide(dividendo: int | float, divisor: int | float) -> float:
 
 if __name__ == '__main__':
     print(DateTz.local())
+    texto_acentos_graves = "Hòla, ¿còmo estàs? Espèro que èstes bìen. Ùltimamente..."
+    assert reemplazar_acentos_graves(texto_acentos_graves) == "Hóla, ¿cómo estás? Espéro que éstes bíen. Últimamente..."
+    

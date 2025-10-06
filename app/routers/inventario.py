@@ -485,29 +485,29 @@ if __name__ == '__main__':
     async def main():
         async for session in get_async_session():
             async with session:
-                # records = await get_movimientos_agrupados(
-                #     session=session,
-                #     start_date=date(2025, 9, 1),
-                #     end_date=date(2025, 9, 30),
-                #     sort=Sort.DESC,
-                #     frequency=Frequency.MONTHLY,
-                #     group_by=GroupBy(group_by={GroupByMovimientos.META_VALOR}),
-                #     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
-                #     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                # )
-                # df = DataFrame(records)
-                # print(df)
-
-                await get_movimientos_agrupados_like_metavalor(
+                records = await get_movimientos_agrupados(
                     session=session,
                     start_date=date(2025, 9, 1),
                     end_date=date(2025, 9, 30),
                     sort=Sort.DESC,
                     frequency=Frequency.MONTHLY,
-                    like_metavalor='keila',
+                    group_by=GroupBy(group_by={GroupByMovimientos.META_VALOR}),
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
                 )
+                df = DataFrame(records)
+                print(df)
+
+                # await get_movimientos_agrupados_like_metavalor(
+                #     session=session,
+                #     start_date=date(2025, 9, 1),
+                #     end_date=date(2025, 9, 30),
+                #     sort=Sort.DESC,
+                #     frequency=Frequency.MONTHLY,
+                #     like_metavalor='keila',
+                #     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
+                #     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
+                # )
                 # df = DataFrame(records)
                 # print(df)
 
