@@ -188,7 +188,7 @@ class GroupByLike(BaseModel):
     group_by: set[GroupByLikeMetaValor]
 
 
-@router.post(
+@router.get(
     '/metadatos-distinct',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
