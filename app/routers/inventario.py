@@ -211,6 +211,7 @@ async def get_movimientos_agrupados(
     frequency: Frequency = Frequency.DAILY,
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
     filtro_tipo_soporte: FiltroTipoSoporte | None = None,
+    meta_valor_ids: list[int] | None = None,
     group_by: GroupBy = GroupBy(group_by={GroupByMovimientos.VARIANTE}),
 ):
     tipo_movimiento_id = None
@@ -247,6 +248,7 @@ async def get_movimientos_agrupados(
         metadatos = await MetadatosPorSoporteQuery().get_list_by(
             session=session,
             tipo_soporte_id=tipo_soporte_id,
+            meta_valor_ids=meta_valor_ids,
             soporte_ids=[movimiento.soporte_id for movimiento in movimientos if movimiento.soporte_id],
         )
 
@@ -256,7 +258,10 @@ async def get_movimientos_agrupados(
 
     if metadatos:
         df_metadatos = DataFrame(metadatos)
-        df = df.merge(df_metadatos, left_on='soporte_id', right_on='soporte_id', how='left')
+        df = df.merge(df_metadatos, left_on='soporte_id', right_on='soporte_id', how='inner')
+
+    if df.empty:
+        return []
 
     df = (
         df.set_index('fecha')
