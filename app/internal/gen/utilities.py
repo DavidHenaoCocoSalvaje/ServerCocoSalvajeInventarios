@@ -1,5 +1,4 @@
 from datetime import date, datetime
-import re
 from zoneinfo import ZoneInfo
 
 if __name__ == '__main__':
