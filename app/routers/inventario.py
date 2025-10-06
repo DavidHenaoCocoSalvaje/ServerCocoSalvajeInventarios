@@ -179,11 +179,6 @@ class FiltroTipoSoporte(str, Enum):
     VENTA = 'venta'
     TRASLADO = 'traslado'
 
-
-class GroupBy(BaseModel):
-    group_by: set[GroupByMovimientos]
-
-
 class GroupByLike(BaseModel):
     group_by: set[GroupByLikeMetaValor]
 
@@ -196,6 +191,9 @@ class GroupByLike(BaseModel):
 async def get_meta_datos_distinct(session: AsyncSessionDep):
     return await MetadatosPorSoporteQuery().get_distinct(session)
 
+class BodyMovimientoAgrupados(BaseModel):
+    group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE}
+    meta_valor_ids: list[int] | None = None
 
 # region reportes
 @router.post(
@@ -211,8 +209,7 @@ async def get_movimientos_agrupados(
     frequency: Frequency = Frequency.DAILY,
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
     filtro_tipo_soporte: FiltroTipoSoporte | None = None,
-    meta_valor_ids: list[int] | None = None,
-    group_by: GroupBy = GroupBy(group_by={GroupByMovimientos.VARIANTE}),
+    body: BodyMovimientoAgrupados = BodyMovimientoAgrupados(),
 ):
     tipo_movimiento_id = None
     tipo_soporte_id = None
@@ -243,18 +240,18 @@ async def get_movimientos_agrupados(
     df = df_movimientos.copy()
 
     metadatos = None
-    meta_agrupadores = {GroupByMovimientos.META_ATRIBUTO, GroupByMovimientos.META_VALOR} & group_by.group_by
+    meta_agrupadores = {GroupByMovimientos.META_ATRIBUTO, GroupByMovimientos.META_VALOR} & body.group_by
     if tipo_soporte_id and meta_agrupadores:
         metadatos = await MetadatosPorSoporteQuery().get_list_by(
             session=session,
             tipo_soporte_id=tipo_soporte_id,
-            meta_valor_ids=meta_valor_ids,
+            meta_valor_ids=body.meta_valor_ids,
             soporte_ids=[movimiento.soporte_id for movimiento in movimientos if movimiento.soporte_id],
         )
 
     if meta_agrupadores and not tipo_soporte_id:
         for meta_agrupador in meta_agrupadores:
-            group_by.group_by.remove(meta_agrupador)
+            body.group_by.remove(meta_agrupador)
 
     if metadatos:
         df_metadatos = DataFrame(metadatos)
@@ -265,7 +262,7 @@ async def get_movimientos_agrupados(
 
     df = (
         df.set_index('fecha')
-        .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *group_by.group_by])
+        .groupby([Grouper(freq=frequency.value), 'tipo_movimiento_id', *body.group_by])
         .agg(
             {
                 'cantidad': 'sum',
@@ -281,7 +278,7 @@ async def get_movimientos_agrupados(
     total_valor = df['valor'].sum()
     df['valor_%'] = df['valor'] / total_valor * 100
 
-    if GroupByMovimientos.VARIANTE in group_by.group_by:
+    if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
 
         df_variantes = DataFrame([ve.model_dump() for ve in variantes_elemento])
@@ -290,7 +287,7 @@ async def get_movimientos_agrupados(
         df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
         df = df.rename(columns={'nombre': 'variante'})
 
-    if GroupByMovimientos.BODEGA in group_by.group_by:
+    if GroupByMovimientos.BODEGA in body.group_by:
         bodegas = await BodegaQuery().get_list(session)
         df_bodegas = DataFrame([bodega.model_dump() for bodega in bodegas])
         df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
@@ -298,6 +295,9 @@ async def get_movimientos_agrupados(
 
     return df.to_dict(orient='records')
 
+
+class BodyMovimientoAgrupadosLikeMetaValor(BaseModel):
+    group_by: set[GroupByLikeMetaValor] = {GroupByLikeMetaValor.VARIANTE}
 
 @router.post(
     'movimientos-agrupados-like-metavalor',
@@ -313,7 +313,7 @@ async def get_movimientos_agrupados_like_metavalor(
     frequency: Frequency = Frequency.DAILY,
     sort: Sort = Sort.DESC,
     filtro_tipo_movimiento: FiltroTipoMovimiento | None = None,
-    group_by: GroupByLike = GroupByLike(group_by={GroupByLikeMetaValor.VARIANTE}),
+    body: BodyMovimientoAgrupadosLikeMetaValor = BodyMovimientoAgrupadosLikeMetaValor(),
 ):
     tipo_movimiento_id = None
     tipo_soporte_id = None
@@ -358,7 +358,7 @@ async def get_movimientos_agrupados_like_metavalor(
 
     df = (
         df.set_index('fecha')
-        .groupby([Grouper(freq=frequency.value), 'meta_valor', *group_by.group_by])
+        .groupby([Grouper(freq=frequency.value), 'meta_valor', *body.group_by])
         .agg(
             {
                 'cantidad': 'sum',
@@ -374,7 +374,7 @@ async def get_movimientos_agrupados_like_metavalor(
     total_valor = df['valor'].sum()
     df['valor_%'] = df['valor'] / total_valor * 100
 
-    if GroupByMovimientos.VARIANTE in group_by.group_by:
+    if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
 
         df_variantes = DataFrame([ve.model_dump() for ve in variantes_elemento])
@@ -383,7 +383,7 @@ async def get_movimientos_agrupados_like_metavalor(
         df = df.drop(columns=['id', 'variante_id', 'shopify_id'])
         df = df.rename(columns={'nombre': 'variante'})
 
-    if GroupByMovimientos.BODEGA in group_by.group_by:
+    if GroupByMovimientos.BODEGA in body.group_by:
         bodegas = await BodegaQuery().get_list(session)
         df_bodegas = DataFrame([bodega.model_dump() for bodega in bodegas])
         df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
@@ -491,9 +491,9 @@ if __name__ == '__main__':
                     end_date=date(2025, 9, 30),
                     sort=Sort.DESC,
                     frequency=Frequency.MONTHLY,
-                    group_by=GroupBy(group_by={GroupByMovimientos.META_VALOR}),
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
+                    body=BodyMovimientoAgrupados()
                 )
                 df = DataFrame(records)
                 print(df)
