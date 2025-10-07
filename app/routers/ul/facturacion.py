@@ -26,7 +26,7 @@ log_facturacion = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
-async def validar_identificacion(identificacion: str) -> bool:
+def validar_identificacion(identificacion: str) -> bool:
     if not identificacion:
         return False
     # Validar una longitud entre 5 y 10 digitos para evitar facturar con documentos inválidos
