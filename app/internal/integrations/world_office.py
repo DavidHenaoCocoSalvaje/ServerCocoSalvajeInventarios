@@ -83,12 +83,6 @@ class WoClient(BaseClient):
         return await super().request(method, headers, url, payload, timeout=timeout)
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
-        if not identificacion:
-            msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
-            exception = WOException(msg=msg)
-            wo_log.error(str(exception))
-            raise exception
-
         url = self.build_url(self.host, self.Paths.Terceros.identificacion, [identificacion])
         tercero_json = await self.request('GET', self.headers, url)
 

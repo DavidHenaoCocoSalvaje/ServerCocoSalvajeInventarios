@@ -77,7 +77,6 @@ async def procesar_pedido_shopify(
                 pedido_update.pago = order.fullyPaid
                 await pedido_query.update(session, pedido_update, pedido.id)
 
-            wo_client = WoClient()
             try:
                 identificacion_billing_address = order.billingAddress.identificacion
                 identificacion_shipping_address = order.shippingAddress.identificacion
@@ -85,26 +84,6 @@ async def procesar_pedido_shopify(
                 if not validar_identificacion(identificacion_tercero):
                     identificacion_tercero = identificacion_shipping_address
                 
-                if not validar_identificacion(identificacion_tercero):
-                    raise ValueError('Identificacion inválida')
-
-            except Exception as e:
-                identificacion_tercero = None
-                pedido_update = pedido.model_copy()
-                pedido_update.log = f'{type(e).__name__}: {e}'
-                await pedido_query.update(session, pedido_update, pedido.id)
-                return
-
-            if not pedido.factura_id:
-                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
-                for tag in order_tags_lower:
-                    if PedidoLogs.NO_FACTURAR.value.lower() in tag and not f:
-                        pedido_update = pedido.model_copy()
-                        pedido_update.log = PedidoLogs.NO_FACTURAR.value
-                        pedido_update.q_intentos = 0
-                        await pedido_query.update(session, pedido_update, pedido.id)
-                        return
-
                 # Cuando un cliente realiza una compra en shopify, El documento de identidad se solicita en el campo "company" en la dirección de facturación.
                 if not identificacion_tercero:
                     msg = PedidoLogs.FALTA_DOCUMENTO_DE_IDENTIDAD.value
@@ -115,6 +94,27 @@ async def procesar_pedido_shopify(
                     log_facturacion.debug(msg)
                     return
 
+                if not validar_identificacion(identificacion_tercero):
+                    raise ValueError('Identificacion inválida')
+
+            except Exception as e:
+                identificacion_tercero = None
+                pedido_update = pedido.model_copy()
+                pedido_update.log = f'{type(e).__name__}: {e}'
+                await pedido_query.update(session, pedido_update, pedido.id)
+                return
+
+            wo_client = WoClient()
+            if not pedido.factura_id:
+                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
+                for tag in order_tags_lower:
+                    if PedidoLogs.NO_FACTURAR.value.lower() in tag and not f:
+                        pedido_update = pedido.model_copy()
+                        pedido_update.log = PedidoLogs.NO_FACTURAR.value
+                        pedido_update.q_intentos = 0
+                        await pedido_query.update(session, pedido_update, pedido.id)
+                        return
+            
                 concepto = f'{config.wo_concepto} - Pedido {order.number}'
                 try:
                     factura = await facturar_orden(wo_client, order, identificacion_tercero, order_tags_lower, concepto)
