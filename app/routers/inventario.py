@@ -256,6 +256,8 @@ async def get_movimientos_agrupados(
     if metadatos:
         df_metadatos = DataFrame(metadatos)
         df = df.merge(df_metadatos, left_on='soporte_id', right_on='soporte_id', how='inner')
+    else:
+        return []
 
     if df.empty:
         return []
@@ -493,7 +495,7 @@ if __name__ == '__main__':
                     frequency=Frequency.MONTHLY,
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR})
+                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR}, meta_valor_ids=[42])
                 )
                 df = DataFrame(records)
                 print(df)
