@@ -493,7 +493,7 @@ if __name__ == '__main__':
                     frequency=Frequency.MONTHLY,
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                    body=BodyMovimientoAgrupados()
+                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR})
                 )
                 df = DataFrame(records)
                 print(df)

@@ -26,6 +26,14 @@ log_facturacion = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
 
 
+async def validar_identificacion(identificacion: str) -> bool:
+    if not identificacion:
+        return False
+    # Validar una longitud entre 5 y 10 digitos para evitar facturar con documentos inválidos
+    if len(identificacion) < 5 or len(identificacion) > 10:
+        return False
+    return True
+
 async def procesar_pedido_shopify(
     order_number: int | None = None, order_gid: str | None = None, f=False
 ):  # BackgroundTasks No lanzar excepciones.
@@ -71,7 +79,15 @@ async def procesar_pedido_shopify(
 
             wo_client = WoClient()
             try:
-                identificacion_tercero = order.billingAddress.identificacion or order.shippingAddress.identificacion
+                identificacion_billing_address = order.billingAddress.identificacion
+                identificacion_shipping_address = order.shippingAddress.identificacion
+                identificacion_tercero = identificacion_billing_address
+                if not validar_identificacion(identificacion_tercero):
+                    identificacion_tercero = identificacion_shipping_address
+                
+                if not validar_identificacion(identificacion_tercero):
+                    raise ValueError('Identificacion inválida')
+
             except Exception as e:
                 identificacion_tercero = None
                 pedido_update = pedido.model_copy()
