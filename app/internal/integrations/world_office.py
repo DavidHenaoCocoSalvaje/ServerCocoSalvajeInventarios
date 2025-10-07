@@ -10,7 +10,6 @@ if __name__ == '__main__':
 
 from pydantic import ValidationError
 from app.internal.log import factory_logger
-from app.models.db.transacciones import PedidoLogs
 from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarDocumentoVentaResponse,
