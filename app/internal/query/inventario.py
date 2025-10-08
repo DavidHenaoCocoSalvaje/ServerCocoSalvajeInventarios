@@ -238,7 +238,7 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
-    async def get_distinct(self, session: AsyncSession):
+    async def get_distinct(self, session: AsyncSession, start_date: date | None = None, end_date: date | None = None):
         statement = (
             select(
                 self.model_db.meta_atributo_id,
@@ -250,6 +250,11 @@ class MetadatosPorSoporteQuery(BaseQuery[MetadatosPorSoporte, MetadatosPorSoport
             .join(MetaAtributo)
             .join(MetaValor)
         )
+
+        if start_date and end_date and end_date >= start_date:
+            end_date += timedelta(days=1)
+            statement = statement.join(Movimiento, self.model_db.soporte_id == Movimiento.soporte_id)  # type: ignore
+            statement = statement.where(between(Movimiento.fecha, start_date, end_date))
 
         result = await session.execute(statement)
         return [dict(row) for row in result.mappings().all()]
@@ -460,9 +465,9 @@ if __name__ == '__main__':
                 #     session, 2, meta_atributo='tag', meta_valor='keila'
                 # )
 
-                metadatos = await MetadatosPorSoporteQuery().get_distinct(session)
+                metadatos = await MetadatosPorSoporteQuery().get_distinct(session, start_date=date(2025, 9, 1), end_date=date(2025, 9, 30))
 
                 for m in metadatos:
-                    print(json.dumps(m, indent=4))
+                    print(m)
 
     asyncio.run(main())
