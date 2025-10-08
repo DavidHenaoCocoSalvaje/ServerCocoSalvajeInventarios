@@ -274,11 +274,11 @@ async def get_movimientos_agrupados(
         .reset_index()
     )
 
-    total_cantidad = df['cantidad'].sum()
-    df['cantidad_%'] = df['cantidad'] / total_cantidad * 100
+    total_cantidad = df_movimientos['cantidad'].sum()
+    df['cantidad_%'] = df_movimientos['cantidad'] / total_cantidad * 100
 
-    total_valor = df['valor'].sum()
-    df['valor_%'] = df['valor'] / total_valor * 100
+    total_valor = df_movimientos['valor'].sum()
+    df['valor_%'] = df_movimientos['valor'] / total_valor * 100
 
     if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
@@ -370,11 +370,11 @@ async def get_movimientos_agrupados_like_metavalor(
         .reset_index()
     )
 
-    total_cantidad = df['cantidad'].sum()
-    df['cantidad_%'] = df['cantidad'] / total_cantidad * 100
+    total_cantidad = df_movimientos['cantidad'].sum()
+    df['cantidad_%'] = df_movimientos['cantidad'] / total_cantidad * 100
 
-    total_valor = df['valor'].sum()
-    df['valor_%'] = df['valor'] / total_valor * 100
+    total_valor = df_movimientos['valor'].sum()
+    df['valor_%'] = df_movimientos['valor'] / total_valor * 100
 
     if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
