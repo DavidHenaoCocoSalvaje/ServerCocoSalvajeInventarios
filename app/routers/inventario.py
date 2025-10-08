@@ -12,6 +12,7 @@ if __name__ == '__main__':
     sys_path.append(abspath('.'))
 
 
+from app.internal.gen.utilities import divide
 from app.internal.integrations.shopify import ShopifyInventario
 from app.models.db.session import AsyncSessionDep
 from app.internal.query.base import DateRange, Sort
@@ -275,10 +276,10 @@ async def get_movimientos_agrupados(
     )
 
     total_cantidad = df_movimientos['cantidad'].sum()
-    df['cantidad_%'] = df_movimientos['cantidad'] / total_cantidad * 100
+    df['cantidad_%'] = df['cantidad'].apply(lambda x: divide(x, total_cantidad) * 100)
 
     total_valor = df_movimientos['valor'].sum()
-    df['valor_%'] = df_movimientos['valor'] / total_valor * 100
+    df['valor_%'] = df['valor'].apply(lambda x: divide(x, total_valor) * 100)
 
     if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
@@ -371,10 +372,10 @@ async def get_movimientos_agrupados_like_metavalor(
     )
 
     total_cantidad = df_movimientos['cantidad'].sum()
-    df['cantidad_%'] = df_movimientos['cantidad'] / total_cantidad * 100
+    df['cantidad_%'] = df['cantidad'].apply(lambda x: divide(x, total_cantidad) * 100)
 
     total_valor = df_movimientos['valor'].sum()
-    df['valor_%'] = df_movimientos['valor'] / total_valor * 100
+    df['valor_%'] = df['valor'].apply(lambda x: divide(x, total_valor) * 100)
 
     if GroupByMovimientos.VARIANTE in body.group_by:
         variantes_elemento = await VarianteElementoQuery().get_list(session)
@@ -495,7 +496,7 @@ if __name__ == '__main__':
                     frequency=Frequency.MONTHLY,
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR}, meta_valor_ids=[42])
+                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR})
                 )
                 df = DataFrame(records)
                 print(df)
