@@ -256,9 +256,9 @@ async def get_movimientos_agrupados(
     if metadatos:
         df_metadatos = DataFrame(metadatos)
         df = df.merge(df_metadatos, left_on='soporte_id', right_on='soporte_id', how='inner')
-    else:
+    elif meta_agrupadores and not metadatos:
         return []
-
+        
     if df.empty:
         return []
 
