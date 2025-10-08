@@ -35,7 +35,7 @@ def validar_identificacion(identificacion: str) -> bool:
     return True
 
 async def procesar_pedido_shopify(
-    order_number: int | None = None, order_gid: str | None = None, f=False
+    order_number: int | None = None, order_gid: str | None = None, force=False
 ):  # BackgroundTasks No lanzar excepciones.
     await sleep(30)
 
@@ -106,9 +106,9 @@ async def procesar_pedido_shopify(
 
             wo_client = WoClient()
             if not pedido.factura_id:
-                order_tags_lower = [x.lower().replace(' ', '_') for x in order.tags]
+                order_tags_lower = [x.strip().lower() for x in order.tags]
                 for tag in order_tags_lower:
-                    if PedidoLogs.NO_FACTURAR.value.lower() in tag and not f:
+                    if PedidoLogs.NO_FACTURAR.value.lower() in tag and not force:
                         pedido_update = pedido.model_copy()
                         pedido_update.log = PedidoLogs.NO_FACTURAR.value
                         pedido_update.q_intentos = 0

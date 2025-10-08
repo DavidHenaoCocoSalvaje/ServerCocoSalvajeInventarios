@@ -88,4 +88,4 @@ async def facturar_pedido(session: AsyncSessionDep, background_tasks: Background
 
 
 async def task_facturar_pedido(pedido: Pedido):
-    await procesar_pedido_shopify(order_number=pedido.numero, f=True)
+    await procesar_pedido_shopify(order_number=pedido.numero, force=True)
