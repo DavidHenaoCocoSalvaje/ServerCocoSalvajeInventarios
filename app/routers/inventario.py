@@ -188,8 +188,8 @@ class GroupByLike(BaseModel):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
-async def get_meta_datos_distinct(session: AsyncSessionDep):
-    return await MetadatosPorSoporteQuery().get_distinct(session)
+async def get_meta_datos_distinct(session: AsyncSessionDep, start_date: date | None = None, end_date: date | None = None):
+    return await MetadatosPorSoporteQuery().get_distinct(session, start_date, end_date)
 
 class BodyMovimientoAgrupados(BaseModel):
     group_by: set[GroupByMovimientos] = {GroupByMovimientos.VARIANTE}
