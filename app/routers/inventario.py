@@ -238,6 +238,8 @@ async def get_movimientos_agrupados(
         return []
 
     df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
+    # En la base de datos el valor es precio unitario, por lo que no representa el valor total de la venta.
+    df_movimientos.valor = df_movimientos.valor * df_movimientos.cantidad
     df = df_movimientos.copy()
 
     metadatos = None
@@ -347,6 +349,8 @@ async def get_movimientos_agrupados_like_metavalor(
         return []
 
     df_movimientos = DataFrame([mov.model_dump() for mov in movimientos])
+    # En la base de datos el valor es precio unitario, por lo que no representa el valor total de la venta.
+    df_movimientos.valor = df_movimientos.valor * df_movimientos.cantidad
 
     metadatos = None
     metadatos = await MetadatosPorSoporteQuery().get_like(
