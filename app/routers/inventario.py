@@ -303,7 +303,7 @@ class BodyMovimientoAgrupadosLikeMetaValor(BaseModel):
     group_by: set[GroupByLikeMetaValor] = {GroupByLikeMetaValor.VARIANTE}
 
 @router.post(
-    'movimientos-agrupados-like-metavalor',
+    '/movimientos-agrupados-like-metavalor',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
