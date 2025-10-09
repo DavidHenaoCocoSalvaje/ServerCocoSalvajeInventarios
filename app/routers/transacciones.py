@@ -75,17 +75,12 @@ async def task_facturar_pendientes(pedidos: list[Pedido]):
     dependencies=[Depends(validar_access_token)],
 )
 async def facturar_pedido(session: AsyncSessionDep, background_tasks: BackgroundTasks, pedido_number: int):
-    pedido_query = PedidoQuery()
-    pedido = await pedido_query.get_by_number(session, pedido_number)
-    if not pedido:
-        raise HTTPException(status_code=404, detail='Pedido no encontrado')
-
     if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
         return True
 
-    background_tasks.add_task(task_facturar_pedido, pedido, )
+    background_tasks.add_task(task_facturar_pedido, pedido_number)
     return True
 
 
-async def task_facturar_pedido(pedido: Pedido):
-    await procesar_pedido_shopify(order_number=pedido.numero, force=True)
+async def task_facturar_pedido(pedido_numero: int):
+    await procesar_pedido_shopify(order_number=pedido_numero, force=True)
