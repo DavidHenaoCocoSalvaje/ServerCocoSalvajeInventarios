@@ -1,6 +1,6 @@
 from enum import Enum
 
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, Depends, BackgroundTasks, status
 
 from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
@@ -74,7 +74,7 @@ async def task_facturar_pendientes(pedidos: list[Pedido]):
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
-async def facturar_pedido(session: AsyncSessionDep, background_tasks: BackgroundTasks, pedido_number: int):
+async def facturar_pedido(background_tasks: BackgroundTasks, pedido_number: int):
     if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
         return True
 
