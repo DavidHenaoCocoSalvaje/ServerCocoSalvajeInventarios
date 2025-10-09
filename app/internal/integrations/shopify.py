@@ -1011,8 +1011,8 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sicnronizar_inventario()
 
-        await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 10), 5)
+        # await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 10), 5)
 
-        # await ShopifyInventario().temp_crear_metadata_orders_by_range(date(2025, 9, 1), date(2025, 9, 15))
+        await ShopifyInventario().crear_metadata_orders_by_range(date(2025, 10, 1), date(2025, 10, 31))
 
     run(main())

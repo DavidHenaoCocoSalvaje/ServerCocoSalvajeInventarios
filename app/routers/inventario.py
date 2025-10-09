@@ -490,13 +490,13 @@ if __name__ == '__main__':
             async with session:
                 records = await get_movimientos_agrupados(
                     session=session,
-                    start_date=date(2025, 9, 1),
-                    end_date=date(2025, 9, 30),
+                    start_date=date(2025, 10, 1),
+                    end_date=date(2025, 10, 31),
                     sort=Sort.DESC,
                     frequency=Frequency.MONTHLY,
                     filtro_tipo_soporte=FiltroTipoSoporte.PEDIDO,
                     filtro_tipo_movimiento=FiltroTipoMovimiento.SALIDA,
-                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR})
+                    body=BodyMovimientoAgrupados(group_by={GroupByMovimientos.META_VALOR}, meta_valor_ids=[2, 7]),
                 )
                 df = DataFrame(records)
                 print(df)

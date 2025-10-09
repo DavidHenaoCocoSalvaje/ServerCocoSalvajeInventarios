@@ -50,8 +50,6 @@ async def procesar_pedido_shopify(
         log_facturacion.error(msg)
         return
 
-    await ShopifyInventario().crear_movimientos_orden(order)
-
     async for session in get_async_session():
         async with session:
             pedido_query = PedidoQuery()
@@ -144,6 +142,7 @@ async def procesar_pedido_shopify(
                 if not pedido.id or not pedido.factura_id:
                     return
 
+            await ShopifyInventario().crear_movimientos_orden(order)
             try:
                 if not pedido.contabilizado:
                     factura = await wo_client.get_documento_venta(pedido.factura_id)
