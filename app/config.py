@@ -16,7 +16,6 @@ class Config:
     def __new__(cls):
         # Asegura que solo se cree una instancia (Singleton)
         if cls._instance is None:
-            print('Creando instancia de configuración...')  # Para depuración
             cls._instance = super(Config, cls).__new__(cls)
             # Carga las variables de entorno una sola vez al crear la instancia
             cls._instance._load_config()
