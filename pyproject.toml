@@ -15,5 +15,6 @@ dependencies = [
     "argon2-cffi",
     "pyjwt",
     "apscheduler",
-    "python-dateutil"
+    "python-dateutil",
+    "holidays_co"
 ]

@@ -1,5 +1,8 @@
-from datetime import date, datetime
+import calendar
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
+
+import holidays_co
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -88,10 +91,7 @@ def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
 
 
 def reemplazar_acentos_graves(cadena: str) -> str:
-    tabla_traduccion = str.maketrans(
-        'àèìòùÀÈÌÒÙ',
-        'áéíóúÁÉÍÓÚ'
-    )
+    tabla_traduccion = str.maketrans('àèìòùÀÈÌÒÙ', 'áéíóúÁÉÍÓÚ')
     return cadena.translate(tabla_traduccion)
 
 
@@ -105,8 +105,20 @@ def divide(dividendo: int | float, divisor: int | float) -> float:
         return dividendo / divisor
 
 
+def get_weekday(fecha: datetime | date):
+    return calendar.weekday(fecha.year, fecha.month, fecha.day)
+
+
+def next_business_day(fecha: datetime | date, no_working_days: list[int] = [5, 6]):
+    weekday = get_weekday(fecha)
+    holidays = {h.date for h in holidays_co.get_colombia_holidays_by_year(fecha.year)}
+    while fecha in holidays or weekday in no_working_days:
+        fecha = fecha + timedelta(days=1)
+        weekday = get_weekday(fecha)
+    return fecha
+
+
 if __name__ == '__main__':
     print(DateTz.local())
-    texto_acentos_graves = "Hòla, ¿còmo estàs? Espèro que èstes bìen. Ùltimamente..."
-    assert reemplazar_acentos_graves(texto_acentos_graves) == "Hóla, ¿cómo estás? Espéro que éstes bíen. Últimamente..."
-    
+    texto_acentos_graves = 'Hòla, ¿còmo estàs? Espèro que èstes bìen. Ùltimamente...'
+    assert reemplazar_acentos_graves(texto_acentos_graves) == 'Hóla, ¿cómo estás? Espéro que éstes bíen. Últimamente...'

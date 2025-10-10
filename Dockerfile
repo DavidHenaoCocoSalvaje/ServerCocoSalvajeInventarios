@@ -6,7 +6,16 @@ FROM python:3.13-slim-trixie
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /app
 
-# Instala dependencias del sistema necesarias
+# Instala dependencias del sistema necesarias UV
+# The installer requires curl (and certificates) to download the release archive
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+# Download the latest installer
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+# Run the installer then remove it
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+# Ensure the installed binary is on the `PATH`
+ENV PATH="/root/.local/bin/:$PATH"
+
 RUN apt-get update && apt-get install -y \
     python3-dev \
     libpq-dev \
@@ -16,14 +25,15 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Actualiza pip a la última versión
-RUN pip install --upgrade pip
-
 # Copia solo los archivos de dependencias primero (para aprovechar cache de Docker)
 COPY pyproject.toml ./
 
+# Actualiza pip a la última versión
+# RUN pip install --upgrade pip
+RUN uv sync
+
 # Instala dependencias usando pip con pyproject.toml
-RUN pip install --no-cache-dir .
+# RUN pip install --no-cache-dir .
 
 # Copia el código de la aplicación
 COPY app/ ./app/
@@ -41,4 +51,4 @@ USER coco
 EXPOSE 8000
 
 # Comando para ejecutar la aplicación
-CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uv", "run", "fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

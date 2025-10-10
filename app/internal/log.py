@@ -1,41 +1,10 @@
 # app/internal/log.py
 import logging
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from enum import Enum
-from zoneinfo import ZoneInfo
 from app.config import config
 from sys import stdout
 from os import path, makedirs
-import datetime
-
-from app.internal.gen.utilities import DateTz
-
-
-class TimedSizeRotatingFileHandler(TimedRotatingFileHandler):
-    """
-    Handler que combina rotación por tiempo y por tamaño
-    """
-
-    def __init__(self, *args, maxBytes=0, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.maxBytes = maxBytes
-
-    def shouldRollover(self, record):
-        """
-        Determina si se debe rotar el archivo por tiempo o por tamaño
-        """
-        # Verificar rotación por tiempo
-        if super().shouldRollover(record):
-            return True
-
-        # Verificar rotación por tamaño
-        if self.maxBytes > 0:
-            msg = '%s\n' % self.format(record)
-            self.stream.seek(0, 2)  # Ir al final del archivo
-            if self.stream.tell() + len(msg) >= self.maxBytes:
-                return True
-
-        return False
 
 
 class LogLevel(Enum):
@@ -55,7 +24,7 @@ def factory_logger(
     backup_count: int = 5,
 ):
     """
-    Crea un logger con configuración para consola y opcionalmente archivo con rotación.
+    Crea un logger con configuración para consola y opcionalmente archivo con rotación por tamaño.
 
     Args:
         name: Nombre del logger
@@ -80,32 +49,23 @@ def factory_logger(
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # Handler para archivo con rotación (solo en desarrollo o si se especifica file=True)
+    # Handler para archivo con rotación por tamaño (solo en desarrollo o si se especifica file=True)
     if not config.production or file:
         # Crear directorio de logs si no existe
         logs_dir = 'logs'
         if not path.exists(logs_dir):
             makedirs(logs_dir)
 
-        # Nombre base del archivo de log
-        log_filename = path.join(logs_dir, f'{name}_{DateTz.local().strftime("%Y_%m_%d")}.log')
+        # Nombre del archivo de log
+        log_filename = path.join(logs_dir, f'{name}.log')
 
-        # Configurar timezone de Colombia
-        bogota_tz = ZoneInfo('America/Bogota')
-        midnight_bogota = datetime.time(0, 0, 0, 0, bogota_tz)
-
-        # TimedSizeRotatingFileHandler para rotación diaria y por tamaño
-        file_handler = TimedSizeRotatingFileHandler(
+        # RotatingFileHandler para rotación por tamaño
+        file_handler = RotatingFileHandler(
             filename=log_filename,
-            when='midnight',
-            interval=1,
+            maxBytes=max_file_size,
             backupCount=backup_count,
             encoding='utf-8',
-            maxBytes=max_file_size,
-            utc=False,
-            atTime=midnight_bogota,
         )
-        file_handler.suffix = '%Y_%m_%d'
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 

@@ -2,8 +2,11 @@
 
 
 import traceback
+from datetime import date, datetime, timedelta, time
 
-from app.internal.gen.utilities import DateTz, reemplazar_acentos_graves
+import holidays_co
+
+from app.internal.gen.utilities import DateTz, get_weekday, next_business_day, reemplazar_acentos_graves
 from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
 from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
@@ -24,6 +27,23 @@ from app.config import config
 
 log_facturacion = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
+
+
+def get_correct_date_for_invoice(
+    fecha: datetime | date, hora_fin_jornada: time = time(hour=16, minute=30), no_working_days: list[int] = [5, 6]
+):
+    holidays = {h.date for h in holidays_co.get_colombia_holidays_by_year(fecha.year)}
+    weekday = get_weekday(fecha)
+    if weekday in no_working_days or fecha in holidays:
+        return next_business_day(fecha)
+
+    if isinstance(fecha, datetime) and fecha.time() > hora_fin_jornada:
+        tomorrow = fecha + timedelta(days=1)
+        tomorrow_weekday = get_weekday(tomorrow)
+        if tomorrow in holidays or tomorrow_weekday in no_working_days:
+            return next_business_day(tomorrow)
+
+    return fecha
 
 
 def validar_identificacion(identificacion: str) -> bool:
@@ -296,7 +316,7 @@ async def facturar_orden(
 
     # if all(x.gateway == 'Addi Payment' for x in order.transactions):
     wo_documento_venta_create = WODocumentoVentaCreate(
-        fecha=DateTz.today(),
+        fecha=get_correct_date_for_invoice(DateTz.today()),
         prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FEFE
         documentoTipo='FV',
         concepto=concepto,
