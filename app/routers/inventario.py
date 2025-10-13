@@ -1,9 +1,12 @@
 # app/routers/inventario.py
 from datetime import date
 from enum import Enum
+from anyio import sleep
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 from pandas import DataFrame, Grouper
 from pydantic import BaseModel
+
+from app.internal.integrations.shopify_world_office import facturar_orden_shopify_world_office
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -13,7 +16,7 @@ if __name__ == '__main__':
 
 
 from app.internal.gen.utilities import divide
-from app.internal.integrations.shopify import ShopifyInventario
+from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
 from app.models.db.session import AsyncSessionDep
 from app.internal.query.base import DateRange, Sort
 from app.internal.query.inventario import (
@@ -79,7 +82,6 @@ from app.models.db.inventario import (
 
 # Base de datos (Repositorio)
 from app.routers.auth import validar_access_token
-from app.routers.ul.facturacion import procesar_pedido_shopify
 
 log_inventario = factory_logger('inventario', file=True)
 log_inventario_shopify = factory_logger('inventario_shopify', file=True)
@@ -430,7 +432,15 @@ async def recibir_pedido_shopify(
     order_webhook = OrderWebHook(**request_json)
     """Se evidencia que shopify en ocasiones intenta enviar el mismo pedido varias veces.
     Se evita usando BackgroundTasks pos si es a causa de un TimeoutError."""
-    background_tasks.add_task(procesar_pedido_shopify, order_webhook.order_number, order_webhook.admin_graphql_api_id)
+    async def task():
+        await sleep(30)
+        order = await ShopifyGraphQLClient().get_order_by_number(order_webhook.order_number)
+        if order is None:
+            return
+        await facturar_orden_shopify_world_office(order)
+        await ShopifyInventario().crear_movimientos_orden(order)
+
+    background_tasks.add_task(task)
 
     return True
 

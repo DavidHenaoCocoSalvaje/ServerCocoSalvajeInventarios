@@ -7,7 +7,7 @@ from datetime import date, datetime, timedelta, time
 import holidays_co
 
 from app.internal.gen.utilities import DateTz, get_weekday, next_business_day, reemplazar_acentos_graves
-from app.internal.integrations.shopify import ShopifyGraphQLClient, ShopifyInventario
+from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTercero, WOTerceroCreate
@@ -80,7 +80,7 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
     # 1. Realizar búsqueda por nombre en dirección de facturación
     log = []
     nombre = order.billingAddress.city
-    result = await wo_client.buscar_ciudad_nd(nombre, None)
+    result = await wo_client.buscar_ciudad(nombre, None)
     if isinstance(result, WOCiudad):
         return result
     elif isinstance(result, WOException):
@@ -88,7 +88,7 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
 
     # 2 Realizar búsqueda por nombre en dirección de envío
     nombre = order.shippingAddress.city
-    result = await wo_client.buscar_ciudad_nd(nombre, None)
+    result = await wo_client.buscar_ciudad(nombre, None)
     if isinstance(result, WOCiudad):
         return result
     elif isinstance(result, WOException):
@@ -97,7 +97,7 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
     # 3 Realizar búsqueda por departamento en dirección de facturación
     log = []
     departamento = order.billingAddress.province
-    result = await wo_client.buscar_ciudad_nd(None, departamento)
+    result = await wo_client.buscar_ciudad(None, departamento)
     if isinstance(result, WOCiudad):
         return result
     elif isinstance(result, WOException):
@@ -105,7 +105,7 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
 
     # 4 Realizar búsqueda por departamento en dirección de envío
     departamento = order.shippingAddress.province
-    result = await wo_client.buscar_ciudad_nd(None, departamento)
+    result = await wo_client.buscar_ciudad(None, departamento)
     if isinstance(result, WOCiudad):
         return result
     elif isinstance(result, WOException):
@@ -247,33 +247,20 @@ class ShopifyWorldOffice:
 
 
 async def facturar_orden_shopify_world_office(
-    order_number: int | None = None, order_gid: str | None = None, force=False
+    orden: Order, force = False
 ):  # BackgroundTasks No lanzar excepciones.
-    await sleep(30)
-
-    shopify_graphql_client = ShopifyGraphQLClient()
-    if order_gid:
-        order_response = await shopify_graphql_client.get_order(order_gid)
-        order = order_response.data.order
-    elif order_number:
-        order = await shopify_graphql_client.get_order_by_number(int(order_number))
-    else:
-        msg = 'No se proporciono order_gid ni pedido_number'
-        log_facturacion.error(msg)
-        return
-
     async for session in get_async_session():
         async with session:
             pedido_query = PedidoQuery()
-            pedido = await get_or_create_pedido_by_number(order.number, pedido_query, session)
+            pedido = await get_or_create_pedido_by_number(orden.number, pedido_query, session)
             if pedido.factura_id:
                 # Si el pedido ya se encuentra facturado se detiene el proceso.
                 return
             if not pedido.id:
                 return
 
-            if not order.fullyPaid:
-                msg = f'financialStatus: {order.displayFinancialStatus}'
+            if not orden.fullyPaid:
+                msg = f'financialStatus: {orden.displayFinancialStatus}'
                 pedido_update = pedido.model_copy()
                 pedido_update.log = msg
                 await pedido_query.update(session, pedido_update, pedido.id)
@@ -281,11 +268,11 @@ async def facturar_orden_shopify_world_office(
             else:
                 # Se registra pago
                 pedido_update = pedido.model_copy()
-                pedido_update.pago = order.fullyPaid
+                pedido_update.pago = orden.fullyPaid
                 await pedido_query.update(session, pedido_update, pedido.id)
 
             wo_client = WoClient()
-            order_tags_lower = {x.strip().lower() for x in order.tags}
+            order_tags_lower = {x.strip().lower() for x in orden.tags}
             if PedidoLogs.NO_FACTURAR.value.lower() in order_tags_lower and not force:
                 pedido_update = pedido.model_copy()
                 pedido_update.log = PedidoLogs.NO_FACTURAR.value
@@ -294,7 +281,7 @@ async def facturar_orden_shopify_world_office(
                 return
 
             try:
-                identificacion_tercero = get_identificacion_tercero(order)
+                identificacion_tercero = get_identificacion_tercero(orden)
             except Exception as e:
                 identificacion_tercero = None
                 pedido_update = pedido.model_copy()
@@ -302,11 +289,11 @@ async def facturar_orden_shopify_world_office(
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
-            concepto = f'{config.wo_concepto} - Pedido {order.number}'
+            concepto = f'{config.wo_concepto} - Pedido {orden.number}'
             try:
-                wo_tercero = await get_valid_wo_tercero(wo_client, order, identificacion_tercero)
+                wo_tercero = await get_valid_wo_tercero(wo_client, orden, identificacion_tercero)
 
-                reglones = await get_wo_reglones_from_order(wo_client, order)
+                reglones = await get_wo_reglones_from_order(wo_client, orden)
 
                 # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
                 # 4 para contado, 5 para credito
@@ -356,7 +343,6 @@ async def facturar_orden_shopify_world_office(
             if not pedido.id or not pedido.factura_id:
                 return
 
-            await ShopifyInventario().crear_movimientos_orden(order)
             try:
                 if not pedido.contabilizado:
                     factura = await wo_client.get_documento_venta(pedido.factura_id)

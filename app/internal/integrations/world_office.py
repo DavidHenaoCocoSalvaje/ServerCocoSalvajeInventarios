@@ -221,7 +221,7 @@ class WoClient(BaseClient):
 
         return tercero_response.data
 
-    async def buscar_ciudad_nd(self, nombre: str | None, departamento: str | None) -> WOCiudad | WOException:
+    async def buscar_ciudad(self, nombre: str | None, departamento: str | None) -> WOCiudad | WOException:
         if nombre:
             atributo = 'nombre'
             valor = nombre
@@ -274,73 +274,6 @@ class WoClient(BaseClient):
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
             return exception
         
-        return ciudades_response.data.content[0]
-
-    async def buscar_ciudad(self, departamento: str, ciudad: str | None) -> WOCiudad:
-        valor = ciudad or departamento
-        atributo = 'nombre' if ciudad else 'ubicacionDepartamento.nombre'
-        filtro = WOFiltro(
-            atributo=atributo,
-            valor=valor,
-            tipoFiltro=TipoFiltroWoFiltro.CONTIENE,
-            tipoDato=TipoDatoWoFiltro.STRING,
-            operador=Operador.AND,
-        )
-
-        wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
-
-        url = self.build_url(self.host, self.Paths.Ciudad.listar_ciudades)
-        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
-
-        try:
-            ciudades_json = await self.request('POST', self.headers, url, payload=payload)
-        except Exception as e:
-            msg = f'{type(e)}, ciudad: {ciudad}, departamento: {departamento}'
-            exception = WOException(url=url, payload=payload, response=None, msg=msg)
-            wo_log.error(f'{exception}')
-            raise exception
-
-        try:
-            ciudades_response = WOListaCiudadesResponse(**ciudades_json)
-        except ValidationError as e:
-            msg = f'ValidarionError, ciudad: {ciudad}, departamento: {departamento}'
-            msg += f'\n{repr(e.errors())}'
-            exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-            wo_log.error(str(exception))
-            ciudades_response = WOListaCiudadesResponse()
-
-        # Si no se encuentra por nombre de ciudad, por posible escritura incorrecta, se busca por departamento.
-        if not ciudades_response.valid():
-            if valor == ciudad:
-                atributo = 'ubicacionDepartamento.nombre'
-                filtro.atributo = atributo
-                if 'San Andrés, Providencia y Santa Catalina' in departamento:
-                    # En Shopify sale como Archipiélago de San Andrés, Providencia y Santa Catalina, pero en World Office es Archipiélago de San Andrés.
-                    departamento = 'Archipiélago de San Andrés'
-                filtro.valor = departamento
-
-                wo_listar.filtros = [filtro]
-                url = self.build_url(self.host, self.Paths.Ciudad.listar_ciudades)
-                payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
-                ciudades_json = await self.request('POST', self.headers, url, payload=payload)
-
-                try:
-                    ciudades_response = WOListaCiudadesResponse(**ciudades_json)
-                except ValidationError as e:
-                    msg = (
-                        f'{type(e)} {WOListaCiudadesResponse.__name__}, ciudad: {ciudad}, departamento: {departamento}'
-                    )
-                    msg += f'\n{repr(e.errors())}'
-                    exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-                    wo_log.error(str(exception))
-                    raise exception
-
-                if not ciudades_response.valid():
-                    msg = f'No se encontró ciudad, ciudad: {ciudad}, departamento: {departamento}'
-                    exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-                    wo_log.error(str(exception))
-                    raise exception
-
         return ciudades_response.data.content[0]
 
     async def documento_venta_por_concepto(self, concepto: str, codigo_documento: str = 'FV') -> WODocumentoVenta:
