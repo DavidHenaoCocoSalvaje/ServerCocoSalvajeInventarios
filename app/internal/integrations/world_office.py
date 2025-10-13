@@ -221,6 +221,61 @@ class WoClient(BaseClient):
 
         return tercero_response.data
 
+    async def buscar_ciudad_nd(self, nombre: str | None, departamento: str | None) -> WOCiudad | WOException:
+        if nombre:
+            atributo = 'nombre'
+            valor = nombre
+        elif departamento:
+            atributo = 'ubicacionDepartamento.nombre'
+            # En Shopify sale como Archipiélago de San Andrés, Providencia y Santa Catalina, pero en World Office es Archipiélago de San Andrés.
+            valor = (
+                'Archipiélago de San Andrés'
+                if departamento == 'San Andrés, Providencia y Santa Catalina'
+                else departamento
+            )
+        else:
+            exception = WOException(msg='No se proporcionó nombre ni departamento para buscar ciudad')
+            return exception
+
+        filtro = WOFiltro(
+            atributo=atributo,
+            valor=valor,
+            tipoFiltro=TipoFiltroWoFiltro.IGUAL,
+            tipoDato=TipoDatoWoFiltro.STRING,
+            operador=Operador.AND,
+        )
+
+        wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
+        url = self.build_url(self.host, self.Paths.Ciudad.listar_ciudades)
+        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
+
+        try:
+            ciudades_json = await self.request('POST', self.headers, url, payload=payload)
+        except Exception as e:
+            msg = f'{type(e)}, ciudad: {nombre}'
+            exception = WOException(url=url, payload=payload, response=None, msg=msg)
+            wo_log.error(f'{exception}')
+            raise exception
+
+        try:
+            ciudades_response = WOListaCiudadesResponse(**ciudades_json)
+        except ValidationError as e:
+            msg = f'ValidarionError, ciudad: {nombre}'
+            msg += f'\n{repr(e.errors())}'
+            exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
+            return exception
+
+        if not ciudades_response.valid():
+            msg = 'No se encontró ciudad'
+            if nombre:
+                msg += f', nombre: {nombre}'
+            if departamento:
+                msg += f', departamento: {departamento}'
+            exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
+            return exception
+        
+        return ciudades_response.data.content[0]
+
     async def buscar_ciudad(self, departamento: str, ciudad: str | None) -> WOCiudad:
         valor = ciudad or departamento
         atributo = 'nombre' if ciudad else 'ubicacionDepartamento.nombre'
