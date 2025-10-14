@@ -15,7 +15,7 @@ from app.internal.integrations.world_office import WOException, WoClient
 from app.models.db.transacciones import Pedido, PedidoCreate, PedidoLogs
 from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order
-from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WOReglone
+from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WODocumentoVentaDetail, WOReglone
 from app.internal.log import LogLevel, factory_logger
 from asyncio import sleep, TimeoutError
 
@@ -290,6 +290,7 @@ async def facturar_orden_shopify_world_office(
                 return
 
             concepto = f'{config.wo_concepto} - Pedido {orden.number}'
+            factura = WODocumentoVentaDetail()
             try:
                 wo_tercero = await get_valid_wo_tercero(wo_client, orden, identificacion_tercero)
 
@@ -316,7 +317,13 @@ async def facturar_orden_shopify_world_office(
                     reglones=reglones,
                 )
 
-                return await wo_client.crear_factura_venta(wo_documento_venta_create)
+                factura = await wo_client.crear_factura_venta(wo_documento_venta_create)
+                if not factura.id or not factura.numero:
+                    pedido_update = pedido.model_copy()
+                    pedido_update.log = factura.model_dump_json()
+                    await pedido_query.update(session, pedido_update, pedido.id)
+                    return
+
             except TimeoutError:
                 # Si no se recibe respuesta esperar 30 segundos más y validar si se creo la factura.
                 await sleep(30)
