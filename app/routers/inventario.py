@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request,
 from pandas import DataFrame, Grouper
 from pydantic import BaseModel
 
-from app.internal.integrations.shopify_world_office import facturar_orden_shopify_world_office
 
 if __name__ == '__main__':
     from os.path import abspath
@@ -41,6 +40,7 @@ from app.internal.query.inventario import (
 from app.models.pydantic.shopify.order import OrderWebHook
 from app.routers.base import CRUD
 from app.internal.log import LogLevel, factory_logger
+from app.internal.integrations.shopify_world_office import facturar_orden_shopify_world_office
 
 # Seguridad
 from app.routers.auth import hmac_validation_shopify
