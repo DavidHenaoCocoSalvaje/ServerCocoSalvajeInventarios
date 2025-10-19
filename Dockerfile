@@ -1,7 +1,7 @@
 # Dockerfile para API de Inventarios Coco Salvaje
 
 # Usa una imagen base oficial de Python 3.13 slim
-FROM python:3.13-slim-trixie
+FROM python:3.14-slim-trixie
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Establece el directorio de trabajo en el contenedor
