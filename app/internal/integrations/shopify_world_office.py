@@ -298,9 +298,7 @@ async def facturar_orden_shopify_world_office(
 
                 # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
                 # 4 para contado, 5 para credito
-                id_forma_pago = 4
-                if 'credito' in order_tags_lower:
-                    id_forma_pago = 5
+                id_forma_pago = 5 if any('credito' in tag or 'crédito' in tag for tag in order_tags_lower) else 4
 
                 # if all(x.gateway == 'Addi Payment' for x in order.transactions):
                 wo_documento_venta_create = WODocumentoVentaCreate(
