@@ -1,6 +1,6 @@
 from enum import Enum
 
-from fastapi import APIRouter, Depends, BackgroundTasks, status
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, UploadFile, status
 
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.integrations.shopify_world_office import facturar_orden_shopify_world_office
@@ -11,6 +11,9 @@ from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
 from app.internal.query.transacciones import PedidoQuery
 from app.config import Environments, config
+from pandas import read_csv, DataFrame, to_datetime
+from io import BytesIO
+from numpy import nan
 
 
 class Tags(Enum):
@@ -69,7 +72,6 @@ async def facturar_pendientes(
 
 @router.post(
     '/facturar/{pedido_number}',
-    status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
 async def facturar_pedido(background_tasks: BackgroundTasks, pedido_number: int):
@@ -84,3 +86,89 @@ async def facturar_pedido(background_tasks: BackgroundTasks, pedido_number: int)
 
     background_tasks.add_task(task, pedido_number)
     return True
+
+
+@router.post(
+    'csv-addi',
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(validar_access_token)],
+)
+async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSessionDep):
+    if not len(files) == 1:
+        return HTTPException(status_code=400, detail='Debe enviar un solo archivo')
+
+    filename = files[0].filename
+    if not filename:
+        return HTTPException(status_code=400, detail='')
+
+    if files[0].filename and not files[0].filename.endswith('.csv'):
+        return HTTPException(status_code=400, detail='Debe enviar un archivo CSV')
+
+    file = await files[0].read()
+    buffer = BytesIO(file)
+    df = read_csv(buffer, encoding='utf-8')
+    # Normaliza \xa0, \t, \n, múltiples espacios, etc. a un solo espacio
+    for col in df.select_dtypes(include=['object']).columns:
+        df[col] = df[col].str.split().str.join(' ')
+
+    # Algunos pagos de aparecen en Addi como exitosos pero luego salen como Abandonados, se deben identificar y filtrar
+    # Encontrar valors duplicados en campo "ID Orden" y Eliminar si el último tiene estado de "Abandono"\
+
+    def parse_fecha(fecha_str):
+        meses = {
+            'ene': 'Jan',
+            'feb': 'Feb',
+            'mar': 'Mar',
+            'abr': 'Apr',
+            'jun': 'Jun',
+            'jul': 'Jul',
+            'ago': 'Aug',
+            'sept': 'Sep',
+            'oct': 'Oct',
+            'nov': 'Nov',
+            'dic': 'Dec',
+        }
+        # Reemplazar AM/PM
+        fecha_str = fecha_str.replace('a. m.', 'AM').replace('p. m.', 'PM').replace('GMT-5', '-0500')
+        # Reemplazar solo los meses necesarios
+        for esp, eng in meses.items():
+            fecha_str = fecha_str.replace(f' {esp} ', f' {eng} ')
+        return to_datetime(fecha_str, format='%d %b %Y, %I:%M %p %z')
+
+    df['Fecha Creación'] = df['Fecha Creación'].apply(parse_fecha).dt.tz_convert(config.local_timezone)
+    df = df.sort_values(['Fecha Creación', 'ID Orden']).drop_duplicates(['Fecha Creación', 'ID Orden'], keep='last')
+
+    # Filtrar solo por pagos exitosos y canal E_COMMERCE_SHOPIFY para encontrar los pedidos al consultar en Sopify, de lo contrario serán pedido que no se encontrarán
+    # Solo mantenter órdenes a crédito que son al de interés para realizar menos peticiones a Shopify y tardar menos en responder
+    df = df[(df['Estado'] == 'Exitosa') & (df['Canal'] == 'E_COMMERCE_SHOPIFY') & (df['Tipo de venta'] == 'Crédito')]
+
+    if not len(df):
+        return HTTPException(
+            status_code=400,
+            detail='No se encontraron pedidos exitosos, el archivo debe contener registros con estado Exitoso',
+        )
+
+    orders = await ShopifyGraphQLClient().get_orders_by_payment_ids(
+        [payment_id for payment_id in df['ID Orden'].to_list()]
+    )
+    # Mapear ordenes por payment_id
+    map_orders = {
+        transaction.paymentId: order.number
+        for order in orders
+        for transaction in order.transactions
+        if transaction.gateway == 'Addi Payment' and order.fullyPaid
+    }
+
+    df['orden'] = df['ID Orden'].map(lambda x: map_orders.get(x))
+
+    pedidos = await PedidoQuery().get_by_numbers(session, [int(x) for x in df['orden'][df['orden'].notna()]])
+    pedidos_df = DataFrame([pedido.model_dump() for pedido in pedidos])
+
+    df = df.merge(pedidos_df, left_on='orden', right_on='numero', how='left')
+    df = df.rename(columns={'CC': 'cc', 'Nombre Cliente': 'nombre_cliente', 'Tipo de venta': 'tipo_venta'})
+
+    return (
+        df[['fecha', 'numero', 'factura_id', 'contabilizado', 'CC', 'Nombre Cliente', 'Tipo de venta']]
+        .replace(nan, None)
+        .to_dict(orient='records')
+    )

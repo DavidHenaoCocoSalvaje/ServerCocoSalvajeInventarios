@@ -25,6 +25,11 @@ class PedidoQuery(BaseQuery[Pedido, PedidoCreate]):
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
+    async def get_by_numbers(self, session: AsyncSession, order_numbers: list[int]) -> list[Pedido]:
+        statement = select(self.model_db).where(self.model_db.numero.in_(order_numbers))  # type: ignore
+        result = await session.execute(statement)
+        return list(result.scalars().all())
+
     async def get_pendientes_facturar(self, session: AsyncSession) -> list[Pedido]:
         # factura_id = '' o q_intentos > 0
         # Se restan 5 minutos para evitar obtener pedidos que se están procesando en el momento.

@@ -4,6 +4,7 @@ from enum import Enum
 from anyio import sleep
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 from pandas import DataFrame, Grouper
+from numpy import nan
 from pydantic import BaseModel
 
 
@@ -300,7 +301,7 @@ async def get_movimientos_agrupados(
         df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
         df = df.drop(columns=['id', 'bodega_id', 'shopify_id'])
 
-    return df.to_dict(orient='records')
+    return df.replace(nan, None).to_dict(orient='records')
 
 
 class BodyMovimientoAgrupadosLikeMetaValor(BaseModel):
@@ -398,7 +399,7 @@ async def get_movimientos_agrupados_like_metavalor(
         df = df.merge(df_bodegas, left_on='bodega_id', right_on='id', how='left')
         df = df.drop(columns=['id', 'bodega_id', 'shopify_id'])
 
-    return df.to_dict(orient='records')
+    return df.replace(nan, None).to_dict(orient='records')
 
 
 @router.get(

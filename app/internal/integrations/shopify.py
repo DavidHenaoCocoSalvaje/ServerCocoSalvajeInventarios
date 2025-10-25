@@ -623,6 +623,68 @@ class ShopifyGraphQLClient(BaseClient):
 
         return orders_response.data.orders.nodes[0]
 
+    async def get_order_by_payment_id(self, payment_id: str) -> Order | None:
+        query = """
+        query GetOrderByNumber($search_query: String!) {
+            orders(first: 1, query: $search_query) {
+                nodes {
+                    id
+                    fullyPaid
+                    displayFinancialStatus
+                    tags
+                    email
+                    number
+                    createdAt
+                    app {
+                        name
+                    }
+                    customer {
+                        firstName
+                        lastName
+                        id
+                    }
+                    transactions {
+                        gateway
+                        paymentId
+                    }
+                }
+            }
+        }
+        """
+        variables = self.Variables(search_query=f'payment_id:{payment_id}').model_dump(exclude_none=True)
+        orders_json = await self._execute_query(query, **variables)
+        try:
+            orders_response = OrdersResponse(**orders_json)
+            orders_response.valid()
+            if not orders_response.valid():
+                return None
+        except ValidationError as e:
+            msg = f'{type(e)} {OrdersResponse.__name__}'
+            msg += f'\n{repr(e.errors())}'
+            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
+            raise exception
+        except KeyError:
+            msg = 'KeyError'
+            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
+            raise exception
+        except IndexError:
+            msg = 'IndexError'
+            exception = ShopifyException(url=self.host, payload=self.payload, response=orders_json, msg=msg)
+            raise exception
+
+        return orders_response.data.orders.nodes[0]
+
+    async def get_orders_by_payment_ids(self, payment_ids: list[str], batch_size: int = 10) -> list[Order]:
+        if not len(payment_ids):
+            return []
+        orders = []
+        for i in range(0, len(payment_ids), batch_size):
+            batch = payment_ids[i : i + batch_size]
+            tasks = [self.get_order_by_payment_id(payment_id) for payment_id in batch if payment_id]
+            orders_response = await gather(*tasks)
+            orders.extend([order for order in orders_response if order])
+        return orders
+
     async def get_products(self, batch_size: int = 10) -> list[Product]:
         """Función principal optimizada con procesamiento en lotes de 5 productos"""
         # Obtener todos los productos
@@ -945,9 +1007,7 @@ class ShopifyInventario:
             log_shopify.info(msg=f'movimientos sincronizados desde {current_start} hasta {min(range_end, end)}')
             current_start = range_end + timedelta(days=1)
 
-    async def crear_metadata_orders_by_range(
-        self, start: date, end: date, step_days: int = 5, batch_size: int = 20
-    ):
+    async def crear_metadata_orders_by_range(self, start: date, end: date, step_days: int = 5, batch_size: int = 20):
         shopify_client = ShopifyGraphQLClient()
         # Realizar sincronización por rangos de fechas de acuerdo a step_days
         current_start = start
