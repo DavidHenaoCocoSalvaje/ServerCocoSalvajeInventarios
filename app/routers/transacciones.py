@@ -168,7 +168,7 @@ async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSession
     df = df.rename(columns={'CC': 'cc', 'Nombre Cliente': 'nombre_cliente', 'Tipo de venta': 'tipo_venta'})
 
     return (
-        df[['fecha', 'numero', 'factura_id', 'contabilizado', 'CC', 'Nombre Cliente', 'Tipo de venta']]
+        df[['fecha', 'numero', 'factura_id', 'contabilizado', 'cc', 'nombre_cliente', 'tipo_venta']]
         .replace(nan, None)
         .to_dict(orient='records')
     )
