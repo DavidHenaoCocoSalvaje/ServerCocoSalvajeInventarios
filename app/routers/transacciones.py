@@ -89,7 +89,7 @@ async def facturar_pedido(background_tasks: BackgroundTasks, pedido_number: int)
 
 
 @router.post(
-    'csv-addi',
+    '/csv-addi',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
