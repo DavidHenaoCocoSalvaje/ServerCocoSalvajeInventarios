@@ -10,7 +10,6 @@ from app.internal.gen.utilities import DateTz, get_weekday, next_business_day, r
 from app.internal.integrations.addi import AddiClient
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
-from app.models.pydantic import addi
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTercero, WOTerceroCreate
 from app.internal.integrations.world_office import WOException, WoClient
