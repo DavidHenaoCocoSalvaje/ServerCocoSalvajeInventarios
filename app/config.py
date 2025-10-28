@@ -72,6 +72,11 @@ class Config:
         self.wo_prefijo: int = int(getenv('WO_PREFIJO', 1))
         self.wo_concepto: str = getenv('WO_CONCEPTO', '')
 
+        # Addi
+        self.addi_email: str = getenv('ADDI_EMAIL', '')
+        self.addi_password: str = getenv('ADDI_PASSWORD', '')
+        self.addi_api_version: str = getenv('ADDI_API_VERSION', 'v1')
+
     @property
     def production(self) -> bool:
         """

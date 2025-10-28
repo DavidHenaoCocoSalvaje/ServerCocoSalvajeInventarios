@@ -16,5 +16,6 @@ dependencies = [
     "pyjwt",
     "apscheduler",
     "python-dateutil",
-    "holidays_co"
+    "holidays_co",
+    "playwright"
 ]

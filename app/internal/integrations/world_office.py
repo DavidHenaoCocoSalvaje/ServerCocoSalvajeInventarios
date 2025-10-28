@@ -66,7 +66,7 @@ class WoClient(BaseClient):
     # Singleton para implementar posteriormente la restricción de peticiones.
     def __new__(cls):
         if cls.__instance is None:
-            cls.__instance = super(WoClient, cls).__new__(cls)
+            cls.__instance = super().__new__(cls)
         return cls.__instance
 
     def __init__(self, host: str = f'https://api.worldoffice.cloud/api/{config.wo_api_version}'):
@@ -78,8 +78,8 @@ class WoClient(BaseClient):
         }
 
     # Se han obtenido varios timeouts usando 30 segundos. se cambia a 60 segundos.
-    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 60):
-        return await super().request(method, headers, url, payload, timeout=timeout)
+    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 60, cookies: dict | None = None):
+        return await super().request(method, headers, url, payload, timeout=timeout, cookies=cookies)
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
         url = self.build_url(self.host, self.Paths.Terceros.identificacion, [identificacion])

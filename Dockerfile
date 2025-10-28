@@ -23,6 +23,7 @@ COPY pyproject.toml ./
 # Actualiza pip a la última versión
 # RUN pip install --upgrade pip
 RUN uv sync
+RUN uv run playwright install --with-deps chromium
 
 # Instala dependencias usando pip con pyproject.toml
 # RUN pip install --no-cache-dir .
