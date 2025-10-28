@@ -7,8 +7,10 @@ from datetime import date, datetime, timedelta, time
 import holidays_co
 
 from app.internal.gen.utilities import DateTz, get_weekday, next_business_day, reemplazar_acentos_graves
+from app.internal.integrations.addi import AddiClient
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
+from app.models.pydantic import addi
 from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import WODireccion, WOTercero, WOTerceroCreate
 from app.internal.integrations.world_office import WOException, WoClient
@@ -246,9 +248,7 @@ class ShopifyWorldOffice:
         self.wo = wo_client
 
 
-async def facturar_orden_shopify_world_office(
-    orden: Order, force = False
-):  # BackgroundTasks No lanzar excepciones.
+async def facturar_orden_shopify_world_office(orden: Order, force=False):  # BackgroundTasks No lanzar excepciones.
     async for session in get_async_session():
         async with session:
             pedido_query = PedidoQuery()
@@ -297,8 +297,20 @@ async def facturar_orden_shopify_world_office(
                 reglones = await get_wo_reglones_from_order(wo_client, orden)
 
                 # Si los pagos son por wompi (contado), si son por addi (pse: contado, credito: credito, por defecto se deja en crédito)
+                # Addi Crédito(paymetType: BNPL)
                 # 4 para contado, 5 para credito
                 id_forma_pago = 5 if any('credito' in tag or 'crédito' in tag for tag in order_tags_lower) else 4
+                if (
+                    orden.transactions
+                    and len(orden.transactions) == 1
+                    and orden.transactions[0].gateway == 'Addi Payment'
+                ):
+                    payment_id = orden.transactions[0].paymentId
+                    addi_client = AddiClient()
+                    await addi_client.get_access_token()
+                    addi_transacions = await addi_client.get_transaccions_by_payment_id(payment_id)
+                    if all(t.paymentType == 'BNPL' for t in addi_transacions.transactions):
+                        id_forma_pago = 5  # Crédito
 
                 # if all(x.gateway == 'Addi Payment' for x in order.transactions):
                 wo_documento_venta_create = WODocumentoVentaCreate(

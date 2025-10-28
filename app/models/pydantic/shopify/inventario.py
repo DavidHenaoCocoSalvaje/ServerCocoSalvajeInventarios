@@ -22,10 +22,10 @@ class Quantitie(Base):
 
 class InventoryLevel(Base):
     class Item(Base):
-        class Variant(Base):
+        class InventoryLevelVariant(Base):
             legacyResourceId: int = 0
 
-        variant: Variant = Variant()
+        variant: InventoryLevelVariant = InventoryLevelVariant()
 
     item: Item = Item()
     quantities: list[Quantitie] = []
@@ -55,10 +55,10 @@ class InventoryLevelsResponse(Base):
 
 
 class Variant(Base):
-    class Product(Base):
+    class VariantProduct(Base):
         legacyResourceId: int = 0
 
-    product: Product = Product()
+    product: VariantProduct = VariantProduct()
     legacyResourceId: int = 0
     inventoryQuantity: int = 0
     title: str = ''
