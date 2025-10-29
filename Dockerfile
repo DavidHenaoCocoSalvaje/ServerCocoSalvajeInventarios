@@ -23,7 +23,7 @@ COPY pyproject.toml ./
 # Actualiza pip a la última versión
 # RUN pip install --upgrade pip
 RUN uv sync
-RUN uv run playwright install --with-deps chromium
+RUN uv run playwright install-deps chromium
 
 # Instala dependencias usando pip con pyproject.toml
 # RUN pip install --no-cache-dir .
@@ -37,10 +37,12 @@ RUN chmod +x entrypoint.sh
 
 # Crea un usuario no-root con UID/GID específicos
 RUN adduser --disabled-password --gecos '' --uid 1001 coco && \
-    chown -R coco:coco /app
+chown -R coco:coco /app
 
 # Cambia al usuario no-root
 USER coco
+# Instalar el navegador con el usuario coco
+RUN uv run playwright install chromium
 
 # Expone el puerto 8000
 EXPOSE 8000
