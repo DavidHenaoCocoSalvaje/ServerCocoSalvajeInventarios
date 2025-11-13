@@ -200,4 +200,7 @@ shopify_orders.json
 # Ansible
 .ansible/
 
+# Scripts
+scripts/
+
 # End of https://www.toptal.com/developers/gitignore/api/venv,python

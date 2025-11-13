@@ -18,6 +18,7 @@ parts/
 sdist/
 var/
 wheels/
+scripts/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -25,6 +26,7 @@ MANIFEST
 
 # Archivos de entorno virtual
 venv/
+.venv/
 env/
 ENV/
 env.bak/
@@ -91,3 +93,4 @@ coverage.xml
 
 # Ansible
 ansible/
+.ansible/

@@ -139,7 +139,7 @@ async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSession
     df = df.sort_values(['Fecha Creación', 'ID Orden']).drop_duplicates(['Fecha Creación', 'ID Orden'], keep='last')
 
     # Filtrar solo por pagos exitosos y canal E_COMMERCE_SHOPIFY para encontrar los pedidos al consultar en Sopify, de lo contrario serán pedido que no se encontrarán
-    # Solo mantenter órdenes a crédito que son al de interés para realizar menos peticiones a Shopify y tardar menos en responder
+    # Solo mantenter órdenes a crédito que son las de interes para realizar menos peticiones a Shopify y tardar menos en responder
     df = df[(df['Estado'] == 'Exitosa') & (df['Canal'] == 'E_COMMERCE_SHOPIFY') & (df['Tipo de venta'] == 'Crédito')]
 
     if not len(df):
