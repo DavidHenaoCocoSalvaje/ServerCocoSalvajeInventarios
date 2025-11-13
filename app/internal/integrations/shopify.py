@@ -78,8 +78,9 @@ class ShopifyGraphQLClient(BaseClient):
         num_items: int = 10
         cursor: str | None = None
         search_query: str | None = None
-        id: int | None = None
+        id: int | str | None = None
         gid: str | None = None
+        tags: list[str] | None = None
 
     def __new__(cls):
         if cls.__instance is None:
@@ -120,9 +121,12 @@ class ShopifyGraphQLClient(BaseClient):
             log_shopify.error(f'Error al ejecutar consulta GraphQL: {exception} {traceback.format_exc()}')
             raise exception
 
-    def get_specific_obj_response(self, response: dict, keys: list[str], sub_keys: list[str]):
+    def get_specific_obj_response(self, response: dict, keys: list[str], child_keys: list[str]):
+        """Retorna un objeto en la ruta accediendo a cada una de las key en keys,
+        además retorna hijos específicos de ese objeto accediendo a cada una de las key en child_keys.
+        """
         obj = response
-        sub_objs = {}
+        childs = {}
         if not response:
             msg = 'Respuesta vacía'
             exception = ShopifyException(payload=self.payload, response=response, msg=msg)
@@ -130,26 +134,28 @@ class ShopifyGraphQLClient(BaseClient):
             raise exception
 
         for key in keys:
-            obj = obj.get(key, None)
+            if isinstance(obj, dict):
+                obj = obj.get(key, None)
 
-            if isinstance(obj, list):
+            if isinstance(obj, list) and len(obj) > 0:
                 obj = obj[0]
 
-            if not obj:
-                msg = f'No se pudo obtener {key}, keys: {keys}, sub_keys: {sub_keys}'
+            if obj is None:
+                msg = f'No se pudo obtener {key}, keys: {keys}, child_keys: {child_keys}'
                 exception = ShopifyException(payload=self.payload, response=response, msg=msg)
                 log_shopify.error(str(exception))
                 raise exception
 
-        for sub_key in sub_keys:
-            sub_obj = obj.get(sub_key, None)
-            if not sub_obj:
-                exception = ShopifyException(payload=self.payload, response=response)
-                log_shopify.error(f'No se pudo obtener {sub_key} de la respuesta {exception}')
-                raise exception
-            sub_objs[sub_key] = sub_obj
+        for key in child_keys:
+            if isinstance(obj, dict):
+                child = obj.get(key, None)
+                if not child:
+                    exception = ShopifyException(payload=self.payload, response=response)
+                    log_shopify.error(f'No se pudo obtener {key} de la respuesta {exception}')
+                    raise exception
+                childs[key] = child
 
-        return {'root': obj, 'sub_keys': sub_objs}
+        return {'root': obj, 'childs': childs}
 
     def pagination_verify_query(self, query: str, variables: dict):
         pattern_num_items = r'\$num_items:\s*Int!'
@@ -194,8 +200,8 @@ class ShopifyGraphQLClient(BaseClient):
         result = query_result
         specific_obj_response = self.get_specific_obj_response(query_result, keys, ['pageInfo', 'nodes'])
 
-        page_info = specific_obj_response['sub_keys']['pageInfo']
-        nodes = specific_obj_response['sub_keys']['nodes']
+        page_info = specific_obj_response['childs']['pageInfo']
+        nodes = specific_obj_response['childs']['nodes']
         has_next_page = page_info.get('hasNextPage', False)
         cursor = page_info.get('endCursor', None)
 
@@ -204,9 +210,9 @@ class ShopifyGraphQLClient(BaseClient):
             next_query_result = await self._execute_query(query, **variables)
             specific_obj_response = self.get_specific_obj_response(next_query_result, keys, ['pageInfo', 'nodes'])
 
-            nodes.extend(specific_obj_response['sub_keys']['nodes'])
+            nodes.extend(specific_obj_response['childs']['nodes'])
 
-            page_info = specific_obj_response['sub_keys']['pageInfo']
+            page_info = specific_obj_response['childs']['pageInfo']
             has_next_page = page_info.get('hasNextPage', False)
             cursor = page_info.get('endCursor', None)
 
@@ -704,6 +710,24 @@ class ShopifyGraphQLClient(BaseClient):
 
         return products
 
+    async def taggs_add(self, id: int | str, tags: list[str]) -> bool:
+        mutation = """
+        mutation addTags($id: ID!, $tags: [String!]!) {
+            tagsAdd(id: $id, tags: $tags) {
+                node {
+                   id
+                }
+                userErrors {
+                    message
+                }
+            }
+        }
+        """
+        variables = self.Variables(id=id, tags=tags).model_dump(exclude_none=True)
+        mutation_json = await self._execute_query(mutation, **variables)
+        user_errors = self.get_specific_obj_response(mutation_json, ['data', 'tagsAdd', 'userErrors'], [])['root']
+        return isinstance(user_errors, list) and len(user_errors) == 0
+
 
 class ShopifyInventario:
     async def crear_bodega(self, session: AsyncSession, location: Location) -> Bodega:
@@ -1047,7 +1071,7 @@ if __name__ == '__main__':
     # from time import time
 
     async def main():
-        # client = ShopifyGraphQLClient()
+        client = ShopifyGraphQLClient()
 
         # orders = await client.get_orders_by_range(date(2025, 7, 1), date(2025, 7, 31), 40)
         # with open('shopify_orders.json', 'w', encoding='utf-8') as f:
@@ -1073,6 +1097,9 @@ if __name__ == '__main__':
 
         # await ShopifyInventario().sincronizar_movimientos_ordenes_by_range(date(2025, 1, 1), date(2025, 9, 10), 5)
 
-        await ShopifyInventario().crear_metadata_orders_by_range(date(2025, 10, 1), date(2025, 10, 31))
+        # await ShopifyInventario().crear_metadata_orders_by_range(date(2025, 10, 1), date(2025, 10, 31))
+
+        add_tag_json = await client.taggs_add(id='gid://shopify/Order/10159210922276', tags=['ADDI CREDITO'])
+        print(add_tag_json)
 
     run(main())

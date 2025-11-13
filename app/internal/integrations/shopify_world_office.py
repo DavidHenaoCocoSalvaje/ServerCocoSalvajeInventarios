@@ -310,6 +310,9 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
                     addi_transacions = await addi_client.get_transaccions_by_payment_id(payment_id)
                     if all(t.paymentType == 'BNPL' for t in addi_transacions.transactions):
                         id_forma_pago = 5  # Crédito
+                        await ShopifyGraphQLClient().taggs_add(id=orden.id, tags=['ADDI CREDITO'])
+                    else:
+                        await ShopifyGraphQLClient().taggs_add(id=orden.id, tags=['ADDI PSE'])
 
                 # if all(x.gateway == 'Addi Payment' for x in order.transactions):
                 wo_documento_venta_create = WODocumentoVentaCreate(
