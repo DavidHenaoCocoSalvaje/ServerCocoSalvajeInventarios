@@ -19,7 +19,7 @@ log_search = factory_logger('search')
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
 )
-async def facturar_pendientes(
+async def post_search_bing_copilot(
     query: str,
 ):
     try:
