@@ -9,7 +9,7 @@ async def search_bing_copilot(query: str):
             headless=True, args=['--disable-blink-features=AutomationControlled', '--disable-gpu', '--no-sandbox']
         )
         context = await browser.new_context(
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'
         )
         page = await context.new_page()
         query_url = quote_plus(query)
