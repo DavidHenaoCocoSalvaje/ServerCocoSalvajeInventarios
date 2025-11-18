@@ -8,6 +8,7 @@ from app.routers.auth import validar_access_token
 router = APIRouter(
     prefix='/search',
     responses={404: {'description': 'No encontrado'}},
+    tags=['Search'],
     dependencies=[Depends(validar_access_token)],
 )
 
