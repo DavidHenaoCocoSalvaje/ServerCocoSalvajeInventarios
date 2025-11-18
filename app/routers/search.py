@@ -15,7 +15,7 @@ router = APIRouter(
 log_search = factory_logger('search')
 
 
-@router.post(
+@router.get(
     '/bing',
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(validar_access_token)],
