@@ -4,7 +4,7 @@ from urllib.parse import quote_plus
 
 async def search_bing_copilot(query: str):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         query_url = quote_plus(query)
         await page.goto(f"https://www.bing.com/copilotsearch?q={query_url}")

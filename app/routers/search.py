@@ -26,4 +26,4 @@ async def post_search_bing_copilot(
     try:
         return await search_bing_copilot(query)
     except Exception as e:
-        return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
