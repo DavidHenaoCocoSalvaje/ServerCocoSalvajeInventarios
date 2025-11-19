@@ -15,7 +15,7 @@ async def search_bing_copilot(query: str):
         query_url = quote_plus(query)
         await page.goto(f'https://www.bing.com/copilotsearch?q={query_url}')
         # Obtener iframe
-        iframe_response_locator = page.frame_locator('iframe[src*="https://www.bing.com/search?q="]')
+        iframe_response_locator = page.frame_locator(f'iframe[src*="https://www.bing.com/search?q="][aria-label*="{query}"]')
         iframe_response_main_locator = iframe_response_locator.locator('main')
         # Esperar disponibilidad del iframe
         await iframe_response_main_locator.wait_for(state='attached', timeout=10000)
