@@ -15,7 +15,7 @@ async def search_bing_copilot(query: str):
         query_url = quote_plus(query)
         await page.goto(f'https://www.bing.com/copilotsearch?q={query_url}')
         # Obtener iframe
-        iframe_response_locator = page.frame_locator(f'iframe[src*="https://www.bing.com/search?q="][aria-label*="{query}"]')
+        iframe_response_locator = page.frame_locator(f'iframe[src*="https://www.bing.com/search?q="][aria-label*="{query}"]').first
         iframe_response_main_locator = iframe_response_locator.locator('main')
         # Esperar disponibilidad del iframe
         await iframe_response_main_locator.wait_for(state='attached', timeout=10000)
@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     async def main():
         query = 'Que es BIOACEM B10 de MASSER SAS'
+        query = "Que es CAFE TOSTA/MOLI SUAV de D1 S A S"
         search = await search_bing_copilot(query)
         print(search)
 
