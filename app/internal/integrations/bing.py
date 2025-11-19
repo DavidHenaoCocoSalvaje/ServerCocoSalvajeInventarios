@@ -19,7 +19,7 @@ async def search_bing_copilot(query: str):
         iframe_response_main_locator = iframe_response_locator.locator('main')
         # Esperar disponibilidad del iframe
         await iframe_response_main_locator.wait_for(state='attached', timeout=10000)
-        heading_response = iframe_response_main_locator.locator('[class*="gs_heroTextHeader"][role="heading"]')
+        heading_response = iframe_response_main_locator.locator('.gs_heroTextHeader.gs_heroText20[role="heading"]')
         # Esperar que el heading tenga texto
         await heading_response.wait_for(state='attached', timeout=10000)
         heading_response_text = await heading_response.inner_text()
