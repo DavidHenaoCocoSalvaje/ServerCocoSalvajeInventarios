@@ -78,7 +78,15 @@ class WoClient(BaseClient):
         }
 
     # Se han obtenido varios timeouts usando 30 segundos. se cambia a 60 segundos.
-    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 60, cookies: dict | None = None):
+    async def request(
+        self,
+        method: str,
+        headers: dict,
+        url: str,
+        payload: dict | None = None,
+        timeout: int = 60,
+        cookies: dict | None = None,
+    ):
         return await super().request(method, headers, url, payload, timeout=timeout, cookies=cookies)
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
@@ -273,7 +281,7 @@ class WoClient(BaseClient):
                 msg += f', departamento: {departamento}'
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
             return exception
-        
+
         return ciudades_response.data.content[0]
 
     async def documento_venta_por_concepto(self, concepto: str, codigo_documento: str = 'FV') -> WODocumentoVenta:
@@ -336,9 +344,9 @@ class WoClient(BaseClient):
             raise exception
         return productos_response.data.content
 
-    async def crear_factura_venta(self, factura_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
+    async def crear_factura_venta(self, documento_venta_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
         url = self.build_url(self.host, self.Paths.Ventas.crear)
-        payload = factura_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
+        payload = documento_venta_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_dict = await self.request('POST', self.headers, url, payload=payload, timeout=60)
 
         try:
@@ -358,15 +366,16 @@ class WoClient(BaseClient):
 
         return factura_response.data
 
-    async def editar_factura_venta(self, factura_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
+
+    async def editar_factura_venta(self, documento_venta_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
         url = self.build_url(self.host, self.Paths.Ventas.editar)
-        payload = factura_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
+        payload = documento_venta_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_json = await self.request('PUT', self.headers, url, payload=payload)
 
         try:
             factura_response = WODocumentoVentaDetailResponse(**factura_json)
         except ValidationError as e:
-            msg = f'{type(e)} {WODocumentoVentaDetailResponse.__name__}, id: {factura_edit.id}'
+            msg = f'{type(e)} {WODocumentoVentaDetailResponse.__name__}, id: {documento_venta_edit.id}'
             msg += f'\n{repr(e.errors())}'
             exception = WOException(url=url, payload=payload, response=factura_json, msg=msg)
             wo_log.error(str(exception))
@@ -379,6 +388,8 @@ class WoClient(BaseClient):
             raise exception
         return factura_response.data
 
+    async def crear_factura_compra(self, documento_compra_create):
+        ...
 
 if __name__ == '__main__':
     from asyncio import run
@@ -398,6 +409,5 @@ if __name__ == '__main__':
         assert isinstance(productos_factura[0], WOProductoDocumento)
         inventario = await wo_client.get_inventario_por_codigo('COL-DES-MIRAMAR-60')
         assert isinstance(inventario, WOInventario)
-        # documento_venta = await wo_client.crear_factura_venta(factura_create=WODocumentoVentaCreate())
 
     run(main())

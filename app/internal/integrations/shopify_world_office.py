@@ -16,7 +16,12 @@ from app.internal.integrations.world_office import WOException, WoClient
 from app.models.db.transacciones import Pedido, PedidoCreate, PedidoLogs
 from app.models.db.session import get_async_session
 from app.models.pydantic.shopify.order import Order
-from app.models.pydantic.world_office.facturacion import WODocumentoVentaCreate, WODocumentoVentaDetail, WOReglone
+from app.models.pydantic.world_office.facturacion import (
+    WODocumentoVentaCreate,
+    WODocumentoVentaTipo,
+    WODocumentoVentaDetail,
+    WOReglone,
+)
 from app.internal.log import LogLevel, factory_logger
 from asyncio import sleep, TimeoutError
 
@@ -318,7 +323,7 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
                 wo_documento_venta_create = WODocumentoVentaCreate(
                     fecha=get_correct_date_for_invoice(DateTz.today()),
                     prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FEFE
-                    documentoTipo='FV',
+                    documentoTipo=WODocumentoVentaTipo.FACTURA_VENTA,
                     concepto=concepto,
                     idEmpresa=1,  # CocoSalvaje
                     idTerceroExterno=wo_tercero.id,

@@ -1,6 +1,7 @@
 # app.models.pydantic.world_office.facturacion
 from datetime import date
 from pydantic import Field
+from enum import Enum
 from app.internal.gen.utilities import DateTz
 from app.models.pydantic.base import Base
 from app.models.pydantic.world_office.base import WODataList, WOResponse
@@ -22,17 +23,31 @@ class WORegloneEdit(WOReglone):
     id: int = 0
 
 
-class WODocumentoVentaCreateEditBase(Base):
-    fecha: date
+class WODocumentoFacturaBase(Base):
     prefijo: int = 0
-    documentoTipo: str = ''
     concepto: str = ''
     idEmpresa: int = 0
     idTerceroExterno: int = 0
     idTerceroInterno: int = 0
     idFormaPago: int = 0
     idMoneda: int = 0
-    porcentajeDescuento: bool = False
+
+
+# region Crear/Editar documentos venta
+class WODocumentoVentaTipo(Enum):
+    FACTURA_VENTA = 'FV'
+    NOTA_DEBITO = 'NDV'
+    NOTA_CREDITO = 'NCV'
+    COTIZACION = 'CZ'
+    REMISION_VENTAS = 'REM'
+    PEDIDO = 'PD'
+    SALIDA_ALMACEN = 'SA'
+
+
+class WODocumentoVentaCreateEditBase(WODocumentoFacturaBase):
+    fecha: date
+    documentoTipo: WODocumentoVentaTipo = WODocumentoVentaTipo.FACTURA_VENTA
+    porcentajeDescuento: bool = True
 
 
 class WODocumentoVentaCreate(WODocumentoVentaCreateEditBase):
@@ -75,6 +90,18 @@ class WODocumentoVenta(Base):
     senAnulado: bool = False
 
 
+class WOContabilizarDocumentoVentaResponse(WOResponse):
+    def valid(self) -> bool:
+        conflict_msg = 'El documento ya se encuentra contabilizado o en proceso de contabilizacion'
+        contabilizado = self.status == 'OK' and self.userMessage == 'CONTABILIZACION_EXITOSA'
+        contabilizado_antes = self.status == 'CONFLICT' and self.userMessage == conflict_msg
+        return contabilizado or contabilizado_antes
+
+
+# endregion Crear/Editar documentos venta
+
+
+# region consulta documentos de venta
 class WOContentDocumentosVenta(WODataList):
     content: list[WODocumentoVenta] = []
 
@@ -379,9 +406,28 @@ class WODocumentoVentaDetailResponse(WOResponse):
         return self.status in ['ACCEPTED', 'CREATED']
 
 
-class WOContabilizarDocumentoVentaResponse(WOResponse):
-    def valid(self) -> bool:
-        conflict_msg = 'El documento ya se encuentra contabilizado o en proceso de contabilizacion'
-        contabilizado = self.status == 'OK' and self.userMessage == 'CONTABILIZACION_EXITOSA'
-        contabilizado_antes = self.status == 'CONFLICT' and self.userMessage == conflict_msg
-        return contabilizado or contabilizado_antes
+# endregion consulta documentos de venta
+
+
+class WODocumentoCompraTipo(Enum):
+    FACTURA_COMPRA = 'FC'
+    REMISION_COMPRA = 'REMC'
+    ORDEN_COMPRA = 'OC'
+    DEVOLUCIONES_REMISION_COMPRA = 'DREMC'
+    NOTA_DEBITO_COMPRA = 'NDC'
+    NOTA_CREDITO_COMPRA = 'NCC'
+
+
+class WODocumentoCompraCreateEditBase(WODocumentoFacturaBase):
+    fecha: date
+    documentoTipo: WODocumentoCompraTipo = WODocumentoCompraTipo.FACTURA_COMPRA
+    porcentajeDescuento: bool = True
+
+
+class WODocumentoCompraCreate(WODocumentoCompraCreateEditBase):
+    reglones: list[WOReglone] = []
+
+
+class WODocumentoCompraEdit(WODocumentoCompraCreateEditBase):
+    id: int = 0
+    reglones: list[WORegloneEdit] = []
