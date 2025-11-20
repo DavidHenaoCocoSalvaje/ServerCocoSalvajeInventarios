@@ -13,7 +13,8 @@ from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarDocumentoVentaResponse,
-    WODocumentoVenta,
+    WODocumentoCompraCreate,
+    WODocumentoFactura,
     WODocumentoVentaCreate,
     WODocumentoVentaDetail,
     WODocumentoVentaDetailResponse,
@@ -284,7 +285,7 @@ class WoClient(BaseClient):
 
         return ciudades_response.data.content[0]
 
-    async def documento_venta_por_concepto(self, concepto: str, codigo_documento: str = 'FV') -> WODocumentoVenta:
+    async def documento_venta_por_concepto(self, concepto: str, codigo_documento: str = 'FV') -> WODocumentoFactura:
         # Filtro1 Obligatorio de acuerdo a la documentación de World Office
         filtro1 = WOFiltro(
             atributo='documentoTipo.codigoDocumento',
@@ -344,7 +345,7 @@ class WoClient(BaseClient):
             raise exception
         return productos_response.data.content
 
-    async def crear_factura_venta(self, documento_venta_create: WODocumentoVentaCreate):  # -> WODocumentoVentaDetail:
+    async def crear_factura_venta(self, documento_venta_create: WODocumentoVentaCreate) -> WODocumentoVentaDetail:
         url = self.build_url(self.host, self.Paths.Ventas.crear)
         payload = documento_venta_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_dict = await self.request('POST', self.headers, url, payload=payload, timeout=60)
@@ -365,7 +366,6 @@ class WoClient(BaseClient):
             raise exception
 
         return factura_response.data
-
 
     async def editar_factura_venta(self, documento_venta_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
         url = self.build_url(self.host, self.Paths.Ventas.editar)
@@ -388,8 +388,8 @@ class WoClient(BaseClient):
             raise exception
         return factura_response.data
 
-    async def crear_factura_compra(self, documento_compra_create):
-        ...
+    async def crear_factura_compra(self, documento_compra_create: WODocumentoCompraCreate): ...
+
 
 if __name__ == '__main__':
     from asyncio import run

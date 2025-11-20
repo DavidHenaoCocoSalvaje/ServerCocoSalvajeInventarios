@@ -30,7 +30,34 @@ class WODocumentoFacturaBase(Base):
     idTerceroExterno: int = 0
     idTerceroInterno: int = 0
     idFormaPago: int = 0
-    idMoneda: int = 0
+
+
+class WODocumentoFactura(WODocumentoFacturaBase):
+    id: int = 0
+    idPrefijo: int = 0
+    numero: int = 0
+    fecha: date = Field(default_factory=DateTz.today)
+    empresa: str = ''
+    empresaPrefijo: str = ''
+    terceroExterno: str = ''
+    primerNombreTerceroExterno: str = ''
+    segundoNombreTerceroExterno: str = ''
+    primerApellidoTerceroExterno: str = ''
+    segundoApellidoTerceroExterno: str = ''
+    terceroInterno: str = ''
+    primerNombreTerceroInterno: str = ''
+    segundoNombreTerceroInterno: str = ''
+    primerApellidoTerceroInterno: str = ''
+    segundoApellidoTerceroInterno: str = ''
+    formaPago: str = ''
+    responsable: str = ''
+    senContabilizado: bool = False
+    senCuadrado: bool = False
+    senPresentadoElectronicamente: bool = False
+    senAnulado: bool = False
+    valorTotal: float = 0.0
+    codigoMoneda: str = ''
+    moneda: str = ''
 
 
 # region Crear/Editar documentos venta
@@ -48,6 +75,7 @@ class WODocumentoVentaCreateEditBase(WODocumentoFacturaBase):
     fecha: date
     documentoTipo: WODocumentoVentaTipo = WODocumentoVentaTipo.FACTURA_VENTA
     porcentajeDescuento: bool = True
+    idMoneda: int = 0
 
 
 class WODocumentoVentaCreate(WODocumentoVentaCreateEditBase):
@@ -57,37 +85,6 @@ class WODocumentoVentaCreate(WODocumentoVentaCreateEditBase):
 class WODocumentoVentaEdit(WODocumentoVentaCreateEditBase):
     id: int = 0
     reglones: list[WORegloneEdit] = []
-
-
-class WODocumentoVenta(Base):
-    id: int = 0
-    prefijo: str = ''
-    idPrefijo: int = 0
-    numero: int = 0
-    fecha: date = Field(default_factory=DateTz.today)
-    empresa: str = ''
-    empresaPrefijo: str = ''
-    idEmpresa: int = 0
-    terceroExterno: str = ''
-    primerNombreTerceroExterno: str = ''
-    segundoNombreTerceroExterno: str = ''
-    primerApellidoTerceroExterno: str = ''
-    segundoApellidoTerceroExterno: str = ''
-    idTerceroExterno: int = 0
-    terceroInterno: str = ''
-    primerNombreTerceroInterno: str = ''
-    segundoNombreTerceroInterno: str = ''
-    primerApellidoTerceroInterno: str = ''
-    segundoApellidoTerceroInterno: str = ''
-    idTerceroInterno: int = 0
-    formaPago: str = ''
-    idFormaPago: int = 0
-    concepto: str = ''
-    responsable: str = ''
-    senContabilizado: bool = False
-    senCuadrado: bool = False
-    senPresentadoElectronicamente: bool = False
-    senAnulado: bool = False
 
 
 class WOContabilizarDocumentoVentaResponse(WOResponse):
@@ -103,7 +100,7 @@ class WOContabilizarDocumentoVentaResponse(WOResponse):
 
 # region consulta documentos de venta
 class WOContentDocumentosVenta(WODataList):
-    content: list[WODocumentoVenta] = []
+    content: list[WODocumentoFactura] = []
 
 
 class WOListaDocumentosVentaResponse(WOResponse):
@@ -422,6 +419,7 @@ class WODocumentoCompraCreateEditBase(WODocumentoFacturaBase):
     fecha: date
     documentoTipo: WODocumentoCompraTipo = WODocumentoCompraTipo.FACTURA_COMPRA
     porcentajeDescuento: bool = True
+    idMoneda: int = 0
 
 
 class WODocumentoCompraCreate(WODocumentoCompraCreateEditBase):
@@ -431,3 +429,7 @@ class WODocumentoCompraCreate(WODocumentoCompraCreateEditBase):
 class WODocumentoCompraEdit(WODocumentoCompraCreateEditBase):
     id: int = 0
     reglones: list[WORegloneEdit] = []
+
+
+class WODocumentoCompraResponse(WOResponse):
+    data: WODocumentoFactura = WODocumentoFactura()
