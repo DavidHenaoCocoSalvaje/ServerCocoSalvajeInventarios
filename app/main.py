@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import transacciones, usuario, inventario, auth, search
+from app.routers import inventario, transacciones, usuario, auth, search
 from app.internal.log import factory_logger
 
 logger = factory_logger('main', file=False)
