@@ -60,6 +60,17 @@ class DateTz(datetime):
         isostring = isostring.replace('Z', '+00:00')
         return cls.fromisoformat(isostring).astimezone(ZoneInfo(tz))
 
+    @classmethod
+    def from_str(cls, date_string: str) -> 'DateTz':
+        formatos = ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%y-%m-%d', '%d-%m-%y', '%y/%m/%d', '%d/%m/%y']
+        for formato in formatos:
+            try:
+                _datetime = datetime.strptime(date_string, formato)
+                return cls.local(_datetime)
+            except ValueError:
+                continue
+        raise ValueError(f'Formato de fecha no válido: {date_string}')
+
 
 def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
     """

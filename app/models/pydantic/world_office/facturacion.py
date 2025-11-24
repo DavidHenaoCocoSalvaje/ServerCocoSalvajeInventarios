@@ -1,6 +1,6 @@
 # app.models.pydantic.world_office.facturacion
 from datetime import date
-from pydantic import Field
+from pydantic import Field, field_validator
 from enum import Enum
 from app.internal.gen.utilities import DateTz
 from app.models.pydantic.base import Base
@@ -24,7 +24,6 @@ class WORegloneEdit(WOReglone):
 
 
 class WODocumentoFacturaBase(Base):
-    prefijo: int = 0
     concepto: str = ''
     idEmpresa: int = 0
     idTerceroExterno: int = 0
@@ -34,6 +33,7 @@ class WODocumentoFacturaBase(Base):
 
 class WODocumentoFactura(WODocumentoFacturaBase):
     id: int = 0
+    prefijo: str = ''
     idPrefijo: int = 0
     numero: int = 0
     fecha: date = Field(default_factory=DateTz.today)
@@ -59,6 +59,10 @@ class WODocumentoFactura(WODocumentoFacturaBase):
     codigoMoneda: str = ''
     moneda: str = ''
 
+    @field_validator('fecha', mode='before')
+    def fecha_validator(cls, v):
+        return DateTz.from_str(v)
+
 
 # region Crear/Editar documentos venta
 class WODocumentoVentaTipo(Enum):
@@ -73,6 +77,7 @@ class WODocumentoVentaTipo(Enum):
 
 class WODocumentoVentaCreateEditBase(WODocumentoFacturaBase):
     fecha: date
+    prefijo: int = 0
     documentoTipo: WODocumentoVentaTipo = WODocumentoVentaTipo.FACTURA_VENTA
     porcentajeDescuento: bool = True
     idMoneda: int = 0
@@ -417,6 +422,7 @@ class WODocumentoCompraTipo(Enum):
 
 class WODocumentoCompraCreateEditBase(WODocumentoFacturaBase):
     fecha: date
+    prefijo: int = 0
     documentoTipo: WODocumentoCompraTipo = WODocumentoCompraTipo.FACTURA_COMPRA
     porcentajeDescuento: bool = True
     idMoneda: int = 0
@@ -433,3 +439,6 @@ class WODocumentoCompraEdit(WODocumentoCompraCreateEditBase):
 
 class WODocumentoCompraResponse(WOResponse):
     data: WODocumentoFactura = WODocumentoFactura()
+
+    def valid(self) -> bool:
+        return self.status in ['ACCEPTED', 'CREATED']

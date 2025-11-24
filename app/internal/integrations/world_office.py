@@ -9,11 +9,14 @@ if __name__ == '__main__':
 
 
 from pydantic import ValidationError
+from app.internal.gen.utilities import DateTz
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarDocumentoVentaResponse,
     WODocumentoCompraCreate,
+    WODocumentoCompraResponse,
+    WODocumentoCompraTipo,
     WODocumentoFactura,
     WODocumentoVentaCreate,
     WODocumentoVentaDetail,
@@ -22,6 +25,7 @@ from app.models.pydantic.world_office.facturacion import (
     WOListaDocumentosVentaResponse,
     WOListaProductosDocumentoVentaResponse,
     WOProductoDocumento,
+    WOReglone,
 )
 from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
 from app.models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
@@ -55,6 +59,10 @@ class WoClient(BaseClient):
             listar_documentos_venta: str = f'{root}/listarDocumentoVenta'
             listar_productos = f'{root}/getRenglonesByDocumentoEncabezado'
             contabilizar = f'{root}/contabilizarDocumento'
+
+        class Compras:
+            root: str = '/compra'
+            crear: str = f'{root}/crearCompra'
 
         class Ciudad:
             root: str = '/ciudad'
@@ -388,7 +396,26 @@ class WoClient(BaseClient):
             raise exception
         return factura_response.data
 
-    async def crear_factura_compra(self, documento_compra_create: WODocumentoCompraCreate): ...
+    async def crear_factura_compra(self, documento_compra_create: WODocumentoCompraCreate) -> WODocumentoFactura:
+        url = self.build_url(self.host, self.Paths.Compras.crear)
+        payload = documento_compra_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
+        factura_json = await self.request('POST', self.headers, url, payload=payload)
+
+        try:
+            factura_response = WODocumentoCompraResponse(**factura_json)
+        except ValidationError as e:
+            msg = f'{type(e)} {WODocumentoCompraResponse.__name__}'
+            msg += f'\n{repr(e.errors())}'
+            exception = WOException(url=url, payload=payload, response=factura_json, msg=msg)
+            wo_log.error(str(exception))
+            raise exception
+
+        if not factura_response.valid():
+            msg = 'No se creó factura de compra'
+            exception = WOException(url=url, payload=payload, response=factura_json, msg=msg)
+            wo_log.error(str(exception))
+            raise exception
+        return factura_response.data
 
 
 if __name__ == '__main__':
@@ -397,17 +424,65 @@ if __name__ == '__main__':
 
     async def main():
         wo_client = WoClient()
-        tercero = await wo_client.get_tercero('1094240554')
-        assert tercero is not None and tercero.identificacion == '1094240554'
-        ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
-        assert isinstance(ciudad, WOCiudad)
-        factura = await wo_client.documento_venta_por_concepto('Factura de venta')
-        assert factura.id == 31735
-        factura_detail = await wo_client.get_documento_venta(id_documento=31735)
-        assert factura_detail.id == 31735
-        productos_factura = await wo_client.productos_documento_venta(id_documento=31735)
-        assert isinstance(productos_factura[0], WOProductoDocumento)
-        inventario = await wo_client.get_inventario_por_codigo('COL-DES-MIRAMAR-60')
-        assert isinstance(inventario, WOInventario)
+        # tercero = await wo_client.get_tercero('1094240554')
+        # assert tercero is not None and tercero.identificacion == '1094240554'
+        # ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
+        # assert isinstance(ciudad, WOCiudad)
+        # factura = await wo_client.documento_venta_por_concepto('Factura de venta')
+        # assert factura.id == 31735
+        # factura_detail = await wo_client.get_documento_venta(id_documento=31735)
+        # assert factura_detail.id == 31735
+        # productos_factura = await wo_client.productos_documento_venta(id_documento=31735)
+        # assert isinstance(productos_factura[0], WOProductoDocumento)
+        # inventario = await wo_client.get_inventario_por_codigo('COL-DES-MIRAMAR-60')
+        # assert isinstance(inventario, WOInventario)
+
+        # {
+        #     "fecha": "2025-11-20",
+        #     "prefijo": 1,
+        #     "documentoTipo": "FC",
+        #     "concepto": "FACTURA DE COMPRA PRUEBA",
+        #     "idEmpresa": 1,
+        #     "idTerceroExterno": 11208,
+        #     "idTerceroInterno": 1,
+        #     "idFormaPago": 5,
+        #     "idMoneda": 31,
+        #     "porcentajeDescuento": true,
+        #     "reglones": [
+        #         {
+        #         "idInventario": 1243,
+        #         "unidadMedida": "kg",
+        #         "cantidad": 100,
+        #         "valorUnitario": 10000,
+        #         "idBodega": 3,
+        #         "porDescuento": 0
+        #         }
+        #     ]
+        # }
+        factura_compra = await wo_client.crear_factura_compra(
+            WODocumentoCompraCreate(
+                fecha=DateTz.today(),
+                prefijo=1,
+                documentoTipo=WODocumentoCompraTipo.FACTURA_COMPRA,
+                concepto='FACTURA DE COMPRA PRUEBA',
+                idEmpresa=1,
+                idTerceroExterno=11208,
+                idTerceroInterno=1,
+                idFormaPago=5,
+                idMoneda=31,
+                porcentajeDescuento=True,
+                reglones=[
+                    WOReglone(
+                        idInventario=1243,
+                        unidadMedida='kg',
+                        cantidad=100,
+                        valorUnitario=10000,
+                        idBodega=3,
+                        porDescuento=0,
+                    )
+                ],
+            )
+        )
+        print(factura_compra.model_dump_json(indent=4))
 
     run(main())

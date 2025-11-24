@@ -46,7 +46,7 @@ def validar_identificacion(identificacion: str) -> bool:
     return True
 
 
-def get_correct_date_for_invoice(
+def get_date_for_invoice(
     fecha: datetime | date, hora_fin_jornada: time = time(hour=16, minute=30), no_working_days: list[int] = [5, 6]
 ):
     holidays = {h.date for h in holidays_co.get_colombia_holidays_by_year(fecha.year)}
@@ -321,7 +321,7 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
 
                 # if all(x.gateway == 'Addi Payment' for x in order.transactions):
                 wo_documento_venta_create = WODocumentoVentaCreate(
-                    fecha=get_correct_date_for_invoice(DateTz.today()),
+                    fecha=get_date_for_invoice(DateTz.today()),
                     prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FEFE
                     documentoTipo=WODocumentoVentaTipo.FACTURA_VENTA,
                     concepto=concepto,
