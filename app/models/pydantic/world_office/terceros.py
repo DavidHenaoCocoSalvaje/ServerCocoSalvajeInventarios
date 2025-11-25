@@ -101,6 +101,10 @@ class WOTercero(Base):
         # Verificar que alguno de los tipos sea 4
         return any(x.id == 4 for x in self.terceroTipos)
 
+    def is_provider(self):
+        # Verificar que alguno de los tipos sea 6
+        return any(x.id == 6 for x in self.terceroTipos)
+
     @computed_field
     @property
     def idTerceroTipos(self) -> list[int]:
@@ -121,7 +125,7 @@ class WOTerceroCreate(Base):
     identificacion: str
     primerNombre: str
     segundoNombre: str = ''
-    primerApellido: str
+    primerApellido: str = ''
     segundoApellido: str = ''
     idCiudad: int
     codigo: str = ''

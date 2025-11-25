@@ -162,7 +162,7 @@ async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion
     )
 
     """ Cuando se crea un tercero, 
-    la dirección tienen un nombre, este causa error si es un mombre muy largo,
+    la dirección tiene un nombre, este causa error si es un mombre muy largo,
     por lo cúal hace falta especificar el nombre para evitar errores. """
     direcciones = [
         WODireccion(
@@ -198,13 +198,7 @@ async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion
 
     if wo_tercero is None:
         wo_tercero = await wo_client.crear_tercero(wo_tercero_create)
-
-    if (
-        wo_tercero
-        and not wo_tercero.is_client()
-        and wo_tercero.tieneDirPrincipal
-        and wo_tercero.direccionPrincipal.direccion
-    ):
+    elif not wo_tercero.is_client():
         wo_tercero_create.id = wo_tercero.id
         wo_tercero_create.idTerceroTipoIdentificacion = wo_tercero.terceroTipoIdentificacion.id
         wo_tercero_create.idTerceroTipos = wo_tercero.idTerceroTipos + [4]  # Cliente
