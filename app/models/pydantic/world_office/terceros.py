@@ -1,7 +1,15 @@
 # app.models.pydantic.world_office.terceros
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
 
+    sys_path.append(abspath('.'))
+
+
+from dataclasses import dataclass
 from enum import Enum
-from pydantic import computed_field
+from typing import Annotated, Any
+from pydantic import BeforeValidator, computed_field, PlainSerializer
 from app.models.pydantic.world_office.base import WOResponse
 from app.models.pydantic.world_office.general import WOUbicacionDepartamento, WOCiudad
 from app.models.pydantic.base import Base
@@ -120,47 +128,56 @@ class WOTerceroResponse(WOResponse):
         return self.status in ['OK', 'NOT_FOUND', 'CREATED']
 
 
-#       {
-    #     "id": 1,
-    #     "codigo": "O-13",
-    #     "significado": "Gran Contribuyente"
-    #   },
-    #   {
-    #     "id": 2,
-    #     "codigo": "O-15",
-    #     "significado": "Autorretenedor"
-    #   },
-    #   {
-    #     "id": 3,
-    #     "codigo": "O-23",
-    #     "significado": "Agente de Retención IVA"
-    #   },
-    #   {
-    #     "id": 4,
-    #     "codigo": "O-47",
-    #     "significado": "Régimen Simple de Tributación"
-    #   },
-    #   {
-    #     "id": 5,
-    #     "codigo": "R-99-PN",
-    #     "significado": "No Aplica"
-    #   },
-    #   {
-    #     "id": 6,
-    #     "codigo": "O-48",
-    #     "significado": "Impuesto Sobre las Ventas – IVA"
-    #   },
-    #   {
-    #     "id": 7,
-    #     "codigo": "O-49",
-    #     "significado": "No Responsable de IVA"
-    #   }
-ResponsabilidadesFiscales = {
-    (1, "O-13"): "GRAN_COTRIBUYENTE",
-    (2, ""): ""
-}
+@dataclass
+class Id_Codigo:
+    id: int = 0
+    codigo: str = ''
 
-class WOTerceroCreate(Base):
+
+class ResponsabilidadFiscal(Enum):
+    GRAN_CONTRIBUYENTE = Id_Codigo(id=1, codigo='O-13')
+    AUTORETENEDOR = Id_Codigo(id=2, codigo='O-15')
+    AGENTE_DE_RETENCION_IVA = Id_Codigo(id=3, codigo='O-23')
+    REGIMEN_SIMPLE_DE_TRIBUTACION = Id_Codigo(id=4, codigo='O-47')
+    NO_APLICA = Id_Codigo(id=5, codigo='R-99-PN')
+    IMPUESTO_SOBRE_LAS_VENTAS_IVA = Id_Codigo(id=6, codigo='O-48')
+    NO_RESPONSABLE_DE_IVA = Id_Codigo(id=7, codigo='O-49')
+
+    @property
+    def id(self):
+        return self.value.id
+
+    @property
+    def codigo(self):
+        return self.value.codigo
+
+    @classmethod
+    def buscar(cls, v: Any):
+        """Busca por ID (int), Código (str) o Objeto Responsabilidad"""
+        # Si ya es el Enum, devolverlo
+        if isinstance(v, cls):
+            return v
+
+        # Si es el objeto valor (Responsabilidad)
+        if isinstance(v, Id_Codigo):
+            v = v.id
+
+        # Búsqueda por ID o Código
+        for miembro in cls:
+            if v == miembro.value.id or v == miembro.value.codigo:
+                return miembro
+
+        raise ValueError(f'No se encontró Responsabilidad Fiscal con valor: {v}')
+
+
+ResponsabilidadFiscalField = Annotated[
+    ResponsabilidadFiscal,
+    BeforeValidator(ResponsabilidadFiscal.buscar),
+    PlainSerializer(lambda x: x.id, return_type=int),
+]
+
+
+class WOTerceroCreateEdit(Base):
     id: int | None = None
     idTerceroTipoIdentificacion: int
     identificacion: str
@@ -178,10 +195,40 @@ class WOTerceroCreate(Base):
     telefono: str
     email: str
     plazoDias: int
-    responsabilidadFiscal: list[int]
+    responsabilidadFiscal: list[ResponsabilidadFiscalField]
     direcciones: list[WODireccion]
     idListaPrecioPredeterminada: int = 0
     idTerceroVendedorPredeterminado: int = 0
     idFormaPagoPredeterminada: int = 0
     idLocal: int = 0
     soloCrearDireccion: bool = False
+
+
+if __name__ == '__main__':
+    wo_tercero_create = WOTerceroCreateEdit(
+        idTerceroTipoIdentificacion=6,
+        identificacion='123456789',
+        primerNombre='Juan',
+        primerApellido='Perez',
+        idCiudad=1,
+        direccion='Calle 123',
+        telefono='123456789',
+        email='juan.perez@example.com',
+        plazoDias=30,
+        responsabilidadFiscal=[
+            ResponsabilidadFiscal.IMPUESTO_SOBRE_LAS_VENTAS_IVA,
+            ResponsabilidadFiscal.AUTORETENEDOR,
+        ],
+        direcciones=[
+            WODireccion(
+                nombre='Principal',
+                direccion='Calle 123',
+            )
+        ],
+        idTerceroTipos=[6],
+        idTerceroTipoContribuyente=6,
+        idClasificacionImpuestos=1,
+        soloCrearDireccion=False,
+    )
+    print(wo_tercero_create.model_dump_json(indent=4))
+    print(ResponsabilidadFiscal.buscar(1))

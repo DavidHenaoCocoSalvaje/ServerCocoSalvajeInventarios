@@ -11,7 +11,7 @@ from app.internal.integrations.addi import AddiClient
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
 from app.models.pydantic.world_office.general import WOCiudad
-from app.models.pydantic.world_office.terceros import WODireccion, WOTercero, WOTerceroCreate
+from app.models.pydantic.world_office.terceros import ResponsabilidadFiscal, WODireccion, WOTercero, WOTerceroCreateEdit
 from app.internal.integrations.world_office import WOException, WoClient
 from app.models.db.transacciones import Pedido, PedidoCreate, PedidoLogs
 from app.models.db.session import get_async_session
@@ -177,7 +177,7 @@ async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion
         )
     ]
 
-    wo_tercero_create = WOTerceroCreate(
+    wo_tercero_create = WOTerceroCreateEdit(
         idTerceroTipoIdentificacion=3,  # Cédula de ciudadanía
         identificacion=identificacion_tercero,
         primerNombre=primer_nombre,
@@ -193,7 +193,7 @@ async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion
         telefono=telefono,
         email=email,
         plazoDias=30,
-        responsabilidadFiscal=[7],
+        responsabilidadFiscal=[ResponsabilidadFiscal.NO_RESPONSABLE_DE_IVA],
     )
 
     if wo_tercero is None:

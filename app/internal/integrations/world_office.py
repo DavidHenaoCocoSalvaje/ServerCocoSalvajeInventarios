@@ -29,7 +29,7 @@ from app.models.pydantic.world_office.facturacion import (
 )
 from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
 from app.models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
-from app.models.pydantic.world_office.terceros import WOTercero, WOTerceroResponse, WOTerceroCreate
+from app.models.pydantic.world_office.terceros import WOTercero, WOTerceroResponse, WOTerceroCreateEdit
 from app.internal.integrations.base import BaseClient, ClientException
 from app.config import config
 
@@ -185,7 +185,7 @@ class WoClient(BaseClient):
 
         return True
 
-    async def crear_tercero(self, wo_tercero_create: WOTerceroCreate) -> WOTercero:
+    async def crear_tercero(self, wo_tercero_create: WOTerceroCreateEdit) -> WOTercero:
         url = self.build_url(self.host, self.Paths.Terceros.crear)
         payload = wo_tercero_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         tercero_json = await self.request('POST', self.headers, url, payload=payload)
@@ -206,7 +206,7 @@ class WoClient(BaseClient):
             raise exception
         return tercero_response.data
 
-    async def editar_tercero(self, wo_tercero_edit: WOTerceroCreate) -> WOTercero:
+    async def editar_tercero(self, wo_tercero_edit: WOTerceroCreateEdit) -> WOTercero:
         """_summary_
         Args:
             wo_tercero_edit (WOTerceroCreate): debe contar con el ID para editar el tercer.

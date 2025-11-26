@@ -12,7 +12,7 @@ from app.models.pydantic.world_office.terceros import TerceroTipo
 class WOReglone(Base):
     idInventario: int = 0
     unidadMedida: str = ''
-    cantidad: int = 0
+    cantidad: float = 0
     valorUnitario: float = 0
     idBodega: int = 0
     porDescuento: int | None = None
