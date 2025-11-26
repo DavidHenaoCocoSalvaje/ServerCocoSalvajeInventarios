@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import inventario, transacciones, usuario, auth, search
+from app.routers import inventario, transacciones, usuario, auth, search, facturacion
 from app.internal.log import factory_logger
 
 logger = factory_logger('main', file=False)
@@ -32,6 +32,9 @@ app.include_router(inventario.shopify_inventario_router)
 app.include_router(transacciones.router)
 # Busqueda en internet
 app.include_router(search.router)
+# Facturación
+app.include_router(facturacion.router)
+
 
 # Ruta raíz simple para verificar que la API está funcionando
 @app.get('/', tags=['Root'])
