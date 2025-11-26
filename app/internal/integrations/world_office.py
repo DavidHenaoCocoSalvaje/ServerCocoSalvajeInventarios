@@ -238,7 +238,9 @@ class WoClient(BaseClient):
 
         return tercero_response.data
 
-    async def buscar_ciudad(self, nombre: str | None, departamento: str | None) -> WOCiudad | WOException:
+    async def buscar_ciudad(
+        self, nombre: str | None, departamento: str | None, codigo: str | None
+    ) -> WOCiudad | WOException:
         if nombre:
             atributo = 'nombre'
             valor = nombre
@@ -250,6 +252,9 @@ class WoClient(BaseClient):
                 if departamento == 'San Andrés, Providencia y Santa Catalina'
                 else departamento
             )
+        elif codigo:
+            atributo = 'codigo'
+            valor = codigo
         else:
             exception = WOException(msg='No se proporcionó nombre ni departamento para buscar ciudad')
             return exception

@@ -21,6 +21,7 @@ class Emisor(Base):
     pais: str = ''
     departamento: str = ''
     ciudad: str = ''
+    ciudad_id: str = ''
     address: str = ''
 
 

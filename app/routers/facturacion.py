@@ -56,7 +56,7 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
     # 2. Se debe validar si el tercero tiene dirección principal para facturar.
     wo_client = WoClient()
     wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
-    wo_ciudad = await wo_client.buscar_ciudad(invoice.emisor.ciudad, invoice.emisor.departamento)
+    wo_ciudad = await wo_client.buscar_ciudad(None, None, invoice.emisor.ciudad_id)
     if isinstance(wo_ciudad, WOException):
         raise HTTPException(status_code=404, detail=str(wo_ciudad))
 
