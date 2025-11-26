@@ -234,7 +234,7 @@ async def get_wo_reglones_from_order(wo_client: WoClient, order: Order) -> list[
     if costo_envio > 0:
         # El id de inventario que correspnde a FLETE en World Office es 1079
         reglones.append(
-            WOReglone(idInventario=1079, unidadMedida='und', cantidad=1, valorUnitario=costo_envio, idBodega=1)
+            WOReglone(idInventario='1079', unidadMedida='und', cantidad=1, valorUnitario=costo_envio, idBodega=1)
         )
 
     return reglones

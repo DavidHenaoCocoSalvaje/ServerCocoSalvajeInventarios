@@ -80,7 +80,7 @@ class Grupo(Base):
 
 
 class WOInventario(Base):
-    id: int = 0
+    id: str = ''
     codigo: str = ''
     codigoInternacional: str = ''
     descripcion: str = ''

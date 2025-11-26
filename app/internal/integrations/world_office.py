@@ -478,7 +478,7 @@ if __name__ == '__main__':
                 porcentajeDescuento=True,
                 reglones=[
                     WOReglone(
-                        idInventario=1243,
+                        idInventario='1243',
                         unidadMedida='kg',
                         cantidad=100,
                         valorUnitario=10000,

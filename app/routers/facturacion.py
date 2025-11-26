@@ -56,7 +56,7 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
     # 2. Se debe validar si el tercero tiene dirección principal para facturar.
     wo_client = WoClient()
     wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
-    wo_ciudad = await wo_client.buscar_ciudad(None, None, invoice.emisor.ciudad_id)
+    wo_ciudad = await wo_client.buscar_ciudad(codigo=invoice.emisor.ciudad_id)
     if isinstance(wo_ciudad, WOException):
         raise HTTPException(status_code=404, detail=str(wo_ciudad))
 
@@ -106,16 +106,28 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
     # 1. Se debe buscar el id del  prodcuto a facturar
     wo_reglones = []
     for item in invoice.lineitems:
-        wo_producto = await wo_client.get_inventario_por_codigo(item.inventario)
-        if isinstance(wo_producto, WOException):
-            raise HTTPException(status_code=404, detail=str(wo_producto))
+        if not item.inventario and not item.cuenta:
+            raise HTTPException(
+                status_code=404, detail=f'El item {item.nombre} no cuenta con inventario ni cuenta contable'
+            )
+
+        id_inventario = None
+
+        if item.inventario:
+            wo_producto = await wo_client.get_inventario_por_codigo(item.inventario)
+            if isinstance(wo_producto, WOException):
+                raise HTTPException(status_code=404, detail=str(wo_producto))
+            id_inventario = wo_producto.id
+        else:
+            id_inventario = item.cuenta
+    
         # Si el producto tiene IVA, usar el valor sin IVA que está en los impuestos
         valor_unitario = item.valorunitario
-        if len(wo_producto.impuestos) > 0:
+        if len(item.impuestos) > 0:
             valor_unitario = item.impuestos[0].base
 
         wo_reglone = WOReglone(
-            idInventario=wo_producto.id,
+            idInventario=id_inventario,
             unidadMedida='kg' if item.kg else 'und',  # kg solo se asigna si el item es un inventario por agente
             cantidad=float(item.kg) if item.kg else float(item.und),
             valorUnitario=valor_unitario,
