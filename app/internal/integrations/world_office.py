@@ -239,7 +239,7 @@ class WoClient(BaseClient):
         return tercero_response.data
 
     async def buscar_ciudad(
-        self, nombre: str | None, departamento: str | None, codigo: str | None
+        self, nombre: str | None = None, departamento: str | None = None, codigo: str | None = None
     ) -> WOCiudad | WOException:
         if nombre:
             atributo = 'nombre'
