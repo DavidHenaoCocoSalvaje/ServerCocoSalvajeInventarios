@@ -2,10 +2,10 @@
 from enum import Enum
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.internal.integrations.world_office import WoClient
+from app.internal.integrations.world_office import WOException, WoClient
 from app.models.pydantic.facturacion.invoice import Invoice
-from app.models.pydantic.world_office.terceros import WOTerceroCreate
-from app.models.pydantic.world_office.world_office import WOException, WODireccion
+from ..models.pydantic.world_office.general import WOCiudad
+from app.models.pydantic.world_office.terceros import WODireccion, WOTerceroCreate
 
 
 if __name__ == '__main__':
@@ -47,7 +47,7 @@ router = APIRouter(
 )
 async def facturar_compra_invoice(invoice: Invoice) -> bool:
     # region tercero
-    # 1. Se debe crear el tercero de la factura, si No exstá creado previamente.
+    # 1. Se debe crear el tercero de la factura, si No está creado previamente.
     # Con base en el tercero WO calcula los impuestos, retenciones correctas.
     # - Si el tercero ya existe, se debe validar que sea un porveedor (id timpo tercero proveedor => 6), si no lo es modificarlo.
     # 2. Se debe validar si el tercero tiene dirección principal para facturar.
@@ -55,17 +55,17 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
     wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
     wo_ciudad = await wo_client.buscar_ciudad(invoice.emisor.ciudad, invoice.emisor.departamento)
     if isinstance(wo_ciudad, WOException):
-        raise HTTPException(status_code=404, detail=wo_ciudad.model_dump_json())
+        raise HTTPException(status_code=404, detail=str(wo_ciudad))
 
     direcciones = [
         WODireccion(
             nombre='Principal',
-            direccion=invoice.emisor,
+            direccion=invoice.emisor.address,
             senPrincipal=True,
-            emailPrincipal=email,
-            telefonoPrincipal=telefono,
+            emailPrincipal=invoice.emisor.email,
+            telefonoPrincipal=invoice.emisor.telefono,
             ubicacionCiudad=WOCiudad(
-                id=ciudad_id,
+                id=wo_ciudad.id,
             ),
         )
     ]
@@ -74,14 +74,14 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
         idTerceroTipoIdentificacion=6,  # NIT
         identificacion=invoice.emisor.documento,
         primerNombre=invoice.emisor.nombrecomercial or invoice.emisor.razonsocial,
-        idCiudad=wo_ciudad.id_iudea,
-        direccion=invoice.emisor.direccion,
+        idCiudad=wo_ciudad.id,
+        direccion=invoice.emisor.address,
         direcciones=direcciones,
-        idTerceroTipos=[6],  # Proveedor
+        idTerceroTipos=[6], # Proveedor
         idTerceroTipoContribuyente=6,
         idClasificacionImpuestos=1,
-        telefono=telefono,
-        email=email,
+        telefono=invoice.emisor.telefono,
+        email=invoice.emisor.email,
         plazoDias=30,
         responsabilidadFiscal=[7],
     )

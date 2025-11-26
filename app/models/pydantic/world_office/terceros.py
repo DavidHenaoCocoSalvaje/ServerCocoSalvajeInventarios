@@ -1,5 +1,6 @@
 # app.models.pydantic.world_office.terceros
 
+from enum import Enum
 from pydantic import computed_field
 from app.models.pydantic.world_office.base import WOResponse
 from app.models.pydantic.world_office.general import WOUbicacionDepartamento, WOCiudad
@@ -118,6 +119,46 @@ class WOTerceroResponse(WOResponse):
         # Se asume NOT_FOUND found como valido ya que no representa un error.
         return self.status in ['OK', 'NOT_FOUND', 'CREATED']
 
+
+#       {
+    #     "id": 1,
+    #     "codigo": "O-13",
+    #     "significado": "Gran Contribuyente"
+    #   },
+    #   {
+    #     "id": 2,
+    #     "codigo": "O-15",
+    #     "significado": "Autorretenedor"
+    #   },
+    #   {
+    #     "id": 3,
+    #     "codigo": "O-23",
+    #     "significado": "Agente de Retención IVA"
+    #   },
+    #   {
+    #     "id": 4,
+    #     "codigo": "O-47",
+    #     "significado": "Régimen Simple de Tributación"
+    #   },
+    #   {
+    #     "id": 5,
+    #     "codigo": "R-99-PN",
+    #     "significado": "No Aplica"
+    #   },
+    #   {
+    #     "id": 6,
+    #     "codigo": "O-48",
+    #     "significado": "Impuesto Sobre las Ventas – IVA"
+    #   },
+    #   {
+    #     "id": 7,
+    #     "codigo": "O-49",
+    #     "significado": "No Responsable de IVA"
+    #   }
+ResponsabilidadesFiscales = {
+    (1, "O-13"): "GRAN_COTRIBUYENTE",
+    (2, ""): ""
+}
 
 class WOTerceroCreate(Base):
     id: int | None = None

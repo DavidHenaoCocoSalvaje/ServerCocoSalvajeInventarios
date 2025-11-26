@@ -8,6 +8,7 @@ class EsquemaTributario(Base):
 class Emisor(Base):
     razonsocial: str = ""
     nombrecomercial: str = ""
+    telefono: str = ""
     email: str = ""
     documento: str = ""
     digitoverificacion: str = ""
