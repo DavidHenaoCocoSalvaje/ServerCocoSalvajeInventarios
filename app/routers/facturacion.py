@@ -42,12 +42,13 @@ router = APIRouter(
 @router.post(
     '/compra',
     status_code=status.HTTP_200_OK,
+    response_model=bool,
     summary='Genera una factura de compra.',
     description='A partir de los datos extraidos de una factura electrónica válida, se genera una factura de compra.',
     tags=[Tags.INVENTARIO],
     dependencies=[Depends(validar_access_token)],
 )
-async def facturar_compra_invoice(invoice: Invoice):
+async def facturar_compra_invoice(invoice: Invoice) -> bool:
     # region tercero
     # 1. Se debe crear el tercero de la factura, si No está creado previamente.
     # Con base en el tercero WO calcula los impuestos, retenciones correctas.
@@ -118,7 +119,7 @@ async def facturar_compra_invoice(invoice: Invoice):
             unidadMedida='kg' if item.kg else 'und',  # kg solo se asigna si el item es un inventario por agente
             cantidad=float(item.kg) if item.kg else float(item.und),
             valorUnitario=valor_unitario,
-            idBodega=3, # Bodega insumos
+            idBodega=3,  # Bodega insumos
             porDescuento=0,
         )
 
@@ -142,12 +143,13 @@ async def facturar_compra_invoice(invoice: Invoice):
         )
     )
 
+    return True
+
 
 if __name__ == '__main__':
     from asyncio import run
     # from app.models.db.session import get_async_session
 
-    async def main():
-        ...
+    async def main(): ...
 
     run(main())
