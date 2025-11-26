@@ -120,7 +120,7 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
             id_inventario = wo_producto.id
         else:
             id_inventario = item.cuenta
-    
+
         # Si el producto tiene IVA, usar el valor sin IVA que está en los impuestos
         valor_unitario = item.valorunitario
         if len(item.impuestos) > 0:
@@ -131,7 +131,7 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
             unidadMedida='kg' if item.kg else 'und',  # kg solo se asigna si el item es un inventario por agente
             cantidad=float(item.kg) if item.kg else float(item.und),
             valorUnitario=valor_unitario,
-            idBodega=3,  # Bodega insumos
+            idBodega=1,  # 1 Es la única bodega disponible por defecto
             porDescuento=0,
         )
 
