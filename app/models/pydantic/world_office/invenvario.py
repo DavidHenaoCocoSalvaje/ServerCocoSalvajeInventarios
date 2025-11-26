@@ -1,5 +1,8 @@
 # app.models.pydantic.world_office.inventario
 
+from typing import Annotated
+
+from pydantic import BeforeValidator
 from app.models.pydantic.base import Base
 from app.models.pydantic.world_office.base import WOResponse
 
@@ -80,7 +83,7 @@ class Grupo(Base):
 
 
 class WOInventario(Base):
-    id: str = ''
+    id: Annotated[str, BeforeValidator(lambda x: str(x))] = ''
     codigo: str = ''
     codigoInternacional: str = ''
     descripcion: str = ''
