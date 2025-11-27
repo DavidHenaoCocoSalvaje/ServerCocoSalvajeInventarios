@@ -126,13 +126,15 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
 
         # Si el producto tiene IVA, usar el valor sin IVA que está en los impuestos
         valor_unitario = item.valorunitario
+        # Cantidad y valor base -> En el invoice el impuesto viene totalizado por producto, no por unidad, por lo cúal el valor base se debe dividir en la catidad de unidades.
+        cantidad = float(item.kg) if item.kg else float(item.und)
         if len(item.impuestos) > 0:
-            valor_unitario = item.impuestos[0].base
+            valor_unitario = item.impuestos[0].base / cantidad
 
         wo_reglone = WOReglone(
             idInventario=id_inventario,
             unidadMedida='kg' if item.kg else 'und',  # kg solo se asigna si el item es un inventario por agente
-            cantidad=float(item.kg) if item.kg else float(item.und),
+            cantidad=cantidad,
             valorUnitario=valor_unitario,
             idBodega=1,  # 1 Es la única bodega disponible por defecto
             porDescuento=0,
