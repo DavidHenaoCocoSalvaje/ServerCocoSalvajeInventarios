@@ -119,7 +119,10 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
                 raise HTTPException(status_code=404, detail=str(wo_producto))
             id_inventario = wo_producto.id
         else:
-            id_inventario = item.cuenta
+            wo_producto = await wo_client.get_inventario_por_codigo(item.cuenta)
+            if isinstance(wo_producto, WOException):
+                raise HTTPException(status_code=404, detail=str(wo_producto))
+            id_inventario = wo_producto.id
 
         # Si el producto tiene IVA, usar el valor sin IVA que está en los impuestos
         valor_unitario = item.valorunitario
