@@ -17,5 +17,6 @@ dependencies = [
     "apscheduler",
     "python-dateutil",
     "holidays_co",
-    "playwright"
+    "playwright",
+    "pandas-stubs"
 ]
