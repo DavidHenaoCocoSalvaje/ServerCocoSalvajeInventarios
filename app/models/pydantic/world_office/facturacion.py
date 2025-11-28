@@ -92,10 +92,10 @@ class WODocumentoVentaEdit(WODocumentoVentaCreateEditBase):
     reglones: list[WORegloneEdit] = []
 
 
-class WOContabilizarDocumentoVentaResponse(WOResponse):
+class WOContabilizarFacturaResponse(WOResponse):
     def valid(self) -> bool:
         conflict_msg = 'El documento ya se encuentra contabilizado o en proceso de contabilizacion'
-        contabilizado = self.status == 'OK' and self.userMessage == 'CONTABILIZACION_EXITOSA'
+        contabilizado = self.status in ['OK', 'ACCEPTED'] and self.userMessage == 'CONTABILIZACION_EXITOSA'
         contabilizado_antes = self.status == 'CONFLICT' and self.userMessage == conflict_msg
         return contabilizado or contabilizado_antes
 

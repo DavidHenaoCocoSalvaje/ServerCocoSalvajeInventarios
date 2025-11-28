@@ -13,7 +13,7 @@ from app.internal.gen.utilities import DateTz
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
 from app.models.pydantic.world_office.facturacion import (
-    WOContabilizarDocumentoVentaResponse,
+    WOContabilizarFacturaResponse,
     WODocumentoCompraCreate,
     WODocumentoCompraResponse,
     WODocumentoCompraTipo,
@@ -170,9 +170,9 @@ class WoClient(BaseClient):
         contabilizar_json = await self.request('POST', self.headers, url)
 
         try:
-            contabilizar_response = WOContabilizarDocumentoVentaResponse(**contabilizar_json)
+            contabilizar_response = WOContabilizarFacturaResponse(**contabilizar_json)
         except ValidationError as e:
-            msg = f'{type(e)} {WOContabilizarDocumentoVentaResponse.__name__}, id: {id_documento}'
+            msg = f'{type(e)} {WOContabilizarFacturaResponse.__name__}, id: {id_documento}'
             msg += f'\n{repr(e.errors())}'
             exception = WOException(url=url, response=contabilizar_json, msg=msg)
             wo_log.error(str(exception))
