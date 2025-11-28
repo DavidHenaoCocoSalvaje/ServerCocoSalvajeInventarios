@@ -47,18 +47,24 @@ def validar_identificacion(identificacion: str) -> bool:
 
 
 def get_date_for_invoice(
-    fecha: datetime | date, hora_fin_jornada: time = time(hour=16, minute=30), no_working_days: list[int] = [5, 6]
+    fecha: datetime | date,
+    hora_fin_jornada_last_working_day: time = time(hour=16, minute=30),
+    no_working_days: list[int] = [5, 6],
+    fin_jornada_working_days: time = time(hour=17, minute=30),
 ):
     holidays = {h.date for h in holidays_co.get_colombia_holidays_by_year(fecha.year)}
     weekday = get_weekday(fecha)
     if weekday in no_working_days or fecha in holidays:
         return next_business_day(fecha)
 
-    if isinstance(fecha, datetime) and fecha.time() > hora_fin_jornada:
+    if isinstance(fecha, datetime) and fecha.time() > hora_fin_jornada_last_working_day:
         tomorrow = fecha + timedelta(days=1)
         tomorrow_weekday = get_weekday(tomorrow)
         if tomorrow in holidays or tomorrow_weekday in no_working_days:
             return next_business_day(tomorrow)
+
+    if isinstance(fecha, datetime) and fecha.time() > fin_jornada_working_days:
+        return fecha + timedelta(days=1)
 
     return fecha
 
@@ -364,7 +370,9 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
             try:
                 if not pedido.contabilizado:
                     factura = await wo_client.get_documento_venta(pedido.factura_id)
-                    contabilizar = await wo_client.contabilizar_documento_venta(pedido.factura_id)
+                    contabilizar = await wo_client.contabilizar_documento(
+                        wo_client.Paths.Ventas.contabilizar, pedido.factura_id
+                    )
                     pedido_update = pedido.model_copy()
                 else:
                     return

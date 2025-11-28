@@ -131,12 +131,15 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
         if len(item.impuestos) > 0:
             valor_unitario = item.impuestos[0].base / cantidad
 
+        # 1 Es la única bodega disponible por defecto para cuentas de gasto, para inventario bodega 3
+        id_bodega = 3 if item.inventario else 1
+
         wo_reglone = WOReglone(
             idInventario=id_inventario,
             unidadMedida='kg' if item.kg else 'und',  # kg solo se asigna si el item es un inventario por agente
             cantidad=cantidad,
             valorUnitario=valor_unitario,
-            idBodega=1,  # 1 Es la única bodega disponible por defecto
+            idBodega=id_bodega,
             porDescuento=0,
         )
 
@@ -144,7 +147,7 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
 
     # endregion reglone
 
-    await wo_client.crear_factura_compra(
+    factura_compra = await wo_client.crear_factura_compra(
         WODocumentoCompraCreate(
             fecha=DateTz.from_str(invoice.fecha),
             prefijo=1,  # TODO: 1 -> Sin Prefijo, Cambiar para producción
@@ -160,7 +163,8 @@ async def facturar_compra_invoice(invoice: Invoice) -> bool:
         )
     )
 
-    return True
+    # Al contabilizar documento, realiza la contabilización del documento
+    return await wo_client.contabilizar_documento(wo_client.Paths.Compras.contabilizar, factura_compra.id)
 
 
 if __name__ == '__main__':

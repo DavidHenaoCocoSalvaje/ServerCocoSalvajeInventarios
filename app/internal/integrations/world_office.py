@@ -63,6 +63,7 @@ class WoClient(BaseClient):
         class Compras:
             root: str = '/compra'
             crear: str = f'{root}/crearCompra'
+            contabilizar = f'{root}/contabilizarCompra'
 
         class Ciudad:
             root: str = '/ciudad'
@@ -164,8 +165,8 @@ class WoClient(BaseClient):
 
         return inventario_response.data
 
-    async def contabilizar_documento_venta(self, id_documento: int) -> bool:
-        url = self.build_url(self.host, self.Paths.Ventas.contabilizar, [str(id_documento)])
+    async def contabilizar_documento(self, path: str, id_documento: int) -> bool:
+        url = self.build_url(self.host, path, [str(id_documento)])
         contabilizar_json = await self.request('POST', self.headers, url)
 
         try:
