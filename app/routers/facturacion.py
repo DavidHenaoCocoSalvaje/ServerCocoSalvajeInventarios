@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.internal.gen.utilities import DateTz
 from app.internal.integrations.world_office import WOException, WoClient
+from app.internal.query.transacciones import CompraQuery
+from app.models.db.transacciones import CompraCreate
 from app.models.pydantic.facturacion.invoice import Invoice
 from app.models.pydantic.world_office.facturacion import WODocumentoCompraCreate, WODocumentoCompraTipo, WOReglone
 from ..models.pydantic.world_office.general import WOCiudad
@@ -24,16 +26,12 @@ from app.internal.log import LogLevel, factory_logger
 # Base de datos (Repositorio)
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.db.session import get_async_session
-from app.models.db.transacciones import Compra, CompraCreate
-from app.internal.query.transacciones import TransaccionQuery
 import traceback
 
 from app.routers.auth import validar_access_token
 
 log_inventario = factory_logger('facturacion', file=True)
 log_debug = factory_logger('debug', level=LogLevel.DEBUG, file=False)
-
-compra_query = TransaccionQuery(Compra, CompraCreate)
 
 
 class Tags(Enum):
@@ -58,11 +56,12 @@ router = APIRouter(
     dependencies=[Depends(validar_access_token)],
 )
 async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depends(get_async_session)) -> bool:
+    compra_query = CompraQuery()
     # 0. Se crea el registro de la compra en la base de datos, se usa el uuid por si llega a coincidir el secuencial de la factura de diferentes proveedores.
-    compra_id = f'{invoice.id} {invoice.uuid}'
-    compra = await compra_query.get_by_number(session, compra_id)
+    compra_provider_number = f'{invoice.id} {invoice.uuid}'
+    compra = await compra_query.get_by_provider_number(session, compra_provider_number)
     if not compra:
-        compra_create = CompraCreate(numero_factura_proveedor=compra_id)
+        compra_create = CompraCreate(numero_factura_proveedor=compra_provider_number)
         compra = await compra_query.create(session, compra_create)
 
     if compra.factura_id:
