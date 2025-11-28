@@ -23,7 +23,6 @@ class TransaccionBase(SQLModel):
     factura_id: int | None = None  # Creación exitosa cuando se recibe número de factura
     factura_numero: int | None = None  # Creación exitosa cuando se recibe número de factura
     contabilizado: bool = False
-    pago: bool = False
     q_intentos: int = Field(
         sa_type=SMALLINT, default=3
     )  # Determina los intentos de reprocesar si la transacción no está facturada/contabilizada
@@ -36,6 +35,7 @@ class PedidoLogs(Enum):
 
 class PedidoCreate(TransaccionBase):
     numero: int | None = None  # Número de pedido shopify ej. #1234
+    pago: bool = False
     log: str | PedidoLogs | None = Field(sa_type=TEXT, default=None)
 
 
