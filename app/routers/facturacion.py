@@ -169,7 +169,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         factura_compra = await wo_client.crear_factura_compra(
             WODocumentoCompraCreate(
                 fecha=DateTz.from_str(invoice.fecha),
-                prefijo=1,  # TODO: 1 -> Sin Prefijo, Cambiar para producción
+                prefijo=14,  # 1 -> Sin Prefijo, 14 -> FC24
                 documentoTipo=WODocumentoCompraTipo.FACTURA_COMPRA,
                 concepto=f'FACTURA DE COMPRA - {invoice.id}',
                 idEmpresa=1,
@@ -182,7 +182,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
             )
         )
 
-        # Al contabilizar documento, realiza la contabilización del documento
+        # Al causar documento, realizar la contabilización del documento para que se apliquen los cálculos de WO
         contabilizado = await wo_client.contabilizar_documento(wo_client.Paths.Compras.contabilizar, factura_compra.id)
 
         # region log success
