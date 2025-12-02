@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import BeforeValidator
 from app.models.pydantic.base import Base
-from app.models.pydantic.world_office.base import WOResponse
+from app.models.pydantic.world_office.base import WOResponse, WODataList
 
 
 class Contabilizacion(Base):
@@ -115,3 +115,14 @@ class WOInventarioResponse(WOResponse):
 
     def valid(self) -> bool:
         return self.status == 'ACCEPTED' and bool(self.data)
+
+
+class WODataListInventarios(WODataList):
+    content: list[WOInventario] = []
+
+
+class WOListaInventariosResponse(WOResponse):
+    data: WODataListInventarios = WODataListInventarios()
+
+    def valid(self) -> bool:
+        return self.status == 'OK' and bool(self.data.content)

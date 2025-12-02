@@ -62,9 +62,14 @@ class Operador(int, Enum):
 class WOFiltro(Base):
     atributo: str = ''
     valor: str | int = ''
+    valor2: str | int | None = None
     tipoFiltro: TipoFiltroWoFiltro = TipoFiltroWoFiltro.IGUAL
     tipoDato: TipoDatoWoFiltro = TipoDatoWoFiltro.STRING
+    nombreColumna: str = ''
+    valores: list[str | int] | None = None
+    clase: str = ''
     operador: Operador = Operador.AND
+    subGrupo: str = ''
 
 
 class WOListar(Base):

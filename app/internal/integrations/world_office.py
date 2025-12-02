@@ -1,4 +1,5 @@
 # app.internal.integrations.world_office
+
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -9,14 +10,13 @@ if __name__ == '__main__':
 
 
 from pydantic import ValidationError
-from app.internal.gen.utilities import DateTz
 from app.internal.log import factory_logger
 from app.models.pydantic.world_office.base import Operador, TipoDatoWoFiltro, TipoFiltroWoFiltro, WOFiltro, WOListar
+from app.models.pydantic.world_office.invenvario import WOListaInventariosResponse, WODataListInventarios
 from app.models.pydantic.world_office.facturacion import (
     WOContabilizarFacturaResponse,
     WODocumentoCompraCreate,
     WODocumentoCompraResponse,
-    WODocumentoCompraTipo,
     WODocumentoFactura,
     WODocumentoVentaCreate,
     WODocumentoVentaDetail,
@@ -25,7 +25,6 @@ from app.models.pydantic.world_office.facturacion import (
     WOListaDocumentosVentaResponse,
     WOListaProductosDocumentoVentaResponse,
     WOProductoDocumento,
-    WOReglone,
 )
 from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesResponse
 from app.models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
@@ -72,6 +71,7 @@ class WoClient(BaseClient):
         class Inventario:
             root: str = '/inventarios'
             inventario_por_codigo: str = f'{root}/consultaCodigo'
+            listar_inventarios: str = f'{root}/listarInventarios'
 
     # Singleton para implementar posteriormente la restricción de peticiones.
     def __new__(cls):
@@ -164,6 +164,57 @@ class WoClient(BaseClient):
             raise exception
 
         return inventario_response.data
+
+    async def get_list_inventario_por_codigo(self, codigo: str) -> WODataListInventarios:
+        url = self.build_url(self.host, self.Paths.Inventario.listar_inventarios)
+
+        wo_filtro = WOFiltro(
+            atributo='codigo',
+            valor=codigo,
+            valor2=None,
+            tipoFiltro=TipoFiltroWoFiltro.CONTIENE,
+            tipoDato=TipoDatoWoFiltro.STRING,
+            nombreColumna='',
+            valores=None,
+            clase='',
+            operador=Operador.AND,
+            subGrupo='filtro',
+        )
+        wo_listar = WOListar(
+            columnaOrdenar='id',
+            pagina=0,
+            registrosPorPagina=10,
+            orden='DESC',
+            filtros=[wo_filtro],
+            canal=0,
+            registroInicial=0,
+        )
+        payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
+
+        try:
+            inventarios_json = await self.request('POST', self.headers, url, payload=payload)
+        except Exception as e:
+            msg = f'{type(e)}, codigo: {codigo}'
+            exception = WOException(url=url, payload=payload, response=None, msg=msg)
+            wo_log.error(f'{exception}')
+            raise exception
+
+        try:
+            inventarios_response = WOListaInventariosResponse(**inventarios_json)
+        except ValidationError as e:
+            msg = f'{type(e)} {WOListaInventariosResponse.__name__}, codigo: {codigo}'
+            msg += f'\n{repr(e.errors())}'
+            exception = WOException(url=url, response=inventarios_json, msg=msg)
+            wo_log.error(str(exception))
+            raise exception
+
+        if not inventarios_response.valid():
+            msg = 'No se obtuvo inventario'
+            exception = WOException(url=url, payload=payload, response=inventarios_json, msg=msg)
+            wo_log.error(str(exception))
+            raise exception
+
+        return inventarios_response.data
 
     async def contabilizar_documento(self, path: str, id_documento: int) -> bool:
         url = self.build_url(self.host, path, [str(id_documento)])
@@ -427,6 +478,8 @@ class WoClient(BaseClient):
 if __name__ == '__main__':
     from asyncio import run
     # from random import randint
+    # from app.internal.gen.utilities import DateTz
+    # from app.models.pydantic.world_office.facturacion import WOReglone, WODocumentoCompraTipo
 
     async def main():
         wo_client = WoClient()
@@ -465,30 +518,55 @@ if __name__ == '__main__':
         #         }
         #     ]
         # }
-        factura_compra = await wo_client.crear_factura_compra(
-            WODocumentoCompraCreate(
-                fecha=DateTz.today(),
-                prefijo=1,
-                documentoTipo=WODocumentoCompraTipo.FACTURA_COMPRA,
-                concepto='FACTURA DE COMPRA PRUEBA',
-                idEmpresa=1,
-                idTerceroExterno=11208,
-                idTerceroInterno=1,
-                idFormaPago=5,
-                idMoneda=31,
-                porcentajeDescuento=True,
-                reglones=[
-                    WOReglone(
-                        idInventario='1243',
-                        unidadMedida='kg',
-                        cantidad=100,
-                        valorUnitario=10000,
-                        idBodega=3,
-                        porDescuento=0,
-                    )
-                ],
-            )
-        )
-        print(factura_compra.model_dump_json(indent=4))
+        # factura_compra = await wo_client.crear_factura_compra(
+        #     WODocumentoCompraCreate(
+        #         fecha=DateTz.today(),
+        #         prefijo=1,
+        #         documentoTipo=WODocumentoCompraTipo.FACTURA_COMPRA,
+        #         concepto='FACTURA DE COMPRA PRUEBA',
+        #         idEmpresa=1,
+        #         idTerceroExterno=11208,
+        #         idTerceroInterno=1,
+        #         idFormaPago=5,
+        #         idMoneda=31,
+        #         porcentajeDescuento=True,
+        #         reglones=[
+        #             WOReglone(
+        #                 idInventario='1243',
+        #                 unidadMedida='kg',
+        #                 cantidad=100,
+        #                 valorUnitario=10000,
+        #                 idBodega=3,
+        #                 porDescuento=0,
+        #             )
+        #         ],
+        #     )
+        # )
+        # print(factura_compra.model_dump_json(indent=4))
+        # {
+        #   "columnaOrdenar": "id",
+        #   "pagina": 0,
+        #   "registrosPorPagina": 10,
+        #   "orden": "DESC",
+        #   "filtros": [
+        #     {
+        #       "atributo": "codigo",
+        #       "valor": "529525",
+        #       "valor2": null,
+        #       "tipoFiltro": 1,
+        #       "tipoDato": 0,
+        #       "nombreColumna": "",
+        #       "valores": null,
+        #       "clase": "",
+        #       "operador": 0,
+        #       "subGrupo": "filtro"
+        #     }
+        #   ],
+        #   "canal": 0,
+        #   "registroInicial": 0
+        # }
+
+        inventario = await wo_client.get_list_inventario_por_codigo('529525')
+        print(inventario.model_dump_json(indent=4))
 
     run(main())
