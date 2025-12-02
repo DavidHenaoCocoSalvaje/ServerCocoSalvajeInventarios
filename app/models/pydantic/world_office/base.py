@@ -15,10 +15,10 @@ from app.models.pydantic.base import Base
 
 
 class WOResponse(Base):
-    status: str = ''
-    userMessage: str = ''
-    developerMessage: str = ''
-    errorCode: str = ''
+    status: str | int = ''
+    userMessage: str | int = ''
+    developerMessage: str | int = ''
+    errorCode: str | int = ''
     moreInfo: Any = None
 
 
