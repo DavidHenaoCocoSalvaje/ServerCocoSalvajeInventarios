@@ -99,7 +99,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
             idTerceroTipoIdentificacion=6,  # NIT
             identificacion=invoice.emisor.documento,
             primerNombre=invoice.emisor.nombrecomercial or invoice.emisor.razonsocial,
-            primerApellido=" ",  # WO Exige el campo primer apellido al usar el api v1.
+            primerApellido=' ',  # WO Exige el campo primer apellido al usar el api v1.
             idCiudad=wo_ciudad.id,
             direccion=invoice.emisor.address,
             direcciones=direcciones,
@@ -139,9 +139,10 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
                     raise HTTPException(status_code=404, detail=str(wo_producto))
                 id_inventario = wo_producto.id
             else:
-                wo_producto = await wo_client.get_inventario_por_codigo(item.cuenta)
-                if isinstance(wo_producto, WOException):
-                    raise HTTPException(status_code=404, detail=str(wo_producto))
+                wo_inventarios = await wo_client.get_list_inventario_por_codigo(item.cuenta)
+                if len(wo_inventarios.content) == 0:
+                    raise HTTPException(status_code=404, detail=f'El inventario {item.cuenta} no se encontro')
+                wo_producto = wo_inventarios.content[0]
                 id_inventario = wo_producto.id
 
             # Si el producto tiene IVA, usar el valor sin IVA que está en los impuestos
