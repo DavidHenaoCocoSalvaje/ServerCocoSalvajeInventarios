@@ -99,6 +99,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
             idTerceroTipoIdentificacion=6,  # NIT
             identificacion=invoice.emisor.documento,
             primerNombre=invoice.emisor.nombrecomercial or invoice.emisor.razonsocial,
+            primerApellido=" ",  # WO Exige el campo primer apellido al usar el api v1.
             idCiudad=wo_ciudad.id,
             direccion=invoice.emisor.address,
             direcciones=direcciones,
