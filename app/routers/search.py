@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from app.internal.integrations.bing import search_bing_copilot
 from app.internal.log import factory_logger
@@ -25,5 +25,5 @@ async def post_search_bing_copilot(
 ):
     try:
         return await search_bing_copilot(query)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    except Exception:
+        return ''
