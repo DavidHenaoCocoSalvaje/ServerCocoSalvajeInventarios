@@ -128,7 +128,7 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
         log.append(str(e))
 
     msg = '\n\n'.join([str(x) for x in log])
-    raise Exception(msg)
+    raise Exception(msg.strip())
 
 
 async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion_tercero: str) -> WOTercero:
