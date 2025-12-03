@@ -61,9 +61,9 @@ router = APIRouter(
     tags=[Tags.INVENTARIO],
     dependencies=[Depends(validar_access_token)],
 )
-async def compra_contabilizada(compra_id: int, session: AsyncSession = Depends(get_async_session)) -> bool:
+async def compra_contabilizada(compra_provider_number: str, session: AsyncSession = Depends(get_async_session)) -> bool:
     compra_query = CompraQuery()
-    compra = await compra_query.get(session, compra_id)
+    compra = await compra_query.get_by_provider_number(session, compra_provider_number)
     return compra is not None and compra.factura_id is not None
 
 
