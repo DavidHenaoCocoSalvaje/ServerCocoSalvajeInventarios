@@ -111,7 +111,9 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         # 2. Se debe validar si el tercero tiene dirección principal para facturar.
         wo_client = WoClient()
         wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
-        wo_ciudad = await wo_client.buscar_ciudad(codigo=invoice.emisor.ciudad_id)
+        wo_ciudad = await wo_client.buscar_ciudad(
+            codigo=str(int(invoice.emisor.ciudad_id))
+        )  # World office maneja los códigos de ciudad sin ceros a la izquierda.
 
         direcciones = [
             WODireccion(

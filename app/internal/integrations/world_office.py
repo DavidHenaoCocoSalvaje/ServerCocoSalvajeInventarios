@@ -308,7 +308,7 @@ class WoClient(BaseClient):
             atributo = 'codigo'
             valor = codigo
         else:
-            exception = WOException(msg='No se proporcionó nombre ni departamento para buscar ciudad')
+            exception = WOException(msg='No se proporcionó nombre, departamento o código para buscar ciudad')
             raise exception
 
         filtro = WOFiltro(
