@@ -41,7 +41,7 @@ class Impuesto(Base):
 
 class LineItem(Base):
     nombre: str = ''
-    cantidad: str | int = ''
+    cantidad: str | float = ''
     valorunitario: float = 0.0
     total: float = 0.0
     unidad: str = ''
@@ -52,8 +52,8 @@ class LineItem(Base):
     nombre_unidad: str = ''
     inventario: str = ''
     cuenta: str = ''
-    kg: str | int = ''
-    und: str | int = ''
+    kg: str | float = ''
+    und: str | float = ''
 
 
 class Invoice(Base):
