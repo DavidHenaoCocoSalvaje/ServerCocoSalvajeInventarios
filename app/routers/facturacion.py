@@ -1,6 +1,12 @@
 # app.routers.facturacion.py
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
 
 from enum import Enum
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.internal.gen.utilities import DateTz
@@ -9,7 +15,7 @@ from app.internal.query.transacciones import CompraQuery
 from app.models.db.transacciones import CompraCreate
 from app.models.pydantic.facturacion.invoice import Invoice
 from app.models.pydantic.world_office.facturacion import WODocumentoCompraCreate, WODocumentoCompraTipo, WOReglone
-from ..models.pydantic.world_office.general import WOCiudad
+from app.models.pydantic.world_office.general import WOCiudad
 from app.models.pydantic.world_office.terceros import ResponsabilidadFiscal, WODireccion, WOTerceroCreateEdit
 
 
@@ -46,6 +52,21 @@ router = APIRouter(
 )
 
 
+@router.get(
+    '/compra-contabilizada',
+    status_code=status.HTTP_200_OK,
+    response_model=bool,
+    summary='Verifica si una compra ha sido contabilizada.',
+    description='Verifica si una compra ha sido contabilizada.',
+    tags=[Tags.INVENTARIO],
+    dependencies=[Depends(validar_access_token)],
+)
+async def compra_contabilizada(compra_id: int, session: AsyncSession = Depends(get_async_session)) -> bool:
+    compra_query = CompraQuery()
+    compra = await compra_query.get(session, compra_id)
+    return compra is not None and compra.factura_id is not None
+
+
 @router.post(
     '/compra',
     status_code=status.HTTP_200_OK,
@@ -76,8 +97,6 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         wo_client = WoClient()
         wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
         wo_ciudad = await wo_client.buscar_ciudad(codigo=invoice.emisor.ciudad_id)
-        if isinstance(wo_ciudad, WOException):
-            raise HTTPException(status_code=404, detail=str(wo_ciudad))
 
         direcciones = [
             WODireccion(
@@ -203,14 +222,14 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         compra_update = compra.model_copy()
         compra_update.log = str(e)
         await compra_query.update(session, compra_update, compra.id)
-        raise e
+        return False
         # endregion log error
     except Exception as e:
         # region log error
         compra_update = compra.model_copy()
         compra_update.log = str(e) if str(e) else traceback.format_exc()
         await compra_query.update(session, compra_update, compra.id)
-        raise e
+        return False
         # endregion log error
 
 
@@ -218,6 +237,11 @@ if __name__ == '__main__':
     from asyncio import run
     # from app.models.db.session import get_async_session
 
-    async def main(): ...
+    async def main():
+        invoice_json_string = '{ "body": { "id": "IG45", "uuid": "3da0b00bd2238d705abb5f90fe564370806524142eec2509383a9e7c3d6550ed9a2c75343b3142616791c368081bc394", "fecha": "2025-11-19", "emisor": { "razonsocial": "INGRID YULIETH ACOSTA DIAZ", "nombrecomercial": "CREATIVA DISEÑO GRAFICO", "telefono": "3105188548", "email": "acostadiazingrid@gmail.com", "documento": "1067904034", "digitoverificacion": "5", "tipodocumento": "31", "responsabilidadesfiscales": "R-99-PN", "nameresponsabilidadesfiscales": "No aplica – Otros *", "esquematributario": { "id": "ZZ", "name": "No aplica" } }, "receptor": { "razonsocial": "COCO SALVAJE S.A.S.", "documento": "900912246" }, "moneda": "COP", "subtotal": "70000.00", "total": 70000, "descuento": 0, "impuestos": [], "lineitems": [ { "nombre": "Vinilo adhesvo mate", "cantidad": "500.00", "valorunitario": "140.00", "total": 70000, "unidad": "94", "cantidadbase": "500.00", "impuestos": [], "nombre_unidad": "Unidad", "inventario": "", "cuenta": "529530", "kg": "", "und": "500.00" } ], "pago": "1", "fechapago": "2025-11-19" }, "headers": { "authorization": "**hidden**", "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7" }, "method": "POST", "uri": "https://api.cocosalvajeapps.com/facturacion/compra", "gzip": true, "rejectUnauthorized": true, "followRedirect": true, "resolveWithFullResponse": true, "followAllRedirects": true, "timeout": 300000, "encoding": null, "json": false, "useStream": true }'
+        invoice = Invoice(**json.loads(invoice_json_string)['body'])
+        async for session in get_async_session():
+            async with session:
+                await facturar_compra_invoice(invoice, session)
 
     run(main())

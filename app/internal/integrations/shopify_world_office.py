@@ -92,36 +92,40 @@ async def get_wo_ciudad_from_order(wo_client: WoClient, order: Order) -> WOCiuda
     # 1. Realizar búsqueda por nombre en dirección de facturación
     log = []
     nombre = order.billingAddress.city
-    result = await wo_client.buscar_ciudad(nombre=nombre)
-    if isinstance(result, WOCiudad):
-        return result
-    elif isinstance(result, WOException):
-        log.append(result)
+    try:
+        return await wo_client.buscar_ciudad(nombre=nombre)
+    except WOException as e:
+        log.append(str(e))
+    except Exception as e:
+        log.append(str(e))
 
     # 2 Realizar búsqueda por nombre en dirección de envío
     nombre = order.shippingAddress.city
-    result = await wo_client.buscar_ciudad(nombre=nombre)
-    if isinstance(result, WOCiudad):
-        return result
-    elif isinstance(result, WOException):
-        log.append(result)
+    try:
+        return await wo_client.buscar_ciudad(nombre=nombre)
+    except WOException as e:
+        log.append(str(e))
+    except Exception as e:
+        log.append(str(e))
 
     # 3 Realizar búsqueda por departamento en dirección de facturación
     log = []
     departamento = order.billingAddress.province
-    result = await wo_client.buscar_ciudad(departamento=departamento)
-    if isinstance(result, WOCiudad):
-        return result
-    elif isinstance(result, WOException):
-        log.append(result)
+    try:
+        return await wo_client.buscar_ciudad(departamento=departamento)
+    except WOException as e:
+        log.append(str(e))
+    except Exception as e:
+        log.append(str(e))
 
     # 4 Realizar búsqueda por departamento en dirección de envío
     departamento = order.shippingAddress.province
-    result = await wo_client.buscar_ciudad(departamento=departamento)
-    if isinstance(result, WOCiudad):
-        return result
-    elif isinstance(result, WOException):
-        log.append(result)
+    try:
+        return await wo_client.buscar_ciudad(departamento=departamento)
+    except WOException as e:
+        log.append(str(e))
+    except Exception as e:
+        log.append(str(e))
 
     msg = '\n\n'.join([str(x) for x in log])
     raise Exception(msg)

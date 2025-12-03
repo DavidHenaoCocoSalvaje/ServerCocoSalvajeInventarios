@@ -292,7 +292,7 @@ class WoClient(BaseClient):
 
     async def buscar_ciudad(
         self, nombre: str | None = None, departamento: str | None = None, codigo: str | None = None
-    ) -> WOCiudad | WOException:
+    ) -> WOCiudad:
         if nombre:
             atributo = 'nombre'
             valor = nombre
@@ -309,7 +309,7 @@ class WoClient(BaseClient):
             valor = codigo
         else:
             exception = WOException(msg='No se proporcionó nombre ni departamento para buscar ciudad')
-            return exception
+            raise exception
 
         filtro = WOFiltro(
             atributo=atributo,
@@ -337,7 +337,7 @@ class WoClient(BaseClient):
             msg = f'ValidarionError, ciudad: {nombre}'
             msg += f'\n{repr(e.errors())}'
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-            return exception
+            raise exception
 
         if not ciudades_response.valid():
             msg = 'No se encontró ciudad'
@@ -346,7 +346,7 @@ class WoClient(BaseClient):
             if departamento:
                 msg += f', departamento: {departamento}'
             exception = WOException(url=url, payload=payload, response=ciudades_json, msg=msg)
-            return exception
+            raise exception
 
         return ciudades_response.data.content[0]
 
