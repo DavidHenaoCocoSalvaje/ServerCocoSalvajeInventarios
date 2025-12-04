@@ -103,6 +103,12 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
     if compra.factura_id:
         return True
 
+    inventario_o_cuenta = [line_item.inventario or line_item.cuenta for line_item in invoice.lineitems]
+    if False in inventario_o_cuenta:
+        compra_update = compra.model_copy()
+        compra_update.log = 'No se pude facturar la compra porque hay elementos que no tienen inventario o cuenta.'
+        return False
+
     try:
         # region tercero
         # 1. Se debe crear el tercero de la factura, si No está creado previamente.
