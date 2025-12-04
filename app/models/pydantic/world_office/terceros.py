@@ -73,7 +73,7 @@ class TerceroZonaPOJO(Base):
 
 class WODireccion(Base):
     id: int = 0
-    nombre: str
+    nombre: str = ''
     terceroTipoDireccion: TerceroTipoDireccion = TerceroTipoDireccion()
     direccion: str = ''
     senPrincipal: bool = False

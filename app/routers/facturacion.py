@@ -111,22 +111,30 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         # 2. Se debe validar si el tercero tiene dirección principal para facturar.
         wo_client = WoClient()
         wo_tercero = await wo_client.get_tercero(invoice.emisor.documento)
-        wo_ciudad = await wo_client.buscar_ciudad(
-            codigo=str(int(invoice.emisor.ciudad_id))
-        )  # World office maneja los códigos de ciudad sin ceros a la izquierda.
 
-        direcciones = [
-            WODireccion(
-                nombre='Principal',
-                direccion=invoice.emisor.address,
-                senPrincipal=True,
-                emailPrincipal=invoice.emisor.email,
-                telefonoPrincipal=invoice.emisor.telefono,
-                ubicacionCiudad=WOCiudad(
-                    id=wo_ciudad.id,
-                ),
-            )
-        ]
+        if wo_tercero and wo_tercero.ciudad.id:
+            wo_ciudad_id = wo_tercero.ciudad.id
+        else:
+            wo_ciudad = await wo_client.buscar_ciudad(
+                codigo=str(int(invoice.emisor.ciudad_id))
+            )  # World office maneja los códigos de ciudad sin ceros a la izquierda.
+            wo_ciudad_id = wo_ciudad.id
+
+        if wo_tercero and wo_tercero.direccionPrincipal.id:
+            direcciones = [WODireccion(id=wo_tercero.direccionPrincipal.id)]
+        else:
+            direcciones = [
+                WODireccion(
+                    nombre='Principal',
+                    direccion=invoice.emisor.address,
+                    senPrincipal=True,
+                    emailPrincipal=invoice.emisor.email,
+                    telefonoPrincipal=invoice.emisor.telefono,
+                    ubicacionCiudad=WOCiudad(
+                        id=wo_ciudad_id,
+                    ),
+                )
+            ]
 
         responsabilidades_emisor = invoice.emisor.responsabilidadesfiscales.split(';')
         responsabilidades_emisor = [ResponsabilidadFiscal.buscar(x) for x in responsabilidades_emisor]
@@ -136,7 +144,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
             identificacion=invoice.emisor.documento,
             primerNombre=invoice.emisor.nombrecomercial or invoice.emisor.razonsocial,
             primerApellido=' ',  # WO Exige el campo primer apellido al usar el api v1.
-            idCiudad=wo_ciudad.id,
+            idCiudad=wo_ciudad_id,
             direccion=invoice.emisor.address,
             direcciones=direcciones,
             idTerceroTipos=[6],  # Proveedor
