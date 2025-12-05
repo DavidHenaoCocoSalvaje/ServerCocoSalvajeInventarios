@@ -176,11 +176,6 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         # 1. Se debe buscar el id del  prodcuto a facturar
         wo_reglones = []
         for item in invoice.lineitems:
-            if not item.inventario and not item.cuenta:
-                raise HTTPException(
-                    status_code=404, detail=f'El item {item.nombre} no cuenta con inventario ni cuenta contable'
-                )
-
             id_inventario = None
 
             if item.inventario:
