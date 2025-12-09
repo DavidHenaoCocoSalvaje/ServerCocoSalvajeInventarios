@@ -6,10 +6,10 @@ from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.integrations.shopify_world_office import facturar_orden_shopify_world_office
 from app.internal.log import factory_logger
 from app.models.db.session import AsyncSessionDep
-from app.models.db.transacciones import Pedido, PedidoCreate, PedidoLogs
+from app.models.db.transacciones import Compra, CompraCreate, Pedido, PedidoCreate, PedidoLogs
 from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
-from app.internal.query.transacciones import PedidoQuery
+from app.internal.query.transacciones import CompraQuery, PedidoQuery
 from app.config import Environments, config
 from pandas import read_csv, DataFrame, to_datetime
 from io import BytesIO
@@ -28,6 +28,7 @@ router = APIRouter(
 )
 
 CRUD(router, 'pedido', PedidoQuery(), Pedido, PedidoCreate)
+CRUD(router, 'compra', CompraQuery(), Compra, CompraCreate)
 
 log_transacciones = factory_logger('transacciones')
 
