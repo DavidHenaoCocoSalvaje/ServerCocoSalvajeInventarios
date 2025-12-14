@@ -37,7 +37,7 @@ RUN chmod +x entrypoint.sh
 
 # Crea un usuario no-root con UID/GID específicos
 RUN adduser --disabled-password --gecos '' --uid 1001 coco && \
-chown -R coco:coco /app
+    chown -R coco:coco /app
 
 # Cambia al usuario no-root
 USER coco

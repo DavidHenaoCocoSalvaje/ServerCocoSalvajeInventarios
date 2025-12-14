@@ -93,15 +93,19 @@ class WoClient(BaseClient):
         method: str,
         headers: dict,
         url: str,
+        params: list[str] | None = None,
+        query_params: dict | None = None,
         payload: dict | None = None,
         timeout: int = 60,
         cookies: dict | None = None,
     ):
-        return await super().request(method, headers, url, payload, timeout=timeout, cookies=cookies)
+        return await super().request(
+            method, headers, url, params, query_params, payload, timeout=timeout, cookies=cookies
+        )
 
     async def get_tercero(self, identificacion: str) -> WOTercero | None:
-        url = self.build_url(self.host, self.Paths.Terceros.identificacion, [identificacion])
-        tercero_json = await self.request('GET', self.headers, url)
+        url = f'{self.host}{self.Paths.Terceros.identificacion}'
+        tercero_json = await self.request('GET', self.headers, url, params=[identificacion])
 
         try:
             tercero_response = WOTerceroResponse(**tercero_json)
@@ -124,8 +128,8 @@ class WoClient(BaseClient):
         return tercero_response.data
 
     async def get_documento_venta(self, id_documento: int) -> WODocumentoVentaDetail:
-        url = self.build_url(self.host, self.Paths.Ventas.documento_venta, [str(id_documento)])
-        documento_venta_json = await self.request('GET', self.headers, url)
+        url = f'{self.host}{self.Paths.Ventas.documento_venta}'
+        documento_venta_json = await self.request('GET', self.headers, url, params=[str(id_documento)])
 
         try:
             documento_venta_response = WODocumentoVentaDetailResponse(**documento_venta_json)
@@ -145,8 +149,8 @@ class WoClient(BaseClient):
         return documento_venta_response.data
 
     async def get_inventario_por_codigo(self, codigo: str) -> WOInventario:
-        url = self.build_url(self.host, self.Paths.Inventario.inventario_por_codigo, [codigo])
-        inventario_json = await self.request('GET', self.headers, url)
+        url = f'{self.host}{self.Paths.Inventario.inventario_por_codigo}'
+        inventario_json = await self.request('GET', self.headers, url, params=[codigo])
 
         try:
             inventario_response = WOInventarioResponse(**inventario_json)
@@ -166,7 +170,7 @@ class WoClient(BaseClient):
         return inventario_response.data
 
     async def get_list_inventario_por_codigo(self, codigo: str) -> WODataListInventarios:
-        url = self.build_url(self.host, self.Paths.Inventario.listar_inventarios)
+        url = f'{self.host}{self.Paths.Inventario.listar_inventarios}'
 
         wo_filtro = WOFiltro(
             atributo='codigo',
@@ -217,8 +221,8 @@ class WoClient(BaseClient):
         return inventarios_response.data
 
     async def contabilizar_documento(self, path: str, id_documento: int) -> bool:
-        url = self.build_url(self.host, path, [str(id_documento)])
-        contabilizar_json = await self.request('POST', self.headers, url)
+        url = f'{self.host}{path}'
+        contabilizar_json = await self.request('POST', self.headers, url, params=[str(id_documento)])
 
         try:
             contabilizar_response = WOContabilizarFacturaResponse(**contabilizar_json)
@@ -238,7 +242,7 @@ class WoClient(BaseClient):
         return True
 
     async def crear_tercero(self, wo_tercero_create: WOTerceroCreateEdit) -> WOTercero:
-        url = self.build_url(self.host, self.Paths.Terceros.crear)
+        url = f'{self.host}{self.Paths.Terceros.crear}'
         payload = wo_tercero_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         tercero_json = await self.request('POST', self.headers, url, payload=payload)
 
@@ -263,7 +267,7 @@ class WoClient(BaseClient):
         Args:
             wo_tercero_edit (WOTerceroCreate): debe contar con el ID para editar el tercer.
         """
-        url = self.build_url(self.host, self.Paths.Terceros.editar)
+        url = f'{self.host}{self.Paths.Terceros.editar}'
         payload = wo_tercero_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         if not wo_tercero_edit.id:
             msg = 'Identificador requerido.'
@@ -320,7 +324,7 @@ class WoClient(BaseClient):
         )
 
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=1, orden='ASC', filtros=[filtro])
-        url = self.build_url(self.host, self.Paths.Ciudad.listar_ciudades)
+        url = f'{self.host}{self.Paths.Ciudad.listar_ciudades}'
         payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
 
         try:
@@ -367,7 +371,7 @@ class WoClient(BaseClient):
             operador=Operador.AND,
         )
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[filtro1, filtro2])
-        url = self.build_url(self.host, self.Paths.Ventas.listar_documentos_venta)
+        url = f'{self.host}{self.Paths.Ventas.listar_documentos_venta}'
         payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         facturas_json = await self.request('POST', self.headers, url, payload=payload)
 
@@ -390,9 +394,9 @@ class WoClient(BaseClient):
 
     async def productos_documento_venta(self, id_documento: int) -> list[WOProductoDocumento]:
         wo_listar = WOListar(columnaOrdenar='id', registrosPorPagina=10, orden='ASC', filtros=[])
-        url = self.build_url(self.host, self.Paths.Ventas.listar_productos, [str(id_documento)])
+        url = f'{self.host}{self.Paths.Ventas.listar_productos}'
         payload = wo_listar.model_dump(exclude_none=True, exclude_unset=True, mode='json')
-        productos_json = await self.request('POST', self.headers, url, payload=payload)
+        productos_json = await self.request('POST', self.headers, url, params=[str(id_documento)], payload=payload)
 
         try:
             productos_response = WOListaProductosDocumentoVentaResponse(**productos_json)
@@ -411,7 +415,7 @@ class WoClient(BaseClient):
         return productos_response.data.content
 
     async def crear_factura_venta(self, documento_venta_create: WODocumentoVentaCreate) -> WODocumentoVentaDetail:
-        url = self.build_url(self.host, self.Paths.Ventas.crear)
+        url = f'{self.host}{self.Paths.Ventas.crear}'
         payload = documento_venta_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_dict = await self.request('POST', self.headers, url, payload=payload, timeout=60)
 
@@ -433,7 +437,7 @@ class WoClient(BaseClient):
         return factura_response.data
 
     async def editar_factura_venta(self, documento_venta_edit: WODocumentoVentaEdit) -> WODocumentoVentaDetail:
-        url = self.build_url(self.host, self.Paths.Ventas.editar)
+        url = f'{self.host}{self.Paths.Ventas.editar}'
         payload = documento_venta_edit.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_json = await self.request('PUT', self.headers, url, payload=payload)
 
@@ -454,7 +458,7 @@ class WoClient(BaseClient):
         return factura_response.data
 
     async def crear_factura_compra(self, documento_compra_create: WODocumentoCompraCreate) -> WODocumentoFactura:
-        url = self.build_url(self.host, self.Paths.Compras.crear)
+        url = f'{self.host}{self.Paths.Compras.crear}'
         payload = documento_compra_create.model_dump(exclude_none=True, exclude_unset=True, mode='json')
         factura_json = await self.request('POST', self.headers, url, payload=payload)
 

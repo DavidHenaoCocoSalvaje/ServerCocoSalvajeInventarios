@@ -7,7 +7,6 @@ dependencies = [
     "fastapi[standard]",
     "sqlalchemy[asyncio]",
     "pandas",
-    "aiohttp",
     "python-multipart",
     "sqlmodel",
     "psycopg",

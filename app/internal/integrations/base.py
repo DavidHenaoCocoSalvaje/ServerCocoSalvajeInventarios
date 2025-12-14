@@ -1,5 +1,5 @@
 import json
-from aiohttp import ClientSession, ClientTimeout
+import httpx
 from time import time
 from asyncio import sleep
 
@@ -44,20 +44,27 @@ class BaseClient:
             sleep_time = self._min_interval - time_since_last_request
             await sleep(sleep_time)
 
-    def build_url(self, host: str, path: str, params: list[str] | None = None, query_params: dict | None = None):
-        url = f'{host}{path}'
-        if params:
-            url += f'/{"/".join(params)}'
-        if query_params:
-            url += f'?{"&".join([f"{k}={v}" for k, v in query_params.items()])}'
-        return url
-
-        self._last_request_time = time()
-
-    async def request(self, method: str, headers: dict, url: str, payload: dict | None = None, timeout: int = 30, cookies: dict | None = None):
+    async def request(
+        self,
+        method: str,
+        headers: dict,
+        url: str,
+        params: list[str] | None = None,
+        query_params: dict | None = None,
+        payload: dict | None = None,
+        timeout: int = 30,
+        cookies: dict | None = None,
+    ):
         if self._min_interval > 0:
             await self._rate_limit()
-        client_timeout = ClientTimeout(total=timeout)
-        async with ClientSession() as session:
-            async with session.request(method, url, headers=headers, json=payload, timeout=client_timeout, cookies=cookies) as response:
-                return await response.json()
+
+        if params:
+            url += f'/{"/".join(params)}'
+
+        timeout_config = httpx.Timeout(float(timeout))
+        async with httpx.AsyncClient(timeout=timeout_config) as client:
+            response = await client.request(
+                method, url, params=query_params, headers=headers, json=payload, cookies=cookies
+            )
+            response.raise_for_status()
+            return response.json()

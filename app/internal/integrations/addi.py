@@ -1,7 +1,3 @@
-from playwright.async_api import async_playwright
-from asyncio import sleep
-
-
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -35,32 +31,18 @@ class AddiClient(BaseClient):
         return {'addiauth': self.acces_token}
 
     async def get_access_token(self):
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context()
-            page = await context.new_page()
-            await page.goto(url='https://aliados.addi.com/')
-            await sleep(3)
-            input_email = page.locator('input[name="email"]')
-            input_password = page.locator('input[name="password"]')
-            login_button = page.get_by_role(
-                'button', name='Iniciar sesión'
-            )  # Name se refiere al texto visible del botón
-            await input_email.fill('jose@cocosalvaje.co')
-            await input_password.fill('Coco2025*')
-            await login_button.click()
-            await sleep(3)
-            cookies = await context.cookies()
-            access_token = next((c.get('value') for c in cookies if c.get('name') == 'addiauth'), None)
-            await browser.close()
-            self.acces_token = access_token or ''
-            return access_token
+        # Solicitar acces token a servicio de playwrigth que se ejecuta en el container playwright-api en el puerto 8050 -> 'http://localhost:8050/addi/access-token-addi'
+        url = 'http://localhost:8050/addi/access-token-addi'
+        acces_token = await super().request('GET', {}, url)
+        self.acces_token = acces_token
 
     async def request(
         self,
         method: str,
         headers: dict,
         url: str,
+        params: list[str] | None = None,
+        query_params: dict | None = None,
         payload: dict | None = None,
         timeout: int = 30,
         cookies: dict | None = None,
@@ -69,18 +51,22 @@ class AddiClient(BaseClient):
         if cookies and not cookies.get('addiauth', None) or cookies is None:
             cookies = {**cookies, **self.cookies}
 
-        result = await super().request(method, headers, url, payload, timeout=timeout, cookies=cookies)
+        result = await super().request(
+            method, headers, url, params, query_params, payload, timeout=timeout, cookies=cookies
+        )
         if '401' in result.get('code', ''):
             await self.get_access_token()
             cookies = {**cookies, **self.cookies}
-            result = await super().request(method, headers, url, payload, timeout=timeout, cookies=cookies)
+            result = await super().request(
+                method, headers, url, params, query_params, payload, timeout=timeout, cookies=cookies
+            )
         return result
 
     async def get_transaccions_by_payment_id(self, payment_id: str) -> TransactionsResponse:
-        url = self.build_url(
-            self.host, self.Paths.transactions.root, query_params={'limit': 10, 'offset': 0, 'searchField': payment_id}
+        url = f'{self.host}/{self.Paths.transactions.root}'
+        transactions_json = await self.request(
+            'GET', {}, url, query_params={'limit': 10, 'offset': 0, 'searchField': payment_id}, cookies=self.cookies
         )
-        transactions_json = await self.request('GET', {}, url, cookies=self.cookies)
         return TransactionsResponse(**transactions_json)
 
 
@@ -89,7 +75,7 @@ if __name__ == '__main__':
 
     async def main():
         addi_client = AddiClient()
-        # await addi_client.get_access_token()
+        await addi_client.get_access_token()
         transacions_response = await addi_client.get_transaccions_by_payment_id('rQUeUgW0WQfUNjLLHPCpfLqyM')
         print(transacions_response)
 
