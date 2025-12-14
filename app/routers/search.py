@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
-from app.internal.integrations.bing import search_bing_copilot
+from app.internal.integrations.gemini import search_product_description
 from app.internal.log import factory_logger
 from app.routers.auth import validar_access_token
 
@@ -24,6 +24,6 @@ async def post_search_bing_copilot(
     query: str,
 ):
     try:
-        return await search_bing_copilot(query)
+        return await search_product_description(query)
     except Exception:
         return ''

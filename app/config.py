@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 from os import getenv
-
+from enum import Enum
 from dotenv import load_dotenv
+
+
+class Environments(Enum):
+    DEVELOPMENT = 'development'
+    STAGING = 'staging'
+    PRODUCTION = 'production'
 
 
 @dataclass(frozen=True)
@@ -76,6 +82,10 @@ class Config:
             cls.addi_email = str(getenv('ADDI_EMAIL', ''))
             cls.addi_password = str(getenv('ADDI_PASSWORD', ''))
             cls.addi_api_version = str(getenv('ADDI_API_VERSION', 'v1'))
+
+            # Google Cloud
+            # Gemini
+            cls.gemini_api_key = str(getenv('GEMINI_API_KEY', ''))
 
         return cls._instance
 

@@ -10,7 +10,7 @@ from app.models.db.transacciones import Compra, CompraCreate, Pedido, PedidoCrea
 from app.routers.auth import validar_access_token
 from app.routers.base import CRUD
 from app.internal.query.transacciones import CompraQuery, PedidoQuery
-from app.config import Environments, config
+from app.config import Environments, Config
 from pandas import read_csv, DataFrame, to_datetime
 from io import BytesIO
 from numpy import nan
