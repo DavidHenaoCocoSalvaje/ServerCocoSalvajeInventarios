@@ -16,7 +16,6 @@ dependencies = [
     "apscheduler",
     "python-dateutil",
     "holidays_co",
-    "playwright",
     "pandas-stubs",
     "google-genai",
 ]
