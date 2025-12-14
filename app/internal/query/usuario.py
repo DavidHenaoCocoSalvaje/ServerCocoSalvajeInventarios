@@ -9,7 +9,7 @@ from app.models.db.session import get_async_session
 
 from app.internal.query.base import BaseQuery
 from app.internal.log import factory_logger
-from app.config import config
+from app.config import Config
 
 
 class UsuarioQuery(BaseQuery[UsuarioDB, UsuarioCreate]):
@@ -40,7 +40,7 @@ async def set_admin_user(reset_password: bool = False):
         async with session:
             usuario = await usuario_query.get_by_username(session, 'admin')
             if usuario is None:
-                password = password_hasher.hash(config.admin_password)
+                password = password_hasher.hash(Config.admin_password)
                 usuario = UsuarioDB(username='admin', password=password)
                 usuario = await usuario_query.create(session, usuario)
                 logger.info('✅ Usuario creado')

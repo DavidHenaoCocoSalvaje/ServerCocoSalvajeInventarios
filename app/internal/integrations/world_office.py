@@ -30,7 +30,7 @@ from app.models.pydantic.world_office.general import WOCiudad, WOListaCiudadesRe
 from app.models.pydantic.world_office.invenvario import WOInventario, WOInventarioResponse
 from app.models.pydantic.world_office.terceros import WOTercero, WOTerceroResponse, WOTerceroCreateEdit
 from app.internal.integrations.base import BaseClient, ClientException
-from app.config import config
+from app.config import Config
 
 wo_log = factory_logger('world_office', file=True)
 
@@ -79,12 +79,12 @@ class WoClient(BaseClient):
             cls.__instance = super().__new__(cls)
         return cls.__instance
 
-    def __init__(self, host: str = f'https://api.worldoffice.cloud/api/{config.wo_api_version}'):
+    def __init__(self, host: str = f'https://api.worldoffice.cloud/api/{Config.wo_api_version}'):
         super().__init__(min_interval=1)
         self.host = host
         self.headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'WO {config.wo_api_key}',
+            'Authorization': f'WO {Config.wo_api_key}',
         }
 
     # Se han obtenido varios timeouts usando 30 segundos. se cambia a 60 segundos.

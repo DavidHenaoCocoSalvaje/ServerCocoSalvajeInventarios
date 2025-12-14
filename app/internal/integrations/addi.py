@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
-from app.config import config
+from app.config import Config
 from app.internal.integrations.base import BaseClient
 from app.models.pydantic.addi.transaccion import TransactionsResponse
 
@@ -26,7 +26,7 @@ class AddiClient(BaseClient):
             cls.__instance = super().__new__(cls)
         return cls.__instance
 
-    def __init__(self, host: str = f'https://ally-portal-external-api.addi.com/{config.addi_api_version}'):
+    def __init__(self, host: str = f'https://ally-portal-external-api.addi.com/{Config.addi_api_version}'):
         super().__init__()
         self.host = host
 

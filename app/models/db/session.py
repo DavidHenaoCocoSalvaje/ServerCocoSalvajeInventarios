@@ -15,16 +15,16 @@ from sqlalchemy.ext.asyncio import (
 from sqlmodel import SQLModel
 
 
-from app.config import config
+from app.config import Config
 
 # SQLModel.metadata.schema = 'public'  # Asegúrate de que todas las tablas se creen en el esquema correcto
 url = URL.create(
     'postgresql+psycopg',
-    username=config.db_user,
-    password=config.db_password,
-    host=config.db_host,
-    port=config.db_port,
-    database=config.db_name,
+    username=Config.db_user,
+    password=Config.db_password,
+    host=Config.db_host,
+    port=Config.db_port,
+    database=Config.db_name,
 )
 
 async_engine = create_async_engine(url, pool_size=50)

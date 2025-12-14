@@ -56,10 +56,10 @@ from app.models.pydantic.shopify.inventario import (
     VariantsResponse,
 )
 
-from app.config import config
+from app.config import Config
 
 log_shopify = factory_logger('shopify', file=True)
-log_level = LogLevel.DEBUG if config.environment == 'development' else LogLevel.INFO
+log_level = LogLevel.DEBUG if Config.environment == 'development' else LogLevel.INFO
 log_debug = factory_logger('debug', level=log_level, file=False)
 
 
@@ -89,9 +89,9 @@ class ShopifyGraphQLClient(BaseClient):
 
     def __init__(
         self,
-        shop: str = config.shop_shopify,
-        version: str = config.shop_version,
-        access_token: str = config.api_key_shopify,
+        shop: str = Config.shop_shopify,
+        version: str = Config.shop_version,
+        access_token: str = Config.api_key_shopify,
     ):
         super().__init__(min_interval=0)
         self.host = f'https://{shop}.myshopify.com/admin/api/{version}/graphql.json'
@@ -703,7 +703,7 @@ class ShopifyGraphQLClient(BaseClient):
             await gather(*[self.get_porduct_variant_inventory_levels(product) for product in batch])
 
         # Guardar resultados
-        if config.environment == 'development':
+        if Config.environment == 'development':
             output_json = product_response.model_dump_json(indent=2)
             with open('shopify_inventory_data.json', 'w', encoding='utf-8') as f:
                 f.write(output_json)

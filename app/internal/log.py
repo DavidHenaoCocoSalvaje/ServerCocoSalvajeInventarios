@@ -2,7 +2,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from enum import Enum
-from app.config import config
+from app.config import Config
 from sys import stdout
 from os import path, makedirs
 
@@ -50,7 +50,7 @@ def factory_logger(
     logger.addHandler(console_handler)
 
     # Handler para archivo con rotación por tamaño (solo en desarrollo o si se especifica file=True)
-    if not config.production or file:
+    if not Config.production or file:
         # Crear directorio de logs si no existe
         logs_dir = 'logs'
         if not path.exists(logs_dir):

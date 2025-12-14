@@ -30,7 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Seguridad
 
 # Facturacion
-from app.config import config
+from app.config import Config
 
 
 log_facturacion = factory_logger('facturacion', file=True)
@@ -297,7 +297,7 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
-            concepto = f'{config.wo_concepto} - Pedido {orden.number}'
+            concepto = f'{Config.wo_concepto} - Pedido {orden.number}'
             factura = WODocumentoVentaDetail()
             try:
                 wo_tercero = await get_valid_wo_tercero(wo_client, orden, identificacion_tercero)
@@ -326,7 +326,7 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
                 # if all(x.gateway == 'Addi Payment' for x in order.transactions):
                 wo_documento_venta_create = WODocumentoVentaCreate(
                     fecha=get_date_for_invoice(DateTz.today()),
-                    prefijo=config.wo_prefijo,  # 1 Sin prefijo, 13 FELE
+                    prefijo=Config.wo_prefijo,  # 1 Sin prefijo, 13 FELE
                     documentoTipo=WODocumentoVentaTipo.FACTURA_VENTA,
                     concepto=concepto,
                     idEmpresa=1,  # CocoSalvaje

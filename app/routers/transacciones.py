@@ -48,7 +48,7 @@ async def facturar_pendientes(
         f'Se encontraron {len(pedidos)} pedidos pendientes de facturar, {[x.numero for x in pedidos]}'
     )
 
-    if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
+    if Config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
         return True
 
     async def task(pedidos: list[Pedido]):
@@ -76,7 +76,7 @@ async def facturar_pendientes(
     dependencies=[Depends(validar_access_token)],
 )
 async def facturar_pedido(background_tasks: BackgroundTasks, pedido_number: int):
-    if config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
+    if Config.environment in [Environments.DEVELOPMENT.value, Environments.STAGING.value]:
         return True
 
     async def task(pedido_number: int):
@@ -136,7 +136,7 @@ async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSession
             fecha_str = fecha_str.replace(f' {esp} ', f' {eng} ')
         return to_datetime(fecha_str, format='%d %b %Y, %I:%M %p %z')
 
-    df['Fecha Creación'] = df['Fecha Creación'].apply(parse_fecha).dt.tz_convert(config.local_timezone)
+    df['Fecha Creación'] = df['Fecha Creación'].apply(parse_fecha).dt.tz_convert(Config.local_timezone)
     df = df.sort_values(['Fecha Creación', 'ID Orden']).drop_duplicates(['Fecha Creación', 'ID Orden'], keep='last')
 
     # Filtrar solo por pagos exitosos y canal E_COMMERCE_SHOPIFY para encontrar los pedidos al consultar en Sopify, de lo contrario serán pedido que no se encontrarán

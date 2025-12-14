@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     sys_path.append(abspath('.'))
 
-from app.config import config
+from app.config import Config
 
 
 class DateTz(datetime):
@@ -24,7 +24,7 @@ class DateTz(datetime):
         return isostring.replace('+00:00', 'Z')
 
     @classmethod
-    def local(cls, datetime: datetime | None = None, tz: str = config.local_timezone) -> 'DateTz':
+    def local(cls, datetime: datetime | None = None, tz: str = Config.local_timezone) -> 'DateTz':
         if datetime:
             return cls(
                 datetime.year,
@@ -40,7 +40,7 @@ class DateTz(datetime):
             return cls.now(ZoneInfo(tz))
 
     @classmethod
-    def today(cls, datetime: datetime | None = None, tz: str = config.local_timezone) -> date:
+    def today(cls, datetime: datetime | None = None, tz: str = Config.local_timezone) -> date:
         if datetime:
             return cls(
                 datetime.year,
@@ -56,7 +56,7 @@ class DateTz(datetime):
             return cls.now(ZoneInfo(tz)).date()
 
     @classmethod
-    def from_isostring(cls, isostring: str, tz: str = config.local_timezone) -> 'DateTz':
+    def from_isostring(cls, isostring: str, tz: str = Config.local_timezone) -> 'DateTz':
         isostring = isostring.replace('Z', '+00:00')
         return cls.fromisoformat(isostring).astimezone(ZoneInfo(tz))
 

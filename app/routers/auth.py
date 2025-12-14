@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError
 from pydantic import BaseModel
-from app.config import config
+from app.config import Config
 import hmac
 import hashlib
 import base64
@@ -86,7 +86,7 @@ def crear_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=3)
     to_encode.update({'exp': expire})
-    encoded_jwt = jwt.encode(to_encode, config.secret_key, algorithm=config.algorithm)
+    encoded_jwt = jwt.encode(to_encode, Config.secret_key, algorithm=Config.algorithm)
     return encoded_jwt
 
 
@@ -94,7 +94,7 @@ async def validar_access_token(token: Annotated[str, Depends(oauth2_scheme)], se
     """Se obtiene el usuario actual a partir del token JWT."""
 
     try:
-        payload = jwt.decode(token, config.secret_key, [config.algorithm])
+        payload = jwt.decode(token, Config.secret_key, [Config.algorithm])
         user_id = payload.get('sub')
         if user_id is None:
             raise AuthException.unauthorized_exception
@@ -119,7 +119,7 @@ async def hmac_validation_shopify(request: Request) -> None:
     body = await request.body()
     received_hmac = request.headers.get('x-shopify-hmac-sha256', '')
     calculated_hmac_digest = hmac.new(
-        config.webhook_secret_shopify.encode('utf-8'), msg=body, digestmod=hashlib.sha256
+        Config.webhook_secret_shopify.encode('utf-8'), msg=body, digestmod=hashlib.sha256
     ).digest()
 
     # 2. Codificar el digest en Base64.
