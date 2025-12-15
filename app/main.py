@@ -1,7 +1,8 @@
 # main.py
+from app.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from starlette.middleware.sessions import SessionMiddleware
 from app.routers import inventario, transacciones, usuario, auth, search, facturacion
 from app.internal.log import factory_logger
 
@@ -21,6 +22,8 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+app.add_middleware(SessionMiddleware, secret_key=Config.secret_key)
 
 # Incluye el router de usuarios en la aplicación principal
 app.include_router(usuario.router)

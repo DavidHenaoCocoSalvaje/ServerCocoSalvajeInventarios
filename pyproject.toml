@@ -18,4 +18,7 @@ dependencies = [
     "holidays_co",
     "pandas-stubs",
     "google-genai",
+    "authlib",
+    "starlette",
+    "itsdangerous",
 ]

@@ -207,4 +207,7 @@ scripts/
 # AI
 .agent/
 
+# Credentials
+credentials/
+
 # End of https://www.toptal.com/developers/gitignore/api/venv,python

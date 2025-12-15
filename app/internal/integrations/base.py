@@ -66,5 +66,4 @@ class BaseClient:
             response = await client.request(
                 method, url, params=query_params, headers=headers, json=payload, cookies=cookies
             )
-            response.raise_for_status()
             return response.json()

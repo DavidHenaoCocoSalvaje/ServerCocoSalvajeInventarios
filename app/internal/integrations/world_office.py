@@ -487,8 +487,10 @@ if __name__ == '__main__':
 
     async def main():
         wo_client = WoClient()
-        # tercero = await wo_client.get_tercero('1094240554')
-        # assert tercero is not None and tercero.identificacion == '1094240554'
+        tercero = await wo_client.get_tercero('1094240554')
+        assert tercero is not None and tercero.identificacion == '1094240554'
+        tercero = await wo_client.get_tercero('1103115916')
+        print(tercero)
         # ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
         # assert isinstance(ciudad, WOCiudad)
         # factura = await wo_client.documento_venta_por_concepto('Factura de venta')
@@ -570,7 +572,7 @@ if __name__ == '__main__':
         #   "registroInicial": 0
         # }
 
-        inventario = await wo_client.get_list_inventario_por_codigo('529525')
-        print(inventario.model_dump_json(indent=4))
+        # inventario = await wo_client.get_list_inventario_por_codigo('529525')
+        # print(inventario.model_dump_json(indent=4))
 
     run(main())
