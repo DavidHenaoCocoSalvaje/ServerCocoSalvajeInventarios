@@ -96,7 +96,9 @@ class WOContabilizarFacturaResponse(WOResponse):
     def valid(self) -> bool:
         conflict_msg = 'El documento ya se encuentra contabilizado o en proceso de contabilizacion'
         contabilizado = self.status in ['OK', 'ACCEPTED'] and self.userMessage == 'CONTABILIZACION_EXITOSA'
-        contabilizado_antes = self.status == 'CONFLICT' and self.userMessage == conflict_msg
+        contabilizado_antes = self.status == 'CONFLICT' and (
+            self.userMessage == conflict_msg or self.developerMessage == conflict_msg
+        )
         return contabilizado or contabilizado_antes
 
 

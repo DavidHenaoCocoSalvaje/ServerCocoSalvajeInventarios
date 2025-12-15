@@ -487,10 +487,12 @@ if __name__ == '__main__':
 
     async def main():
         wo_client = WoClient()
-        tercero = await wo_client.get_tercero('1094240554')
-        assert tercero is not None and tercero.identificacion == '1094240554'
-        tercero = await wo_client.get_tercero('1103115916')
-        print(tercero)
+        # tercero = await wo_client.get_tercero('1094240554')
+        # assert tercero is not None and tercero.identificacion == '1094240554'
+        # tercero = await wo_client.get_tercero('1103115916')
+        # print(tercero)
+        contabilizar = await wo_client.contabilizar_documento(wo_client.Paths.Ventas.contabilizar, 42414)
+        print(contabilizar)
         # ciudad = await wo_client.buscar_ciudad('Atlántico', 'Puerto Csolombia')
         # assert isinstance(ciudad, WOCiudad)
         # factura = await wo_client.documento_venta_por_concepto('Factura de venta')
