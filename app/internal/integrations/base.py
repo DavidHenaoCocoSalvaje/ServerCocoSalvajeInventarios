@@ -68,7 +68,7 @@ class BaseClient:
             )
             try:
                 return response.json()
-            except (ValueError, httpx.DecodingError):
+            except Exception:
                 raise ClientException(
                     payload=payload, url=url, response={'statuc_code': response.status_code, 'content': response.text}
                 )
