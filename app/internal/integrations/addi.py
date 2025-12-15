@@ -32,7 +32,8 @@ class AddiClient(BaseClient):
 
     async def get_access_token(self):
         # Solicitar acces token a servicio de playwrigth que se ejecuta en el container playwright-api en el puerto 8050 -> 'http://localhost:8050/addi/access-token-addi'
-        host = 'http://playwright-api:8050' if Config.environment in ['production', 'prod'] else 'http://localhost:8050'
+        # Al realizar peticiones entre container, se debe usar el puerto INTERNO ya que son peticiones en la red interna.
+        host = 'http://playwright-api:8000' if Config.environment in ['production', 'prod'] else 'http://localhost:8050'
         url = f'{host}/addi/access-token-addi'
         acces_token = await super().request('GET', {}, url)
         self.acces_token = acces_token
