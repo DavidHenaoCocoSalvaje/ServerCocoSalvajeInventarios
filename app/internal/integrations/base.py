@@ -66,4 +66,9 @@ class BaseClient:
             response = await client.request(
                 method, url, params=query_params, headers=headers, json=payload, cookies=cookies
             )
-            return response.json()
+            try:
+                return response.json()
+            except (ValueError, httpx.DecodingError):
+                raise ClientException(
+                    payload=payload, url=url, response={'statuc_code': response.status_code, 'content': response.text}
+                )
