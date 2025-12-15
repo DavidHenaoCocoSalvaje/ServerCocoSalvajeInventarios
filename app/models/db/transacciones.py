@@ -4,10 +4,7 @@
 En este módulo se encuentran los modelos que representan los registros de transacciones enviadas a WorldOffie y su estado.
 """
 
-from pydantic.functional_validators import model_validator
 from pydantic.config import ConfigDict
-from pydantic.functional_validators import BeforeValidator
-from typing import Annotated
 from datetime import datetime
 from enum import Enum
 from sqlmodel import SQLModel, Field, TIMESTAMP, TEXT, SMALLINT
