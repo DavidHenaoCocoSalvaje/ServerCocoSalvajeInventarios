@@ -1,4 +1,9 @@
-# app.internal.integrations.shopify_world_office.py
+# app/internal/integrations/shopify_world_office.py
+if __name__ == '__main__':
+    from os.path import abspath
+    from sys import path as sys_path
+
+    sys_path.append(abspath('.'))
 
 
 import traceback
@@ -392,3 +397,14 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
             pedido_update.contabilizado = contabilizar
             pedido_update.log = None
             pedido = await pedido_query.update(session, pedido_update, pedido.id)
+
+
+if __name__ == '__main__':
+    from asyncio import run
+
+    async def main():
+        shopify_client = ShopifyGraphQLClient()
+        order = await shopify_client.get_order_by_number(32924)
+        await facturar_orden_shopify_world_office(order)
+
+    run(main())
