@@ -70,5 +70,8 @@ class BaseClient:
                 return response.json()
             except Exception:
                 raise ClientException(
-                    payload=payload, url=url, response={'statuc_code': response.status_code, 'content': response.text}
+                    payload=payload,
+                    url=url,
+                    response={'statuc_code': response.status_code, 'content': response.text},
+                    msg=f'TypeError: {type(Exception).__name__}',
                 )
