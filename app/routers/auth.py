@@ -1,4 +1,6 @@
 # app/routers/base.py
+from app.internal.log import factory_logger
+from argon2.exceptions import VerifyMismatchError
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import APIRouter, Request, Depends, HTTPException, status
@@ -23,6 +25,8 @@ from app.internal.query.usuario import usuario_query
 
 # Session
 from app.models.db.session import AsyncSessionDep
+
+auth_log = factory_logger('auth')
 
 router = APIRouter(
     prefix='/auth',
@@ -66,7 +70,11 @@ class AuthException:
 
 
 def verificar_password(plain_password, hashed_password):
-    return password_hasher.verify(hashed_password, plain_password)
+    try:
+        return password_hasher.verify(hashed_password, plain_password)
+    except VerifyMismatchError:
+        auth_log.error('VerifyMismatchError')
+        return False
 
 
 async def autenticar_usuario(username: str, password: str, session: AsyncSessionDep) -> UsuarioDB | None:
