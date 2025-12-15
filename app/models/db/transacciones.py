@@ -4,6 +4,8 @@
 En este módulo se encuentran los modelos que representan los registros de transacciones enviadas a WorldOffie y su estado.
 """
 
+from pydantic.functional_validators import BeforeValidator
+from typing import Annotated
 from datetime import datetime
 from enum import Enum
 from sqlmodel import SQLModel, Field, TIMESTAMP, TEXT, SMALLINT
@@ -33,10 +35,18 @@ class PedidoLogs(Enum):
     FALTA_DOCUMENTO_DE_IDENTIDAD = 'Falta documento de identidad'
 
 
+TLog = Annotated[
+    str | PedidoLogs | None,
+    BeforeValidator(
+        lambda x: (x.strip() if isinstance(x, str) else (x.value.strip() if isinstance(x, PedidoLogs) else x))
+    ),
+]
+
+
 class PedidoCreate(TransaccionBase):
     numero: int | None = None  # Número de pedido shopify ej. #1234
     pago: bool = False
-    log: str | PedidoLogs | None = Field(sa_type=TEXT, default=None)
+    log: TLog | None = Field(sa_type=TEXT, default=None)
 
 
 class Pedido(PedidoCreate, table=True):
@@ -46,7 +56,7 @@ class Pedido(PedidoCreate, table=True):
 
 class CompraCreate(TransaccionBase):
     numero_factura_proveedor: str | None = None  # Número de factura proveedor ej. #FV1234
-    log: str | PedidoLogs | None = Field(sa_type=TEXT, default=None)
+    log: TLog | None = Field(sa_type=TEXT, default=None)
 
 
 class Compra(CompraCreate, table=True):
