@@ -4,6 +4,8 @@
 En este módulo se encuentran los modelos que representan los registros de transacciones enviadas a WorldOffie y su estado.
 """
 
+from pydantic.functional_validators import model_validator
+from pydantic.config import ConfigDict
 from pydantic.functional_validators import BeforeValidator
 from typing import Annotated
 from datetime import datetime
@@ -21,6 +23,8 @@ from app.internal.gen.utilities import DateTz
 
 class TransaccionBase(SQLModel):
     __table_args__ = {'schema': 'transaccion'}
+    model_config = ConfigDict(str_strip_whitespace=True, validate_assignment=True)  # type: ignore
+
     fecha: datetime = Field(sa_type=TIMESTAMP(timezone=True), default_factory=DateTz.local)  # type: ignore
     factura_id: int | None = None  # Creación exitosa cuando se recibe número de factura
     factura_numero: int | None = None  # Creación exitosa cuando se recibe número de factura
@@ -35,18 +39,10 @@ class PedidoLogs(Enum):
     FALTA_DOCUMENTO_DE_IDENTIDAD = 'Falta documento de identidad'
 
 
-TLog = Annotated[
-    str | PedidoLogs | None,
-    BeforeValidator(
-        lambda x: (x.strip() if isinstance(x, str) else (x.value.strip() if isinstance(x, PedidoLogs) else x))
-    ),
-]
-
-
 class PedidoCreate(TransaccionBase):
     numero: int | None = None  # Número de pedido shopify ej. #1234
     pago: bool = False
-    log: TLog | None = Field(sa_type=TEXT, default=None)
+    log: str | PedidoLogs | None = Field(sa_type=TEXT, default=None)
 
 
 class Pedido(PedidoCreate, table=True):
@@ -56,7 +52,7 @@ class Pedido(PedidoCreate, table=True):
 
 class CompraCreate(TransaccionBase):
     numero_factura_proveedor: str | None = None  # Número de factura proveedor ej. #FV1234
-    log: TLog | None = Field(sa_type=TEXT, default=None)
+    log: str | None = Field(sa_type=TEXT, default=None)
 
 
 class Compra(CompraCreate, table=True):
@@ -66,5 +62,5 @@ class Compra(CompraCreate, table=True):
 
 if __name__ == '__main__':
     pedido = PedidoCreate()
-    pedido.log = PedidoLogs.NO_FACTURAR.value
+    print(pedido.log)
     print(pedido.model_dump_json(indent=2))
