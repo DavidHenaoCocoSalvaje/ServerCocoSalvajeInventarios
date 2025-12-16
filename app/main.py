@@ -1,8 +1,6 @@
 # main.py
-from app.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 from app.routers import inventario, transacciones, usuario, auth, search, facturacion
 from app.internal.log import factory_logger
 
