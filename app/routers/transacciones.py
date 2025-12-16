@@ -53,7 +53,7 @@ async def facturar_pendientes(
 
     async def task(pedidos: list[Pedido]):
         for pedido in pedidos:
-            if not pedido.numero:
+            if not pedido.numero or not pedido.id:
                 continue
             if pedido.log == PedidoLogs.NO_FACTURAR.value:
                 continue

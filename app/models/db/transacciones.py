@@ -54,7 +54,7 @@ class CompraCreate(TransaccionBase):
 
 class Compra(CompraCreate, table=True):
     __tablename__ = 'compras'  # type: ignore
-    id: int = Field(primary_key=True, default=None)
+    id: int | None = Field(primary_key=True, default=None)
 
 
 if __name__ == '__main__':
