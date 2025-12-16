@@ -23,8 +23,6 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-app.add_middleware(SessionMiddleware, secret_key=Config.secret_key)
-
 # Incluye el router de usuarios en la aplicación principal
 app.include_router(usuario.router)
 # Incluye el router de autenticación en la aplicación principal
