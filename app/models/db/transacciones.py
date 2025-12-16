@@ -44,7 +44,7 @@ class PedidoCreate(TransaccionBase):
 
 class Pedido(PedidoCreate, table=True):
     __tablename__ = 'pedidos'  # type: ignore
-    id: int = Field(primary_key=True, default=None)
+    id: int | None = Field(primary_key=True, default=None)
 
 
 class CompraCreate(TransaccionBase):
