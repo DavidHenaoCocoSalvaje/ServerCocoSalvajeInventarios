@@ -100,6 +100,9 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         compra_create = CompraCreate(numero_factura_proveedor=compra_provider_number)
         compra = await compra_query.create(session, compra_create)
 
+    if not compra.id:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Error al crear la compra.')
+
     if compra.factura_id:
         return True
 
@@ -152,7 +155,7 @@ async def facturar_compra_invoice(invoice: Invoice, session: AsyncSession = Depe
         wo_tercero_create = WOTerceroCreateEdit(
             idTerceroTipoIdentificacion=6,  # NIT
             identificacion=invoice.emisor.documento,
-            primerNombre=invoice.emisor.nombrecomercial or invoice.emisor.razonsocial,
+            primerNombre=invoice.emisor.razonsocial or invoice.emisor.nombrecomercial,
             primerApellido=' ',  # WO Exige el campo primer apellido al usar el api v1.
             idCiudad=wo_ciudad_id,
             direccion=invoice.emisor.address,
