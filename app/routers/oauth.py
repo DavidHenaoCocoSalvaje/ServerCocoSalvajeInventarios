@@ -63,6 +63,7 @@ oauth.register(
     redirect_uri=redirect_uri,
     authorization_endpoint='https://accounts.google.com/o/oauth2/v2/auth',
     token_endpoint='https://oauth2.googleapis.com/token',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': ' '.join(user_scopes + gmail_scopes)},
 )
 google_oauth_client = oauth.register(name='google')

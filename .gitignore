@@ -204,9 +204,6 @@ shopify_orders.json
 # Scripts
 scripts/
 
-# AI
-.agent/
-
 # Credentials
 credentials/
 

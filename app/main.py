@@ -3,7 +3,7 @@ from app.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.routers import inventario, transacciones, usuario, auth, search, facturacion
+from app.routers import inventario, transacciones, usuario, auth, oauth, search, facturacion
 from app.internal.log import factory_logger
 
 logger = factory_logger('main', file=False)
@@ -29,6 +29,8 @@ app.add_middleware(SessionMiddleware, secret_key=Config.secret_key)
 app.include_router(usuario.router)
 # Incluye el router de autenticación en la aplicación principal
 app.include_router(auth.router)
+# Incluye el router de atorizacion oauth
+app.include_router(oauth.router)
 # Incluye el router de elementos de inventario y shopify
 app.include_router(inventario.router)
 app.include_router(inventario.shopify_inventario_router)
