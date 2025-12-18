@@ -1,4 +1,5 @@
 # app/internal/integrations/shopify_world_office.py
+
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -362,7 +363,7 @@ async def facturar_orden_shopify_world_office(orden: Order, force=False):  # Bac
                 if not str(e):
                     log_debug.debug(repr(e))
                     log_debug.debug(traceback.format_exc())
-                pedido_update.log = str(e) if str(e) else 'Error desconocido'
+                pedido_update.log = str(e) if str(e) else traceback.format_exc()
                 await pedido_query.update(session, pedido_update, pedido.id)
                 return
 
@@ -404,7 +405,7 @@ if __name__ == '__main__':
 
     async def main():
         shopify_client = ShopifyGraphQLClient()
-        order = await shopify_client.get_order_by_number(32955)
+        order = await shopify_client.get_order_by_number(33256)
         await facturar_orden_shopify_world_office(order)
 
     run(main())

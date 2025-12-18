@@ -1,4 +1,5 @@
 # app/internal/log.py
+from app.config import Config
 import logging
 from logging.handlers import RotatingFileHandler
 from enum import Enum
@@ -50,8 +51,6 @@ def factory_logger(
 
     # Handler para archivo con rotación por tamaño (solo en desarrollo o si se especifica file=True)
     if file:
-        from app.config import Config
-
         # Crear directorio de logs si no existe
         logs_dir = Config.logs_dir
         if not path.exists(logs_dir):
