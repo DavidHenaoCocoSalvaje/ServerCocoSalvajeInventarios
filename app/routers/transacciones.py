@@ -115,7 +115,7 @@ async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSession
     # Algunos pagos de aparecen en Addi como exitosos pero luego salen como Abandonados, se deben identificar y filtrar
     # Encontrar valors duplicados en campo "ID Orden" y Eliminar si el último tiene estado de "Abandono"\
 
-    def parse_fecha(fecha_str):
+    def clean_fecha_str(fecha_str):
         meses = {
             'ene': 'Jan',
             'feb': 'Feb',
@@ -134,9 +134,11 @@ async def buscar_pedidos_csv_addi(files: list[UploadFile], session: AsyncSession
         # Reemplazar solo los meses necesarios
         for esp, eng in meses.items():
             fecha_str = fecha_str.replace(f' {esp} ', f' {eng} ')
-        return to_datetime(fecha_str, format='%d %b %Y, %I:%M %p %z')
+        return fecha_str
 
-    df['Fecha Creación'] = df['Fecha Creación'].apply(parse_fecha).dt.tz_convert(Config.local_timezone)
+    df['Fecha Creación'] = to_datetime(
+        df['Fecha Creación'].apply(clean_fecha_str), format='%d %b %Y, %I:%M %p %z'
+    ).dt.tz_convert(Config.local_timezone)
     df = df.sort_values(['Fecha Creación', 'ID Orden']).drop_duplicates(['Fecha Creación', 'ID Orden'], keep='last')
 
     # Filtrar solo por pagos exitosos y canal E_COMMERCE_SHOPIFY para encontrar los pedidos al consultar en Sopify, de lo contrario serán pedido que no se encontrarán
