@@ -46,7 +46,8 @@ gmail_scopes = [
 ]
 
 
-client_id, client_secret = get_credentials_google('credentials/integraciones-coco.json')
+path_credentials = Config.google_application_credentials
+client_id, client_secret = get_credentials_google(path_credentials)
 if client_id is None or client_secret is None:
     raise ValueError('No se pudieron obtener las credenciales de Google.')
 

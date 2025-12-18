@@ -11,7 +11,8 @@ services:
     networks:
       - coco-salvaje-network
     volumes:
-      - ./logs:/app/logs
+      - ./logs:/logs
+      - ./credentials:/credentials
 
 networks:
   coco-salvaje-network:
