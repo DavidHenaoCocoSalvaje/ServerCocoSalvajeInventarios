@@ -1,11 +1,7 @@
 #!/bin/bash
 
 # Este script carga la nueva imagen, y reinicia el contenedor
-
-set -e
-
-# Obtener la rama actual
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "staging")
+set -e # -> Hace que el script termine si hay un error
 
 # Colores para output
 GREEN='\033[0;32m'
@@ -16,14 +12,10 @@ NC='\033[0m' # No Color
 # hacer build de la imagen
 ./build.sh
 
-echo -e "${YELLOW}🚀 Iniciando despliegue para rama: $BRANCH${NC}"
+echo -e "${YELLOW}🚀 Iniciando despliegue${NC}"
 
 # Verificar que existe la imagen construida
-if [ "$BRANCH" = "main" ]; then
-    IMAGE_FILE="build/integraciones-api-latest.tar"
-else
-    IMAGE_FILE="build/integraciones-api-$BRANCH.tar"
-fi
+IMAGE_FILE="build/integraciones-api-latest.tar"
 if [ ! -f "$IMAGE_FILE" ]; then
     echo -e "${RED}❌ Error: No se encontró la imagen $IMAGE_FILE${NC}"
     echo -e "${YELLOW}💡 Ejecuta primero: ./build.sh${NC}"
@@ -50,25 +42,10 @@ ansible-playbook \
 
 cd ..
 
-echo -e "${GREEN}✅ Despliegue completado para rama: $BRANCH${NC}"
+echo -e "${GREEN}✅ Despliegue completado${NC}"
 
 # Mostrar información útil
-case "$BRANCH" in
-    "staging")
-        PORT="8001"
-        ;;
-    "development"|"develop")
-        PORT="8002"
-        ;;
-    "main"|"master"|"production")
-        PORT="8000"
-        ;;
-    *)
-        PORT="8003"
-        ;;
-esac
-
+PORT="8000"
 echo -e "${GREEN}🌐 URL del servicio: http://cocosalvajeapps.com:$PORT${NC}"
 echo -e "${GREEN}📋 Para ver logs: ssh coco@cocosalvajeapps.com 'docker logs integraciones-api-app'${NC}"
-
 
