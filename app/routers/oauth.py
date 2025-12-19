@@ -46,7 +46,7 @@ gmail_scopes = [
 ]
 
 
-path_credentials = Config.google_application_credentials
+path_credentials = Config.google_credentials
 client_id, client_secret = get_credentials_google(path_credentials)
 if client_id is None or client_secret is None:
     raise ValueError('No se pudieron obtener las credenciales de Google.')

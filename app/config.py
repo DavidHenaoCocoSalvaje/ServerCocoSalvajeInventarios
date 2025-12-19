@@ -86,7 +86,7 @@ class Config:
             # Google Cloud
             # Gemini
             cls.gemini_api_key = str(getenv('GEMINI_API_KEY', ''))
-            cls.google_application_credentials = str(getenv('GOOGLE_APPLICATION_CREDENTIALS', ''))
+            cls.google_credentials = str(getenv('GOOGLE_CREDENTIALS', '/credentials/integraciones-coco.json'))
 
             # Logs
             cls.logs_dir = str(getenv('LOGS_DIR', 'logs'))
