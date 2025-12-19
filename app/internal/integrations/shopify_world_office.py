@@ -1,7 +1,4 @@
 # app/internal/integrations/shopify_world_office.py
-
-from app.internal.gen.utilities import contains_special_characters
-
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -13,8 +10,13 @@ import traceback
 from datetime import date, datetime, timedelta, time
 
 import holidays_co
-
-from app.internal.gen.utilities import DateTz, get_weekday, next_business_day, reemplazar_acentos_graves
+from app.internal.gen.utilities import (
+    DateTz,
+    get_weekday,
+    next_business_day,
+    reemplazar_acentos_graves,
+    contains_special_characters,
+)
 from app.internal.integrations.addi import AddiClient
 from app.internal.integrations.shopify import ShopifyGraphQLClient
 from app.internal.query.transacciones import PedidoQuery
@@ -423,7 +425,7 @@ if __name__ == '__main__':
 
     async def main():
         shopify_client = ShopifyGraphQLClient()
-        order = await shopify_client.get_order_by_number(33256)
+        order = await shopify_client.get_order_by_number(33291)
         await facturar_orden_shopify_world_office(order)
 
     run(main())
