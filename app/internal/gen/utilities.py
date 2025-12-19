@@ -1,3 +1,4 @@
+import re
 import calendar
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -104,6 +105,12 @@ def pluralizar_por_sep(cadena: str, sep: str, n: int | None = None) -> str:
 def reemplazar_acentos_graves(cadena: str) -> str:
     tabla_traduccion = str.maketrans('àèìòùÀÈÌÒÙ', 'áéíóúÁÉÍÓÚ')
     return cadena.translate(tabla_traduccion)
+
+
+def contains_special_characters(cadena: str) -> bool:
+    # Retorna True si contiene caracteres especiales como @, #, $, %, ^, *, (, ), _, +, =, ?, /, \, |, {, }, [, ], ;, :, ', ", <, >, ., ,
+    pattern = r'[@#$%^*()_+=?/\\|{}[];:,<>.,]'
+    return bool(re.search(pattern, cadena))
 
 
 def divide(dividendo: int | float, divisor: int | float) -> float:

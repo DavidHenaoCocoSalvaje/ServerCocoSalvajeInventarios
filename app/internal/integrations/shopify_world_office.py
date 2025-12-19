@@ -1,5 +1,7 @@
 # app/internal/integrations/shopify_world_office.py
 
+from app.internal.gen.utilities import contains_special_characters
+
 if __name__ == '__main__':
     from os.path import abspath
     from sys import path as sys_path
@@ -163,13 +165,29 @@ async def get_valid_wo_tercero(wo_client: WoClient, order: Order, identificacion
         if order.billingAddress.formatted
         else ', '.join(order.shippingAddress.formatted[1:])
     )
-    names = order.billingAddress.firstName.strip() or order.shippingAddress.firstName.strip()
+    order_billing_address_first_name = order.billingAddress.firstName.strip()
+    order_shipping_address_first_name = order.shippingAddress.firstName.strip()
+    if not contains_special_characters(order_billing_address_first_name):
+        names = order_billing_address_first_name.strip()
+    elif not contains_special_characters(order_shipping_address_first_name):
+        names = order_shipping_address_first_name.strip()
+    else:
+        raise ValueError('El nombre del tercero contiene caracteres especiales.')
+
     names_split = names.split(' ')
     names_split_capitalized = [x.capitalize() for x in names_split]
     primer_nombre = reemplazar_acentos_graves(names_split_capitalized[0])
     segundo_nombre = reemplazar_acentos_graves(' '.join(names_split_capitalized[1:]) if len(names_split) > 1 else '')
 
-    last_name = order.billingAddress.lastName.strip() or order.shippingAddress.lastName.strip()
+    order_billing_address_last_name = order.billingAddress.lastName.strip()
+    order_shipping_address_last_name = order.shippingAddress.lastName.strip()
+    if not contains_special_characters(order_billing_address_last_name):
+        last_name = order_billing_address_last_name
+    elif not contains_special_characters(order_shipping_address_last_name):
+        last_name = order_shipping_address_last_name
+    else:
+        raise ValueError('El apellido del tercero contiene caracteres especiales.')
+
     last_name_split = last_name.split(' ')
     last_name_split_capitalized = [x.capitalize() for x in last_name_split]
     primer_apellido = reemplazar_acentos_graves(last_name_split_capitalized[0])

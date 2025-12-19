@@ -42,10 +42,5 @@ ansible-playbook \
 
 cd ..
 
-echo -e "${GREEN}✅ Despliegue completado${NC}"
-
-# Mostrar información útil
-PORT="8000"
-echo -e "${GREEN}🌐 URL del servicio: http://cocosalvajeapps.com:$PORT${NC}"
-echo -e "${GREEN}📋 Para ver logs: ssh coco@cocosalvajeapps.com 'docker logs integraciones-api-app'${NC}"
+echo -e "${GREEN}🌐 Despliegue completado${NC}"
 
