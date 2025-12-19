@@ -1,6 +1,6 @@
 services:
   integraciones-api:
-    image: integraciones-api:latest
+    image: integraciones-api
     container_name: integraciones-api
     user: "1001:1001"
     ports:

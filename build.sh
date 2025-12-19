@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-IMAGE_NAME="integraciones-api:latest"
+IMAGE_NAME="integraciones-api"
 # Construir la imagen
 echo -e "${GREEN}🚀 Construyendo imagen${NC}"
 docker build -t "${IMAGE_NAME}" .

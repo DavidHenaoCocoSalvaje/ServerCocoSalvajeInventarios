@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 echo -e "${YELLOW}🚀 Iniciando despliegue${NC}"
 
 # Verificar que existe la imagen construida
-IMAGE_FILE="build/integraciones-api-latest.tar"
+IMAGE_FILE="build/integraciones-api.tar"
 if [ ! -f "$IMAGE_FILE" ]; then
     echo -e "${RED}❌ Error: No se encontró la imagen $IMAGE_FILE${NC}"
     echo -e "${YELLOW}💡 Ejecuta primero: ./build.sh${NC}"
