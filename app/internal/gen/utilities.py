@@ -109,7 +109,7 @@ def reemplazar_acentos_graves(cadena: str) -> str:
 
 def contains_special_characters(cadena: str) -> bool:
     # Retorna True si contiene caracteres especiales como @, #, $, %, ^, *, (, ), _, +, =, ?, /, \, |, {, }, [, ], ;, :, ', ", <, >, ., ,
-    pattern = r'[@#$%^*()_+=?/\\|{}[];:,<>.,]'
+    pattern = r'[@#$%^*()_+=?/\\|{} \[\] ;:\'\"<>,.]'
     return bool(re.search(pattern, cadena))
 
 
