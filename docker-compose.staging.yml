@@ -11,8 +11,8 @@ services:
     networks:
       - coco-network
     volumes:
-      - ./logs:/logs
-      - ./credentials:/credentials
+      - ./logs:/home/coco/logs
+      - ./credentials:/home/coco/credentials
 
 networks:
   coco-network:

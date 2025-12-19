@@ -1,13 +1,12 @@
 # Dockerfile para API de Inventarios Coco Salvaje
 
-# Usa una imagen base oficial de Python 3.13 slim
+# Usa una imagen base oficial de Python 3.14 slim
 FROM python:3.14-slim-trixie
+
+# Instala uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Establece el directorio de trabajo en el contenedor
-WORKDIR /app
-
-
+# Instala dependencias del sistema
 RUN apt-get update && apt-get install -y \
     python3-dev \
     libpq-dev \
@@ -17,31 +16,34 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copia solo los archivos de dependencias primero (para aprovechar cache de Docker)
-COPY pyproject.toml ./
-
-# Actualiza pip a la última versión
-# RUN pip install --upgrade pip
-RUN uv sync
-
-# Instala dependencias usando pip con pyproject.toml
-# RUN pip install --no-cache-dir .
+# Crea un usuario no-root con UID/GID específicos
+RUN adduser --disabled-password --gecos '' --uid 1001 coco
 
 # Copia el código de la aplicación
-COPY app/ ./app/
-COPY app/default_data/ ./app/default_data/
-COPY ./reset_admin_pwd.py ./
-COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+COPY app/ /home/coco/app/
+COPY app/default_data/ /home/coco/app/default_data/
 
-# Crea un usuario no-root con UID/GID específicos
-RUN adduser --disabled-password --gecos '' --uid 1001 coco && \
-    chown -R coco:coco /app
+# Copia scripts
+COPY ./reset_admin_pwd.py /home/coco/
+COPY entrypoint.sh /home/coco/
+
+# Permite ejecutar el entrypoint
+RUN chmod +x /home/coco/entrypoint.sh
+
+# Copia pyproject.toml
+COPY pyproject.toml /home/coco/
+
+# Establece el directorio de trabajo en el contenedor
+WORKDIR /home/coco
+
+# Instala dependencias de Python
+RUN uv sync
 
 # Cambia al usuario no-root
+RUN chown -R coco:coco /home/coco/
 USER coco
 
 # Expone el puerto 8000
 EXPOSE 8000
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/home/coco/entrypoint.sh"]

@@ -9,11 +9,11 @@ services:
       - .env
     restart: unless-stopped
     networks:
-      - coco-salvaje-network
+      - coco-network
     volumes:
-      - ./logs:/logs
-      - ./credentials:/credentials
+      - ./logs:/home/coco/logs
+      - ./credentials:/home/coco/credentials
 
 networks:
-  coco-salvaje-network:
-    driver: bridge
+  coco-network:
+    external: true
