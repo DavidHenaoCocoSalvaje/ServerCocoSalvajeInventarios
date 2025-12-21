@@ -34,14 +34,6 @@ class CRUD:
         """
 
         # POST - Crear un nuevo recurso
-        @router.post(
-            f'/{name}',
-            operation_id=f'create_{name}',
-            response_model=model_db,
-            status_code=status.HTTP_201_CREATED,
-            summary=f'Crear un nuevo {name.replace("-", " ")}',
-            description=f'Crea un nuevo {name.replace("-", " ")} con los datos proporcionados.',
-        )
         async def create_resource(
             resource: Annotated[SQLModel, model_create],
             session: AsyncSessionDep,
@@ -49,14 +41,18 @@ class CRUD:
             """Crea un nuevo recurso."""
             return await model_query.create(session, resource)
 
-        # GET - Obtener lista de recursos
-        @router.get(
-            f'/{pluralizar_por_sep(name, "-", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
-            operation_id=f'get_{pluralizar_por_sep(name, "-", 1)}',
-            response_model=list[model_db],
-            summary=f'Obtener lista de {name.replace("-", " ")}s',
-            description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "-", 1).replace("-", " ")}.',
+        router.add_api_route(
+            f'/{name}',
+            create_resource,
+            methods=['POST'],
+            operation_id=f'create_{name}',
+            response_model=model_db,
+            status_code=status.HTTP_201_CREATED,
+            summary=f'Crear un nuevo {name.replace("-", " ")}',
+            description=f'Crea un nuevo {name.replace("-", " ")} con los datos proporcionados.',
         )
+
+        # GET - Obtener lista de recursos
         async def get_resources(
             session: AsyncSessionDep,
             skip: int = 0,
@@ -66,14 +62,17 @@ class CRUD:
             """Obtiene una lista de recursos."""
             return await model_query.get_list(session=session, skip=skip, limit=limit, sort=sort)
 
-        # GET - Obtener un recurso por ID
-        @router.get(
-            f'/{name}/{{{name}-id}}',
-            operation_id=f'get_{name}_by_id',
-            response_model=model_db,
-            summary=f'Obtener {name.replace("-", " ")} por ID',
-            description=f'Obtiene los detalles de {name.replace("-", " ")} específico mediante su ID.',
+        router.add_api_route(
+            f'/{pluralizar_por_sep(name, "-", 1)}',  # Plural para la lista (ej. /bodegas_inventario)
+            get_resources,
+            methods=['GET'],
+            operation_id=f'get_{pluralizar_por_sep(name, "-", 1)}',
+            response_model=list[model_db],
+            summary=f'Obtener lista de {name.replace("-", " ")}s',
+            description=f'Obtiene una lista paginada de {pluralizar_por_sep(name, "-", 1).replace("-", " ")}.',
         )
+
+        # GET - Obtener un recurso por ID
         async def get_resource(
             session: AsyncSessionDep,
             resource_id: int,
@@ -87,13 +86,17 @@ class CRUD:
                 )
             return db_resource
 
-        # PUT - Actualizar un recurso
-        @router.put(
+        router.add_api_route(
             f'/{name}/{{{name}-id}}',
-            operation_id=f'update_{name}',
+            get_resource,
+            methods=['GET'],
+            operation_id=f'get_{name}_by_id',
             response_model=model_db,
-            summary=f'Actualizar {name.replace("-", " ")}',
+            summary=f'Obtener {name.replace("-", " ")} por ID',
+            description=f'Obtiene los detalles de {name.replace("-", " ")} específico mediante su ID.',
         )
+
+        # PUT - Actualizar un recurso
         async def update_resource(
             session: AsyncSessionDep,
             resource_id: int,
@@ -109,13 +112,16 @@ class CRUD:
             updated_resource = await model_query.update(session, new_data, resource_id)
             return updated_resource
 
-        # DELETE - Eliminar un recurso
-        @router.delete(
+        router.add_api_route(
             f'/{name}/{{{name}-id}}',
-            operation_id=f'delete_{name}',
+            update_resource,
+            methods=['PUT'],
+            operation_id=f'update_{name}',
             response_model=model_db,
-            summary=f'Eliminar {name.replace("-", " ")}',
+            summary=f'Actualizar {name.replace("-", " ")}',
         )
+
+        # DELETE - Eliminar un recurso
         async def delete_resource(
             session: AsyncSessionDep,
             resource_id: int,
@@ -128,3 +134,12 @@ class CRUD:
                     detail=f'{ModelDB.__name__} con ID {resource_id} no encontrado',
                 )
             return deleted_resource
+
+        router.add_api_route(
+            f'/{name}/{{{name}-id}}',
+            delete_resource,
+            methods=['DELETE'],
+            operation_id=f'delete_{name}',
+            response_model=model_db,
+            summary=f'Eliminar {name.replace("-", " ")}',
+        )
