@@ -23,32 +23,6 @@ class Config:
             cls.environment = str(getenv('ENVIRONMENT', 'development')).lower()
             cls.production = cls.environment in ['production', 'prod']
 
-            # Azure Container Apps
-            cls.container_app_name = str(getenv('CONTAINER_APP_NAME', ''))
-            cls.container_app_revision = str(getenv('CONTAINER_APP_REVISION', ''))
-            cls.container_app_hostname = str(getenv('CONTAINER_APP_HOSTNAME', ''))
-            cls.container_app_env_dns_suffix = str(getenv('CONTAINER_APP_ENV_DNS_SUFFIX', ''))
-            cls.container_app_replica_name = str(getenv('CONTAINER_APP_REPLICA_NAME', ''))
-            cls.container_app_job_name = str(getenv('CONTAINER_APP_JOB_NAME', ''))
-            cls.container_app_job_execution_name = str(getenv('CONTAINER_APP_JOB_EXECUTION_NAME', ''))
-
-            cls.is_container = bool(
-                cls.container_app_name
-                or cls.container_app_revision
-                or cls.container_app_hostname
-                or cls.container_app_env_dns_suffix
-            )
-
-            cls.container_info = {
-                'container_app_name': cls.container_app_name,
-                'container_app_revision': cls.container_app_revision,
-                'container_app_hostname': cls.container_app_hostname,
-                'container_app_env_dns_suffix': cls.container_app_env_dns_suffix,
-                'container_app_replica_name': cls.container_app_replica_name,
-                'container_app_job_name': cls.container_app_job_name,
-                'container_app_job_execution_name': cls.container_app_job_execution_name,
-            }
-
             # Database
             cls.db_host = str(getenv('DB_HOST', 'localhost'))
             cls.db_port = int(getenv('DB_PORT', 5432))
